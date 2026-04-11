@@ -1,0 +1,41 @@
+# R
+.Rhistory
+.Rdata
+.RData
+.Rproj.user/
+*.Rproj
+
+# Output (large simulation files)
+output/sim_results/*.rds
+output/thresholds/*.rds
+
+# OS
+.DS_Store
+Thumbs.db
+
+# LaTeX auxiliary
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+
+# Compiled PDF (rebuild from .tex)
+proposal.pdf
+summary_writeup.pdf
+
+# LaTeX build files
+*.bbl
+*.blg
+
+# R plots
+Rplots.pdf
+
+# Internal documents
+reviewer_consensus.md
+summary_writeup.md
+
+# renv library (tracked via lockfile)
+renv/library/
+renv/staging/

@@ -1,0 +1,55 @@
+# PABAK Monte Carlo Simulation — Master Configuration
+# All magic numbers live here. Nothing hard-coded in function bodies.
+
+seed: 20260409
+n_reps: 5000
+n_reps_stress: 20000
+
+sample_sizes: [10, 50, 100, 500, 1000]
+
+prevalences: [0.01, 0.05, 0.10, 0.20, 0.50, 0.80, 0.90, 0.95, 0.99]
+
+# Rater profiles encode both accuracy and bias via Se/Sp pairs.
+# Format: Se1, Sp1 (rater 1), Se2, Sp2 (rater 2)
+rater_profiles:
+  # Symmetric raters (no bias), varying accuracy
+  symmetric_vlow:      {Se1: 0.65, Sp1: 0.65, Se2: 0.65, Sp2: 0.65}
+  symmetric_low:       {Se1: 0.60, Sp1: 0.60, Se2: 0.60, Sp2: 0.60}
+  symmetric_med:       {Se1: 0.75, Sp1: 0.75, Se2: 0.75, Sp2: 0.75}
+  symmetric_high:      {Se1: 0.90, Sp1: 0.90, Se2: 0.90, Sp2: 0.90}
+  symmetric_vhigh:     {Se1: 0.95, Sp1: 0.95, Se2: 0.95, Sp2: 0.95}
+
+  # Within-rater asymmetry (both raters biased the same direction)
+  asym_within_se:      {Se1: 0.95, Sp1: 0.70, Se2: 0.95, Sp2: 0.70}  # favor positives
+  asym_within_sp:      {Se1: 0.70, Sp1: 0.95, Se2: 0.70, Sp2: 0.95}  # favor negatives
+
+  # Between-rater asymmetry (raters differ from each other)
+  asym_between_se:     {Se1: 0.95, Sp1: 0.90, Se2: 0.70, Sp2: 0.90}  # R2 misses positives
+  asym_between_sp:     {Se1: 0.90, Sp1: 0.95, Se2: 0.90, Sp2: 0.70}  # R2 misses negatives
+  asym_between_both:   {Se1: 0.90, Sp1: 0.90, Se2: 0.70, Sp2: 0.70}  # R2 worse overall
+
+  # Mixed/opposite biases
+  mixed_bias_1:        {Se1: 0.90, Sp1: 0.70, Se2: 0.70, Sp2: 0.90}  # opposite biases
+  mixed_bias_2:        {Se1: 0.70, Sp1: 0.90, Se2: 0.90, Sp2: 0.70}  # opposite biases, flipped
+
+  # Additional High-quality profiles (densify the High band for threshold stability)
+  symmetric_high_alt:  {Se1: 0.92, Sp1: 0.92, Se2: 0.92, Sp2: 0.92}
+  high_se_dominant:    {Se1: 0.95, Sp1: 0.90, Se2: 0.95, Sp2: 0.90}  # both favor Se
+  high_sp_dominant:    {Se1: 0.90, Sp1: 0.95, Se2: 0.90, Sp2: 0.95}  # both favor Sp
+  high_mixed:          {Se1: 0.95, Sp1: 0.92, Se2: 0.92, Sp2: 0.95}  # complementary high
+  high_between:        {Se1: 0.95, Sp1: 0.95, Se2: 0.90, Sp2: 0.90}  # R2 slightly lower
+
+  # Additional Low-quality profiles (densify the Low band)
+  low_asym_se_high:    {Se1: 0.50, Sp1: 0.90, Se2: 0.50, Sp2: 0.90}  # poor Se, good Sp
+  low_asym_sp_high:    {Se1: 0.90, Sp1: 0.50, Se2: 0.90, Sp2: 0.50}  # good Se, poor Sp
+  low_between:         {Se1: 0.65, Sp1: 0.65, Se2: 0.50, Sp2: 0.50}  # R2 worse
+  low_opposite:        {Se1: 0.60, Sp1: 0.50, Se2: 0.50, Sp2: 0.60}  # opposite low biases
+  low_moderate:        {Se1: 0.55, Sp1: 0.55, Se2: 0.55, Sp2: 0.55}  # symmetric very poor
+
+# Cost ratios (C_FN / C_FP) — applied post-hoc, NOT crossed into simulation grid
+cost_ratios: [1, 2, 5, 10]
+
+# Stress conditions: these get n_reps_stress replications
+stress_conditions:
+  prevalences: [0.01, 0.99]
+  sample_sizes: [10, 50]
