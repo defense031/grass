@@ -7,6 +7,9 @@
 
 # Output (large simulation files)
 output/sim_results/*.rds
+output/unified_sim/sim_results/*.rds
+output/balanced_sim/sim_results/*.rds
+output/balanced_sim/*.rds
 output/thresholds/*.rds
 
 # OS

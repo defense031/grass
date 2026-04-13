@@ -1,0 +1,76 @@
+# PABAK Monte Carlo Simulation — Unified Configuration
+# 39 profiles x 15 prevalences x 5 sample sizes = 2,925 scenarios
+# Full factorial design. No tiering or regime assignment by design.
+#
+# Profiles span symmetric, within-rater asymmetric, between-rater asymmetric,
+# and opposite-bias configurations across High/Medium/Low quality bands.
+# Prevalence levels span extreme (0.01-0.10, 0.90-0.99) and balanced (0.40-0.60).
+
+seed: 20260412
+n_reps: 5000
+n_reps_stress: 20000
+
+sample_sizes: [10, 50, 100, 500, 1000]
+
+prevalences: [0.01, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.48, 0.50, 0.52, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 0.99]
+
+rater_profiles:
+  # --- Symmetric raters (no between-rater bias) ---
+  symmetric_vhigh:     {Se1: 0.95, Sp1: 0.95, Se2: 0.95, Sp2: 0.95}
+  symmetric_high_alt:  {Se1: 0.92, Sp1: 0.92, Se2: 0.92, Sp2: 0.92}
+  symmetric_high:      {Se1: 0.90, Sp1: 0.90, Se2: 0.90, Sp2: 0.90}
+  symmetric_med:       {Se1: 0.75, Sp1: 0.75, Se2: 0.75, Sp2: 0.75}
+  symmetric_mod:       {Se1: 0.80, Sp1: 0.80, Se2: 0.80, Sp2: 0.80}
+  symmetric_vlow:      {Se1: 0.65, Sp1: 0.65, Se2: 0.65, Sp2: 0.65}
+  symmetric_low:       {Se1: 0.60, Sp1: 0.60, Se2: 0.60, Sp2: 0.60}
+  symmetric_poor:      {Se1: 0.55, Sp1: 0.55, Se2: 0.55, Sp2: 0.55}
+
+  # --- Within-rater asymmetry (both raters biased same direction) ---
+  asym_within_se:      {Se1: 0.95, Sp1: 0.70, Se2: 0.95, Sp2: 0.70}  # both favor positives
+  asym_within_sp:      {Se1: 0.70, Sp1: 0.95, Se2: 0.70, Sp2: 0.95}  # both favor negatives
+  asym_within_se_mod:  {Se1: 0.85, Sp1: 0.70, Se2: 0.85, Sp2: 0.70}  # moderate Se-favoring
+  asym_within_sp_mod:  {Se1: 0.70, Sp1: 0.85, Se2: 0.70, Sp2: 0.85}  # moderate Sp-favoring
+
+  # --- Between-rater asymmetry (raters differ, not opposite) ---
+  asym_between_se:     {Se1: 0.95, Sp1: 0.90, Se2: 0.70, Sp2: 0.90}  # R2 misses positives
+  asym_between_sp:     {Se1: 0.90, Sp1: 0.95, Se2: 0.90, Sp2: 0.70}  # R2 misses negatives
+  asym_between_both:   {Se1: 0.90, Sp1: 0.90, Se2: 0.70, Sp2: 0.70}  # R2 worse overall
+
+  # --- High-quality densification ---
+  high_se_dominant:    {Se1: 0.95, Sp1: 0.90, Se2: 0.95, Sp2: 0.90}  # both favor Se
+  high_sp_dominant:    {Se1: 0.90, Sp1: 0.95, Se2: 0.90, Sp2: 0.95}  # both favor Sp
+  high_mixed:          {Se1: 0.95, Sp1: 0.92, Se2: 0.92, Sp2: 0.95}  # complementary high
+  high_between:        {Se1: 0.95, Sp1: 0.95, Se2: 0.90, Sp2: 0.90}  # R2 slightly lower
+
+  # --- Opposite-bias profiles (high quality) ---
+  opp_high_1:          {Se1: 0.99, Sp1: 0.90, Se2: 0.90, Sp2: 0.99}  # max gap in high band
+  opp_high_2:          {Se1: 0.98, Sp1: 0.90, Se2: 0.90, Sp2: 0.98}  # large gap
+  opp_high_3:          {Se1: 0.97, Sp1: 0.91, Se2: 0.91, Sp2: 0.97}  # moderate gap
+  opp_high_4:          {Se1: 0.96, Sp1: 0.92, Se2: 0.92, Sp2: 0.96}  # smaller gap
+
+  # --- Opposite-bias profiles (medium quality) ---
+  opp_med_1:           {Se1: 0.90, Sp1: 0.70, Se2: 0.70, Sp2: 0.90}  # classic opposite
+  opp_med_2:           {Se1: 0.85, Sp1: 0.75, Se2: 0.75, Sp2: 0.85}  # moderate opposite
+  opp_med_3:           {Se1: 0.88, Sp1: 0.72, Se2: 0.72, Sp2: 0.88}  # large gap variant
+  opp_med_4:           {Se1: 0.80, Sp1: 0.70, Se2: 0.70, Sp2: 0.80}  # lower accuracy
+  opp_med_5:           {Se1: 0.85, Sp1: 0.70, Se2: 0.70, Sp2: 0.85}  # medium, large gap
+  opp_med_6:           {Se1: 0.89, Sp1: 0.70, Se2: 0.70, Sp2: 0.89}  # just below high band
+
+  # --- Opposite-bias profiles (low quality) ---
+  opp_low_1:           {Se1: 0.80, Sp1: 0.50, Se2: 0.50, Sp2: 0.80}  # strong opposite
+  opp_low_2:           {Se1: 0.75, Sp1: 0.50, Se2: 0.50, Sp2: 0.75}  # moderate opposite
+  opp_low_3:           {Se1: 0.70, Sp1: 0.55, Se2: 0.55, Sp2: 0.70}  # moderate low
+  opp_low_4:           {Se1: 0.65, Sp1: 0.50, Se2: 0.50, Sp2: 0.65}  # poor, moderate gap
+  opp_low_5:           {Se1: 0.85, Sp1: 0.45, Se2: 0.45, Sp2: 0.85}  # very strong opposite
+
+  # --- Low-quality densification ---
+  low_asym_se_high:    {Se1: 0.50, Sp1: 0.90, Se2: 0.50, Sp2: 0.90}  # poor Se, good Sp
+  low_asym_sp_high:    {Se1: 0.90, Sp1: 0.50, Se2: 0.90, Sp2: 0.50}  # good Se, poor Sp
+  low_between:         {Se1: 0.65, Sp1: 0.65, Se2: 0.50, Sp2: 0.50}  # R2 worse
+  low_opposite:        {Se1: 0.60, Sp1: 0.50, Se2: 0.50, Sp2: 0.60}  # opposite low biases
+
+cost_ratios: [1, 2, 5, 10]
+
+stress_conditions:
+  prevalences: [0.01, 0.99]
+  sample_sizes: [10, 50]

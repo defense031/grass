@@ -1,0 +1,150 @@
+================================================================
+  PABAK SIMULATION — MC DIAGNOSTICS REPORT
+  Generated: 2026-04-09 21:58:29.255287
+================================================================
+
+1. OVERALL SUMMARY
+   Total replications:  3,135,000
+   Total scenarios:     495
+   Standard (5000):     451
+   Stress   (20000):    44
+   File size:           72.0 MB
+
+2. COMPUTING SCENARIO-LEVEL SUMMARIES...
+   Saved: output/scenario_summaries.rds (495 rows)
+
+3. MONTE CARLO STANDARD ERROR DIAGNOSTICS
+
+   MCSE(kappa) distribution:
+        0%: 0.000261
+       25%: 0.000591
+       50%: 0.001298
+       75%: 0.002017
+       90%: 0.004214
+       95%: 0.004445
+      100%: 0.006660
+
+   Scenarios with MCSE(kappa) > 0.01: 0 / 495
+
+4. CONVERGENCE CHECK: MC MEANS vs THEORETICAL
+
+   |MC_mean(P0) - theoretical P0| distribution:
+       50%: 0.000278
+       90%: 0.001324
+       95%: 0.002226
+       99%: 0.004344
+      100%: 0.005880
+
+   |MC_mean(kappa) - theoretical kappa| distribution:
+       50%: 0.001474
+       90%: 0.019179
+       95%: 0.029730
+       99%: 0.110300
+      100%: 0.284938
+
+   Scenarios with |kappa_error| > 0.02: 43
+   These are expected at extreme prevalence + small N:
+     scenario  91: symmetric_high       prev=0.01 N=  10  MC=0.1526  theo=0.0658  err=0.0869
+     scenario  93: symmetric_high       prev=0.10 N=  10  MC=0.3506  theo=0.3902  err=0.0396
+     scenario  94: symmetric_high       prev=0.20 N=  10  MC=0.4850  theo=0.5322  err=0.0472
+     scenario  95: symmetric_high       prev=0.50 N=  10  MC=0.6169  theo=0.6400  err=0.0231
+     scenario  96: symmetric_high       prev=0.80 N=  10  MC=0.4875  theo=0.5322  err=0.0447
+     scenario  97: symmetric_high       prev=0.90 N=  10  MC=0.3570  theo=0.3902  err=0.0332
+     scenario  99: symmetric_high       prev=0.99 N=  10  MC=0.1524  theo=0.0658  err=0.0866
+     scenario 136: symmetric_vhigh      prev=0.01 N=  10  MC=0.3935  theo=0.1444  err=0.2490
+     scenario 137: symmetric_vhigh      prev=0.05 N=  10  MC=0.4767  theo=0.4475  err=0.0291
+     scenario 138: symmetric_vhigh      prev=0.10 N=  10  MC=0.5738  theo=0.6055  err=0.0317
+
+5. DEGENERATE CASE FREQUENCY
+
+   Kappa NA rate by scenario (top 10):
+     scenario   1: symmetric_low        prev=0.01 N=  10  kappa_NA=0.0%
+     scenario   2: symmetric_low        prev=0.05 N=  10  kappa_NA=0.0%
+     scenario   3: symmetric_low        prev=0.10 N=  10  kappa_NA=0.0%
+     scenario   4: symmetric_low        prev=0.20 N=  10  kappa_NA=0.0%
+     scenario   5: symmetric_low        prev=0.50 N=  10  kappa_NA=0.0%
+     scenario   6: symmetric_low        prev=0.80 N=  10  kappa_NA=0.0%
+     scenario   7: symmetric_low        prev=0.90 N=  10  kappa_NA=0.0%
+     scenario   8: symmetric_low        prev=0.95 N=  10  kappa_NA=0.0%
+     scenario   9: symmetric_low        prev=0.99 N=  10  kappa_NA=0.0%
+     scenario  10: symmetric_low        prev=0.01 N=  50  kappa_NA=0.0%
+
+   Positive agreement NA rate (top 10):
+     scenario 226: asym_within_sp       prev=0.01 N=  10  pos_agree_NA=33.2%
+     scenario 136: symmetric_vhigh      prev=0.01 N=  10  pos_agree_NA=33.1%
+     scenario 227: asym_within_sp       prev=0.05 N=  10  pos_agree_NA=23.5%
+     scenario 137: symmetric_vhigh      prev=0.05 N=  10  pos_agree_NA=20.6%
+     scenario 228: asym_within_sp       prev=0.10 N=  10  pos_agree_NA=14.7%
+     scenario 138: symmetric_vhigh      prev=0.10 N=  10  pos_agree_NA=12.0%
+     scenario 271: asym_between_se      prev=0.01 N=  10  pos_agree_NA=11.2%
+     scenario  91: symmetric_high       prev=0.01 N=  10  pos_agree_NA=11.1%
+     scenario  92: symmetric_high       prev=0.05 N=  10  pos_agree_NA=7.5%
+     scenario 272: asym_between_se      prev=0.05 N=  10  pos_agree_NA=7.1%
+
+6. KAPPA vs PABAK DIVERGENCE OVERVIEW
+
+   Mean |PABAK - kappa| distribution across scenarios:
+        0%: 0.0002
+       25%: 0.0711
+       50%: 0.1752
+       75%: 0.2996
+       90%: 0.4224
+       95%: 0.5786
+      100%: 0.7350
+
+   Top 10 scenarios by mean divergence:
+     scenario 207: asym_within_se       prev=0.99 N= 100  kappa=0.070  PABAK=0.805  div=0.735
+     scenario 198: asym_within_se       prev=0.99 N=  50  kappa=0.069  PABAK=0.802  div=0.733
+     scenario 235: asym_within_sp       prev=0.01 N=  50  kappa=0.072  PABAK=0.804  div=0.732
+     scenario 244: asym_within_sp       prev=0.01 N= 100  kappa=0.074  PABAK=0.803  div=0.729
+     scenario 225: asym_within_se       prev=0.99 N=1000  kappa=0.078  PABAK=0.804  div=0.726
+     scenario 253: asym_within_sp       prev=0.01 N= 500  kappa=0.078  PABAK=0.803  div=0.726
+     scenario 216: asym_within_se       prev=0.99 N= 500  kappa=0.078  PABAK=0.804  div=0.726
+     scenario 262: asym_within_sp       prev=0.01 N=1000  kappa=0.079  PABAK=0.804  div=0.725
+     scenario 153: symmetric_vhigh      prev=0.99 N=  50  kappa=0.126  PABAK=0.810  div=0.684
+     scenario 145: symmetric_vhigh      prev=0.01 N=  50  kappa=0.127  PABAK=0.810  div=0.682
+
+7. PARADOX FREQUENCY (P0 > 0.80 AND kappa < 0.40)
+
+   Replications meeting paradox criteria: 468,481 / 3,135,000 (14.94%)
+
+   Paradox rate by prevalence level:
+     prev=0.01:  23.44% (141,828 / 605,000)
+     prev=0.05:  20.20% (55,562 / 275,000)
+     prev=0.10:  11.79% (32,416 / 275,000)
+     prev=0.20:   1.57% (4,315 / 275,000)
+     prev=0.50:   0.03% (77 / 275,000)
+     prev=0.80:   1.58% (4,348 / 275,000)
+     prev=0.90:  11.73% (32,259 / 275,000)
+     prev=0.95:  20.30% (55,825 / 275,000)
+     prev=0.99:  23.45% (141,851 / 605,000)
+
+8. LANDIS-KOCH MISLABELING ANALYSIS
+
+   Scenarios where L-K label differs for kappa vs PABAK: 323 / 495 (65.3%)
+
+   Cross-tabulation of L-K labels (kappa vs PABAK):
+                PABAK
+kappa            poor slight fair moderate substantial almost_perfect
+  poor              0      0    0        0           0              0
+  slight            0     65  160        0          22             16
+  fair              0      0   70       12          58              4
+  moderate          0      0    0       28          20             16
+  substantial       0      0    0        0           5             15
+  almost_perfect    0      0    0        0           0              4
+
+   Dramatic mislabels (kappa=poor/slight, PABAK=substantial+): 38 scenarios
+     scenario  91: symmetric_high       prev=0.01 N=  10  kappa=0.153(slight)  PABAK=0.641(substantial)
+     scenario  99: symmetric_high       prev=0.99 N=  10  kappa=0.152(slight)  PABAK=0.642(substantial)
+     scenario 100: symmetric_high       prev=0.01 N=  50  kappa=0.061(slight)  PABAK=0.640(substantial)
+     scenario 108: symmetric_high       prev=0.99 N=  50  kappa=0.061(slight)  PABAK=0.640(substantial)
+     scenario 109: symmetric_high       prev=0.01 N= 100  kappa=0.064(slight)  PABAK=0.640(substantial)
+     scenario 117: symmetric_high       prev=0.99 N= 100  kappa=0.063(slight)  PABAK=0.640(substantial)
+     scenario 118: symmetric_high       prev=0.01 N= 500  kappa=0.065(slight)  PABAK=0.640(substantial)
+     scenario 126: symmetric_high       prev=0.99 N= 500  kappa=0.066(slight)  PABAK=0.641(substantial)
+     scenario 127: symmetric_high       prev=0.01 N=1000  kappa=0.064(slight)  PABAK=0.639(substantial)
+     scenario 135: symmetric_high       prev=0.99 N=1000  kappa=0.065(slight)  PABAK=0.640(substantial)
+
+================================================================
+  END OF DIAGNOSTICS REPORT
+================================================================

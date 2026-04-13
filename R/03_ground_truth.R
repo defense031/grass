@@ -55,6 +55,16 @@ compute_ground_truth <- function(Se1, Sp1, Se2, Sp2, prevalence, cost_ratios) {
   Se_any     <- 1 - (1 - Se1) * (1 - Se2)
   Sp_any     <- Sp1 * Sp2
 
+  # --- Theoretical PI and BI ---
+  # Cell probabilities under conditional independence
+  prob_a <- prevalence * (1 - Se1) * (1 - Se2) + (1 - prevalence) * Sp1 * Sp2
+  prob_b <- prevalence * (1 - Se1) * Se2 + (1 - prevalence) * Sp1 * (1 - Sp2)
+  prob_c <- prevalence * Se1 * (1 - Se2) + (1 - prevalence) * (1 - Sp1) * Sp2
+  prob_d <- prevalence * Se1 * Se2 + (1 - prevalence) * (1 - Sp1) * (1 - Sp2)
+  PI_theoretical <- abs(prob_d - prob_a)
+  BI_theoretical <- abs(prob_b - prob_c)
+  delta_theoretical <- PI_theoretical^2 - BI_theoretical^2
+
   # Build result row
   result <- data.frame(
     quality_band       = quality_band,
@@ -63,6 +73,9 @@ compute_ground_truth <- function(Se1, Sp1, Se2, Sp2, prevalence, cost_ratios) {
     Pe_theoretical     = Pe_theoretical,
     kappa_theoretical  = kappa_theoretical,
     PABAK_theoretical  = PABAK_theoretical,
+    PI_theoretical     = PI_theoretical,
+    BI_theoretical     = BI_theoretical,
+    delta_theoretical  = delta_theoretical,
     Se_require         = Se_require,
     Sp_require         = Sp_require,
     Se_any             = Se_any,

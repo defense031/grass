@@ -1,0 +1,72 @@
+# Balanced Bias Stress Test — Supplementary Simulation Configuration
+# 600 scenarios: 300 prevalence-dominant, 300 bias-dominant
+# This supplements (does not replace) the original 990-scenario simulation.
+
+seed: 20260412
+n_reps: 5000
+n_reps_stress: 20000
+
+sample_sizes: [10, 50, 100, 500, 1000]
+
+# Cost ratios (applied post-hoc)
+cost_ratios: [1, 2, 5, 10]
+
+# ============================================================
+# Prevalence-Dominant Regime
+# Symmetric raters at extreme prevalence. BI ≈ 0, PI large.
+# ============================================================
+prevalence_dominant:
+  prevalences: [0.01, 0.05, 0.10, 0.90, 0.95, 0.99]
+  profiles:
+    pd_h1:  {Se1: 0.95, Sp1: 0.95, Se2: 0.95, Sp2: 0.95}  # Symmetric excellent
+    pd_h2:  {Se1: 0.92, Sp1: 0.92, Se2: 0.92, Sp2: 0.92}  # Symmetric high
+    pd_h3:  {Se1: 0.90, Sp1: 0.90, Se2: 0.90, Sp2: 0.90}  # At quality boundary
+    pd_h4:  {Se1: 0.95, Sp1: 0.90, Se2: 0.95, Sp2: 0.90}  # Both Se-favoring
+    pd_m1:  {Se1: 0.80, Sp1: 0.80, Se2: 0.80, Sp2: 0.80}  # Symmetric moderate
+    pd_m2:  {Se1: 0.75, Sp1: 0.75, Se2: 0.75, Sp2: 0.75}  # Symmetric lower-medium
+    pd_m3:  {Se1: 0.85, Sp1: 0.70, Se2: 0.85, Sp2: 0.70}  # Both Se-favoring
+    pd_m4:  {Se1: 0.70, Sp1: 0.85, Se2: 0.70, Sp2: 0.85}  # Both Sp-favoring
+    pd_l1:  {Se1: 0.65, Sp1: 0.65, Se2: 0.65, Sp2: 0.65}  # Symmetric poor
+    pd_l2:  {Se1: 0.55, Sp1: 0.55, Se2: 0.55, Sp2: 0.55}  # Symmetric near-chance
+
+# ============================================================
+# Bias-Dominant Regime
+# Opposite-bias (mirror) raters at balanced prevalence.
+# BI > PI by construction. Tiered prevalence by quality band.
+# ============================================================
+bias_dominant:
+  # High quality: narrow prevalence (small Se-Sp gap → small BI)
+  high:
+    prevalences: [0.48, 0.50, 0.52]
+    profiles:
+      bd_h1:  {Se1: 0.99, Sp1: 0.90, Se2: 0.90, Sp2: 0.99}  # Max gap in high band
+      bd_h2:  {Se1: 0.98, Sp1: 0.90, Se2: 0.90, Sp2: 0.98}  # Large gap
+      bd_h3:  {Se1: 0.97, Sp1: 0.91, Se2: 0.91, Sp2: 0.97}  # Moderate gap
+      bd_h4:  {Se1: 0.96, Sp1: 0.92, Se2: 0.92, Sp2: 0.96}  # Smaller gap
+
+  # Medium quality: moderate prevalence range
+  medium:
+    prevalences: [0.45, 0.48, 0.52, 0.55]
+    profiles:
+      bd_m1:  {Se1: 0.90, Sp1: 0.70, Se2: 0.70, Sp2: 0.90}  # Classic opposite bias
+      bd_m2:  {Se1: 0.85, Sp1: 0.75, Se2: 0.75, Sp2: 0.85}  # Moderate opposite
+      bd_m3:  {Se1: 0.88, Sp1: 0.72, Se2: 0.72, Sp2: 0.88}  # Large gap variant
+      bd_m4:  {Se1: 0.80, Sp1: 0.70, Se2: 0.70, Sp2: 0.80}  # Lower accuracy
+      bd_m5:  {Se1: 0.85, Sp1: 0.70, Se2: 0.70, Sp2: 0.85}  # Medium, large gap
+      bd_m6:  {Se1: 0.89, Sp1: 0.70, Se2: 0.70, Sp2: 0.89}  # Just below high band
+
+  # Low quality: wider prevalence range (large BI tolerates more deviation)
+  low:
+    prevalences: [0.40, 0.45, 0.55, 0.60]
+    profiles:
+      bd_l1:  {Se1: 0.80, Sp1: 0.50, Se2: 0.50, Sp2: 0.80}  # Strong opposite
+      bd_l2:  {Se1: 0.75, Sp1: 0.50, Se2: 0.50, Sp2: 0.75}  # Moderate opposite
+      bd_l3:  {Se1: 0.70, Sp1: 0.55, Se2: 0.55, Sp2: 0.70}  # Moderate low
+      bd_l4:  {Se1: 0.65, Sp1: 0.50, Se2: 0.50, Sp2: 0.65}  # Poor, moderate gap
+      bd_l5:  {Se1: 0.60, Sp1: 0.50, Se2: 0.50, Sp2: 0.60}  # Near-chance
+      bd_l6:  {Se1: 0.85, Sp1: 0.45, Se2: 0.45, Sp2: 0.85}  # Very strong opposite
+
+# Stress conditions for extra replications
+stress_conditions:
+  prevalences: [0.01, 0.99]
+  sample_sizes: [10, 50]

@@ -1,0 +1,98 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{times}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{parskip}
+
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+
+\title{\vspace{-1.5cm}\textbf{Research Proposal: Context-Aware Interpretation\\Thresholds for PABAK and Kappa-Type Metrics}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.2cm}
+
+\section*{The Problem}
+
+Researchers routinely label agreement coefficients ($\kappa$, PABAK) using qualitative scales (e.g., Landis \& Koch, 1977: ``slight,'' ``moderate,'' ``substantial''). These labels have two fundamental issues:
+
+\begin{itemize}[nosep, leftmargin=1.5em]
+    \item They were never empirically calibrated. They are heuristics from the 1970s applied as if they were universal standards.
+    \item They are borrowed across metrics that measure different things. PABAK uses a uniform chance model (Brennan \& Prediger, 1981; Byrt et al., 1993); Cohen's $\kappa$ (Cohen, 1960) uses marginal-based chance. Applying the same labels to both ignores this structural difference.
+\end{itemize}
+
+For binary outcomes, PABAK $= 2P_0 - 1$. It is just a linear rescaling of percent agreement. Any fixed ``high/medium/low'' ladder for PABAK is therefore an implicit ladder for percent agreement. The same PABAK value can correspond to very different error profiles depending on prevalence and rater bias (Feinstein \& Cicchetti, 1990; Hoehler, 2000), yet current practice assigns a single label regardless of context (Chen et al., 2009).
+
+\section*{What We Propose}
+
+Replace static interpretation cut points with \textbf{context-conditioned threshold functions} whose meaning is stable across study designs and decision settings.
+
+\subsection*{Research Questions}
+\begin{enumerate}[nosep, leftmargin=1.5em]
+    \item When does PABAK accurately reflect decision-relevant agreement, and when does it obscure meaningful disagreement?
+    \item How often do fixed adjective scales produce misleading labels relative to decision-analytic criteria?
+    \item Can threshold functions conditioned on prevalence, bias, $K$, and cost structure outperform static ladders?
+\end{enumerate}
+
+\subsection*{Method: Monte Carlo Simulation}
+\begin{itemize}[nosep, leftmargin=1.5em]
+    \item Generate binary and multi-class rating data from known rater-accuracy models (sensitivity/specificity, misclassification matrices; Hoehler, 2000; Vanacore \& Pellegrino, 2022). Ground truth is defined by operating characteristics and decision loss.
+    \item Vary conditions systematically across a full factorial grid:
+    \begin{itemize}[nosep, leftmargin=1em]
+        \item Prevalence: $p \in \{0.01, 0.05, 0.10, 0.20, 0.50, 0.80, 0.90, 0.95, 0.99\}$
+        \item Rater bias: multiple levels of marginal asymmetry
+        \item Categories: $K \in \{2, 3, 5, 7\}$, nominal and ordinal
+        \item Raters: $R \in \{2, 3, 5, 10\}$
+        \item Sample size: $N \in \{30, 50, 100, 200, 500, 1000\}$
+    \end{itemize}
+    \item Compute for each scenario: $P_0$, Cohen's $\kappa$, weighted $\kappa$, Fleiss' $\kappa$, PABAK, positive/negative agreement, and confidence intervals.
+\end{itemize}
+
+\subsection*{Threshold Derivation (Three Strategies)}
+\begin{enumerate}[nosep, leftmargin=1.5em]
+    \item \textbf{Decision-utility mapping.} Map observed coefficients to acceptability under explicit false-positive/false-negative cost models. Produce threshold functions $T(\text{prevalence}, K, R, \text{cost ratio})$.
+    \item \textbf{ROC-style optimization.} Treat ``acceptable vs.\ unacceptable reliability'' as a classification target. Choose cut points that minimize weighted misclassification.
+    \item \textbf{Empirical clustering.} Cluster coefficient vectors within each context stratum. Check whether natural groupings correspond to meaningful differences in decision error.
+\end{enumerate}
+
+\subsection*{Validation}
+\begin{itemize}[nosep, leftmargin=1.5em]
+    \item Held-out simulation regimes and external empirical datasets (clinical coding, imaging, survey coding)
+    \item Direct comparison against Landis-Koch (1977) and Altman (1991) baselines
+    \item Quantify how often static ladders produce paradoxical mislabeling (Feinstein \& Cicchetti, 1990)
+\end{itemize}
+
+\section*{Deliverables}
+
+\begin{itemize}[nosep, leftmargin=1.5em]
+    \item \textbf{Context-aware threshold functions} mapping PABAK and $\kappa$ to interpretive categories, conditioned on prevalence, bias, and study design
+    \item \textbf{Empirical mislabeling rates} for existing static scales across realistic conditions
+    \item \textbf{Practitioner reporting checklist:} the minimal set of statistics required for defensible interpretation (cell counts, prevalence/bias indices, positive/negative agreement, CIs; cf.\ Cicchetti \& Feinstein, 1990; Sim \& Wright, 2005)
+    \item \textbf{One-page practitioner guide} translating the framework into accessible decision support
+\end{itemize}
+
+\vspace{4pt}
+\noindent\textit{This is not a new agreement metric. It is an empirically validated interpretation framework that connects agreement labels to decision consequences rather than historical convention.}
+
+\section*{Key References}
+
+\small
+\begin{itemize}[nosep, leftmargin=1.5em]
+\item Altman, D.\ G.\ (1991). \textit{Practical Statistics for Medical Research}. Chapman \& Hall.
+\item Brennan, R.\ L.\ \& Prediger, D.\ J.\ (1981). Coefficient kappa: Some uses, misuses, and alternatives. \textit{Educ.\ Psychol.\ Meas.}, 41(3), 687--699.
+\item Byrt, T., Bishop, J., \& Carlin, J.\ B.\ (1993). Bias, prevalence and kappa. \textit{J.\ Clin.\ Epidemiol.}, 46(5), 423--429.
+\item Chen, G.\ et al.\ (2009). Measuring agreement of administrative data with chart data using prevalence unadjusted and adjusted kappa. \textit{BMC Med.\ Res.\ Methodol.}, 9:5.
+\item Cicchetti, D.\ V.\ \& Feinstein, A.\ R.\ (1990). High agreement but low kappa: II.\ Resolving the paradoxes. \textit{J.\ Clin.\ Epidemiol.}, 43(6), 551--558.
+\item Cohen, J.\ (1960). A coefficient of agreement for nominal scales. \textit{Educ.\ Psychol.\ Meas.}, 20(1), 37--46.
+\item Feinstein, A.\ R.\ \& Cicchetti, D.\ V.\ (1990). High agreement but low kappa: I.\ The problems of two paradoxes. \textit{J.\ Clin.\ Epidemiol.}, 43(6), 543--549.
+\item Hoehler, F.\ K.\ (2000). Bias and prevalence effects on kappa viewed in terms of sensitivity and specificity. \textit{J.\ Clin.\ Epidemiol.}, 53(5), 499--503.
+\item Landis, J.\ R.\ \& Koch, G.\ G.\ (1977). The measurement of observer agreement for categorical data. \textit{Biometrics}, 33(1), 159--174.
+\item Sim, J.\ \& Wright, C.\ C.\ (2005). The kappa statistic in reliability studies. \textit{Phys.\ Ther.}, 85(3), 257--268.
+\item Vanacore, A.\ \& Pellegrino, M.\ S.\ (2022). Robustness of $\kappa$-type coefficients for clinical agreement. \textit{Stat.\ Med.}, 41(11), 1986--2004.
+\end{itemize}
+
+\end{document}
