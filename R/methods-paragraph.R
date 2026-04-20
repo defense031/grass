@@ -73,6 +73,13 @@ grass_methods.grass_spec_binary <- function(result, format = "markdown",
                       markdown = "\u03ba",
                       latex    = "$\\kappa$",
                       plain    = "kappa")
+  # GRRAS citation, format-aware. Used in the opening sentence so a user
+  # who pastes grass_methods() output into a manuscript lands with the
+  # reporting-guideline citation already in place.
+  grras_cite <- switch(format,
+                       markdown = "[Kottner et al. 2011](https://doi.org/10.1016/j.jclinepi.2010.03.002)",
+                       latex    = "\\citep{kottner2011grras}",
+                       plain    = "(Kottner et al. 2011)")
 
   ref_sentence <- if (is.null(lvl)) {
     "No prevalence-conditioned reference curve was attached for this analysis."
@@ -110,10 +117,11 @@ grass_methods.grass_spec_binary <- function(result, format = "markdown",
   opening <- sprintf(
     paste0("Inter-rater agreement between two raters on a binary outcome (N = %d ",
            "rating pairs) was analysed under the GRASS framework (Guide for Rater ",
-           "Agreement under Structural Skew). We computed Cohen's %s, PABAK ",
-           "(prevalence- and bias-adjusted %s), and Gwet's AC1 with Wilson-logit ",
-           "95%% confidence intervals on %s."),
-    n, kappa_sym, kappa_sym, kappa_sym)
+           "Agreement under Structural Skew), with reporting aligned to the ",
+           "Guidelines for Reporting Reliability and Agreement Studies %s. ",
+           "We computed Cohen's %s, PABAK (prevalence- and bias-adjusted %s), ",
+           "and Gwet's AC1 with Wilson-logit 95%% confidence intervals on %s."),
+    n, grras_cite, kappa_sym, kappa_sym, kappa_sym)
 
   paste(opening, prev_sentence, agreement_sentence, regime_sentence,
         ref_sentence, sep = " ")
