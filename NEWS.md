@@ -1,4 +1,113 @@
-# grass 0.1.2 (development)
+# grass 0.5.0
+
+Three substantive landings drive this release. (1) **Cross-coefficient
+divergence `delta_hat` is now computed over the agreement family only**
+(PABAK, mean AC1, Fleiss kappa, Krippendorff alpha). Each has a
+closed-form reference depending on `(q, pi_+)` only, so the cross-family
+spread is DGP-robust at the panel level. ICC remains on the Report
+Card panel rows but does NOT enter `delta_hat`: ICC's reference
+surface depends on the full F-shape variance structure rather than
+`(q, pi_+)`, and a panel whose true F does not match the bundled
+logit-normal reference can drift by ~20 pp at small designs. An
+earlier delta_hat scope including ICC produced ~80% FPR at the
+diagonal null under matched DGPs and was abandoned in favor of the
+agreement-family-only construction adopted here (see § "Behavioral
+change" below; paper §3 ICC scope and Appendix E for the full
+quantitative case). (2) The bundled
+`fitted_icc_reference_curves` sysdata object is rebuilt from a unified
+Julia `MixedModels.jl` simulation extending coverage to
+`k in {3, 5, 8, 15, 25} x N in {30, 50, 75, 100, 200, 300, 500, 1000}`
+on a 14-point q-grid spanning `[0.35, 0.99]`. Across 1,000 random
+common-applied-design panels the ICC clamp rate is 7.7% (residual
+clamping concentrated at small N: 14.3% at N=30; or small k: 16.3%
+at k=3). (3) The `delta_thresholds_lookup` table is freshly derived
+under the agreement-family `delta_hat` definition (4-coefficient
+max-min) for size-alpha calibration.
+
+## Behavioral change
+
+- **`delta_hat` over the agreement family only.** The panel-level
+  `card$panel` data frame now carries an `in_delta_hat` logical
+  column (TRUE for PABAK, AC1, Fleiss kappa, Krippendorff alpha;
+  FALSE for ICC). The print method shows the column inline so users
+  can see which coefficients enter the cross-family spread. The
+  `notes` vector for any divergent / caution panel records the v0.5
+  scope decision: ICC's surface depends on the full F-shape and is
+  reported separately on the Report Card, but does not contribute
+  to the asymmetry signal.
+
+- **ICC marked `[F-shape sensitive]`.** The print method labels ICC's
+  panel row with the `[F-shape sensitive]` marker, signaling to the
+  reader that ICC's percentile reading carries a misspecification
+  cost the agreement family does not. The cost is quantified in
+  Appendix E of the merged GRASS paper.
+
+## New
+
+- **Per-(k, N) threshold lookup** -- `grass_report()` and
+  `check_asymmetry()` now default `delta_thresholds = NULL`, which
+  triggers a lookup against the `delta_thresholds_lookup` table
+  (`k in {2, 3, 5, 6, 8, 10}, N in {15, 20, 30, 50, 75, 100, 200, 500}`).
+  When the exact `(k, N)` has both thresholds calibrated, those are
+  used directly. Otherwise the lookup searches all fully-calibrated
+  cells and returns the nearest one in `(k, log10(N))` space (each
+  axis range-normalized). Falling back to the modal default
+  `c(9.25, 11.75)` is reserved for the impossible-with-bundled-sysdata
+  case of an empty calibration table; in normal operation users always
+  receive thresholds calibrated *somewhere* on the grid.
+
+  The card field `card$delta$thresholds_source` records one of
+  `"calibrated_at_k_N"`, `"snapped_to_nearest_calibrated"`,
+  `"default_fallback"`, or `"user_supplied"`.
+
+- **Print-method visibility** -- the Report Card now shows a
+  `thresholds = (caution, divergent) [source]` line directly under the
+  `delta = ... pp (flag)` line, so the user sees which pair was applied
+  and why.
+
+- **ICC reference-path transparency** -- `position_on_surface()` now
+  records which path produced each coefficient's reference surface in
+  a structured `reference_used` field (one of `"closed-form"`,
+  `"fitted-icc"`, `"oracle-icc-fallback"`, `"oracle-icc-explicit"`,
+  `"user-supplied"`), surfaced in `card$panel$reference_used`. When
+  the fitted-ICC reference is unavailable at the user's `(k, N)` and
+  the function falls back to the older oracle reference, the print
+  output now marks the affected coefficient with `[oracle-fallback]`
+  in addition to the existing notes-vector entry. Closes a quiet
+  fallback that previously only showed up in the bottom-of-card
+  notes block.
+
+## Coverage extension
+
+- **`fitted_icc_reference_curves` rebuilt for the v0.5 grid.** The
+  bundled GLMM-gap-corrected ICC reference now covers
+  `k in {3, 5, 8, 15, 25} x N in {30, 50, 75, 100, 200, 300, 500, 1000}`
+  on a 14-point q-grid spanning `[0.35, 0.99]` -- 2,080 (F_key, k, N)
+  lookups across 52 F_keys (logit-normal grid + 4 discrete-mixture
+  presets). Built from a unified Julia + `MixedModels.jl` simulation
+  averaging 500-1000 fitted-ICC reps per cell. Per-cell `mean_icc`
+  values are monotone-enforced along q (cummax) and linearly
+  interpolated onto the package's 501-point internal q-grid.
+  Builder source: `data-raw/build_fitted_icc_reference_v0.4.R`.
+  Sysdata size ~8.9 MB (xz-compressed).
+
+- **Calibrated `delta_thresholds_lookup` for `delta_hat_4`.** The
+  per-(k, N) threshold table is built against the agreement-family
+  `delta_hat` definition over a 1,440-cell sim grid
+  (`k in {2, 3, 5, 6, 8, 10} x N in {15, ..., 500} x A in {0, ..., 0.30}
+  x mu in {0.05, 0.20, 0.50, 0.80, 0.95}`, 1,000 reps per cell). Cells
+  where no threshold satisfies the size-alpha constraint at
+  `t in [0, 50]` pp return `NA` and the Report Card defaults to
+  caution-by-default per-rater routing per the paper's Appendix D
+  specification.
+
+- **§4.1 worked example clean under v0.5 sysdata.** The §4.1 design
+  point `(k=5, N=1000, mu=-1.386, tau2=1.0)` resolves via the
+  fitted-ICC path with no `[oracle-fallback]` marker; the previously
+  load-bearing ICC clamp at this case is closed.
+
+
+# grass 0.1.2
 
 Round 5 — spec-dispatch architecture + reviewer 5/5 items.
 
