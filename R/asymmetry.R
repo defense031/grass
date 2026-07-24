@@ -367,7 +367,7 @@ as.data.frame.grass_asymmetry <- function(x, row.names = NULL, optional = FALSE,
 #'   design)
 #' - `flag`: one of `"aligned"`, `"caution"`, `"divergent"`
 #' - `matched_null`: list describing the matched null cell
-#'   (`k`, `N`, `q`, `q_hat_panel`, `n_draws`, `snapped`,
+#'   (`k`, `N`, `q`, `q_hat_panel`, `n_draws`, `snapped`, `interpolated`,
 #'   `unstable_tail`), or `NULL` if uncalibrated
 #' - `thresholds`: named numeric vector of the implied (caution, divergent)
 #'   pp cuts (95th/99th of the matched null)
@@ -595,12 +595,15 @@ check_asymmetry <- function(ratings,
                          q_hat_panel = unname(q_hat_panel),
                          n_draws = null_cell$n_draws,
                          snapped = null_cell$snapped,
+                         interpolated = null_cell$interpolated,
                          unstable_tail = null_cell$unstable_tail)
     thresholds_note <- sprintf(
-      "flag from delta_hat's percentile on the matched null (k=%d, N=%d, q=%.2f; %s draws)%s%s.",
+      "flag from delta_hat's percentile on the matched null (k=%d, N=%d, q=%.2f; %s draws)%s%s%s.",
       null_cell$k, null_cell$N, null_cell$q,
       format(null_cell$n_draws, big.mark = ","),
-      if (null_cell$snapped) "; design snapped to nearest calibrated cell" else "",
+      if (null_cell$snapped) "; design snapped to the calibrated grid" else "",
+      if (null_cell$interpolated)
+        "; null interpolated between calibrated grid nodes" else "",
       if (null_cell$unstable_tail)
         "; this cell's extreme tail is flagged as not stably invertible (percentile reading unaffected)" else "")
   } else if (k2_degenerate) {

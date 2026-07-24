@@ -13,10 +13,15 @@
 # MUST be calibrated in the same units — the stage 6 regeneration under
 # the Option-B pipeline replaces the 0.7.0 percentile-spread null.
 
-# Resolve the nearest calibrated (k, N, q) cell. k and N snap by the same
-# normalized (k, log10 N) metric the surface lookup uses; q snaps to the
-# nearest calibrated quality level. Snap distances are returned so the
-# card can disclose them.
+# Resolve the calibrated null at (k, N, q_hat). k snaps to the nearest
+# calibrated panel size (panel size is discrete). q and N interpolate
+# linearly between the two bracketing grid nodes (log10 scale for N),
+# combining the stored quantile vectors cell-wise: the null is smooth in
+# both, and nearest-node snapping mis-sizes off-grid thresholds by up to
+# ~45% at near-ceiling q where interpolation recovers direct-simulation
+# truth to ~2% (probe 2026-07-23). Queries outside the grid clamp to the
+# edge node and are disclosed via `snapped`; q_hat above the top node
+# cannot be bracketed until a higher-q node joins the grid.
 lookup_delta_null <- function(k, N, q_hat) {
   # k = 2 is NOT calibrated and must never snap to k = 3: at k = 2 the
   # agreement family is PABAK + AC1, whose implied qualities coincide by
@@ -29,21 +34,49 @@ lookup_delta_null <- function(k, N, q_hat) {
     error = function(e) NULL)
   if (is.null(obj)) return(NULL)
   idx <- obj$index
+  ks <- sort(unique(idx$k))
+  Ns <- sort(unique(idx$N))
   qs <- sort(unique(idx$q))
-  q_near <- qs[which.min(abs(qs - q_hat))]
-  sub <- idx[idx$q == q_near, , drop = FALSE]
-  dk <- (sub$k - k) / diff(range(idx$k))
-  dN <- (log10(sub$N) - log10(N)) / diff(range(log10(idx$N)))
-  i <- which.min(sqrt(dk^2 + dN^2))
-  row <- sub[i, ]
-  cell_i <- which(idx$k == row$k & idx$N == row$N & idx$q == row$q)
+  k_node <- ks[which.min(abs(ks - k))]
+  q_eff <- min(max(as.numeric(q_hat), qs[1L]), qs[length(qs)])
+  N_eff <- min(max(as.numeric(N), Ns[1L]), Ns[length(Ns)])
+  # Bracketing nodes and the weight on the upper node; an exact node hit
+  # gives weight 0 or 1 and reproduces the stored cell bit-for-bit.
+  bracket <- function(nodes, x, transform = identity) {
+    i <- findInterval(x, nodes, rightmost.closed = TRUE)
+    i <- max(1L, min(i, length(nodes) - 1L))
+    lo <- nodes[i]; hi <- nodes[i + 1L]
+    w <- (transform(x) - transform(lo)) / (transform(hi) - transform(lo))
+    list(lo = lo, hi = hi, w = w)
+  }
+  qb <- bracket(qs, q_eff)
+  Nb <- bracket(Ns, N_eff, transform = log10)
+  grid_q <- c(qb$lo, qb$hi, qb$lo, qb$hi)
+  grid_N <- c(Nb$lo, Nb$lo, Nb$hi, Nb$hi)
+  wts <- c((1 - qb$w) * (1 - Nb$w), qb$w * (1 - Nb$w),
+           (1 - qb$w) * Nb$w,       qb$w * Nb$w)
+  values <- 0
+  n_draws <- integer(0)
+  unstable <- FALSE
+  for (j in which(wts > 0)) {
+    cell_i <- which(idx$k == k_node & idx$N == grid_N[j] & idx$q == grid_q[j])
+    if (length(cell_i) != 1L) return(NULL)
+    values <- values + wts[j] * obj$values[cell_i, ]
+    n_draws <- c(n_draws, idx$n_draws[cell_i])
+    unstable <- unstable || isTRUE(idx$unstable_tail[cell_i])
+  }
   list(
-    k = row$k, N = row$N, q = row$q,
-    n_draws = row$n_draws,
-    unstable_tail = isTRUE(row$unstable_tail),
-    snapped = (row$k != k || row$N != N || abs(row$q - q_hat) > 1e-9),
+    k = k_node, N = as.integer(N_eff), q = q_eff,
+    n_draws = min(n_draws),
+    unstable_tail = unstable,
+    # snapped = the resolved design differs from the query (k off the
+    # calibrated set, or N / q_hat clamped at a grid edge). Interior
+    # off-node queries are served by interpolation, not snapping.
+    snapped = (k_node != k || N_eff != as.numeric(N) ||
+                 abs(q_eff - as.numeric(q_hat)) > 1e-9),
+    interpolated = (qb$w > 0 && qb$w < 1) || (Nb$w > 0 && Nb$w < 1),
     probs = obj$probs,
-    values = obj$values[cell_i, ],
+    values = values,
     conventions = obj$flag_conventions
   )
 }
