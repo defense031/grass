@@ -702,32 +702,72 @@ lookup_empirical_q_sweep <- function(metric, pi_hat, k, N) {
 
   idx <- surf$index
 
+  # v0.8.0: N and prevalence interpolate; k snaps (rater count is
+  # discrete and the surface k-grid is sparse). Prevalence interpolates
+  # by M1 WITHIN the fixed-shape logit-normal family (the tau2 of the
+  # nearest-M1 key is held constant), so moving along the prevalence
+  # axis never smuggles in an F-shape change; the discrete-mixture
+  # presets stay nearest-key with a note. The q axis is returned whole
+  # (the sweep convention) and band endpoints interpolate downstream.
   k_grid <- sort(unique(idx$k))
   k_near <- k_grid[which.min(abs(k_grid - as.numeric(k)))]
 
   n_grid <- sort(unique(idx$N))
-  n_near <- n_grid[which.min(abs(n_grid - as.numeric(N)))]
+  N_eff <- min(max(as.numeric(N), n_grid[1L]), n_grid[length(n_grid)])
+  ni <- findInterval(N_eff, n_grid, rightmost.closed = TRUE)
+  ni <- max(1L, min(ni, length(n_grid) - 1L))
+  N_lo <- n_grid[ni]; N_hi <- n_grid[ni + 1L]
+  wN <- (log10(N_eff) - log10(N_lo)) / (log10(N_hi) - log10(N_lo))
 
-  # Nearest F_key via M1 (mean subject prevalence) ~ pi_hat. Restrict to
-  # the (k_near, n_near) subgrid so that q_true grids are equal.
-  sub <- idx[idx$k == k_near & idx$N == n_near, ]
+  sub <- idx[idx$k == k_near & idx$N %in% c(N_lo, N_hi), ]
   if (nrow(sub) == 0L) return(NULL)
   F_keys <- unique(sub[, c("F_key", "M1")])
   fi <- which.min(abs(F_keys$M1 - as.numeric(pi_hat)))
-  m1_near <- F_keys$M1[fi]
-  F_key_near <- F_keys$F_key[fi]
+  key0 <- F_keys$F_key[fi]
 
-  sub2 <- sub[sub$F_key == F_key_near, ]
-  sub2 <- sub2[order(sub2$q_true), ]
-  arr_ids <- as.integer(dimnames(surf$quantiles)$scenario_id)
-  rows_in_arr <- match(as.integer(sub2$scenario_id), arr_ids)
-  keep <- !is.na(rows_in_arr)
-  sub2 <- sub2[keep, , drop = FALSE]
-  rows_in_arr <- rows_in_arr[keep]
-  if (nrow(sub2) < 2L) return(NULL)
+  if (grepl("^LN_", key0)) {
+    tau2_0 <- sub("^LN_mu=.*_tau2=", "", key0)
+    fam <- F_keys[grepl(paste0("_tau2=", tau2_0, "$"), F_keys$F_key), ]
+    fam <- fam[order(fam$M1), ]
+    m_eff <- min(max(as.numeric(pi_hat), fam$M1[1L]),
+                 fam$M1[nrow(fam)])
+    mi <- findInterval(m_eff, fam$M1, rightmost.closed = TRUE)
+    mi <- max(1L, min(mi, nrow(fam) - 1L))
+    keys <- fam$F_key[c(mi, mi + 1L)]
+    m_lo <- fam$M1[mi]; m_hi <- fam$M1[mi + 1L]
+    wM <- (m_eff - m_lo) / (m_hi - m_lo)
+  } else {
+    keys <- c(key0, key0); m_eff <- F_keys$M1[fi]; wM <- 0
+  }
 
-  qmat <- surf$quantiles[rows_in_arr, metric, , drop = FALSE]
-  qmat <- matrix(qmat, nrow = nrow(sub2))
+  # gather the (N, F_key) corner sweeps and combine them cell-wise
+  fetch <- function(Nn, key) {
+    s <- sub[sub$N == Nn & sub$F_key == key, ]
+    s <- s[order(s$q_true), ]
+    arr_ids <- as.integer(dimnames(surf$quantiles)$scenario_id)
+    rows <- match(as.integer(s$scenario_id), arr_ids)
+    keep <- !is.na(rows)
+    if (sum(keep) < 2L) return(NULL)
+    m <- matrix(surf$quantiles[rows[keep], metric, , drop = FALSE],
+                nrow = sum(keep))
+    list(q_true = as.numeric(s$q_true[keep]), m = m)
+  }
+  corners <- list(
+    list(f = fetch(N_lo, keys[1L]), w = (1 - wN) * (1 - wM)),
+    list(f = fetch(N_hi, keys[1L]), w = wN * (1 - wM)),
+    list(f = fetch(N_lo, keys[2L]), w = (1 - wN) * wM),
+    list(f = fetch(N_hi, keys[2L]), w = wN * wM))
+  corners <- Filter(function(c) c$w > 0, corners)
+  if (any(vapply(corners, function(c) is.null(c$f), logical(1))))
+    return(NULL)
+  q_shared <- Reduce(intersect, lapply(corners, function(c) c$f$q_true))
+  if (length(q_shared) < 2L) return(NULL)
+  q_shared <- sort(q_shared)
+  qmat <- 0
+  for (c in corners) {
+    rows <- match(q_shared, c$f$q_true)
+    qmat <- qmat + c$w * c$f$m[rows, , drop = FALSE]
+  }
   finite_rows <- apply(qmat, 1L, function(v) sum(is.finite(v)) >= 2L)
   if (sum(finite_rows) < 2L) return(NULL)
 
@@ -737,25 +777,31 @@ lookup_empirical_q_sweep <- function(metric, pi_hat, k, N) {
                      sprintf("k=%s clamped to nearest sim-grid k=%d.",
                              as.character(k), k_near))
   }
-  if (as.numeric(N) != n_near) {
+  if (N_eff != as.numeric(N)) {
     clamp_notes <- c(clamp_notes,
-                     sprintf("N=%s clamped to nearest sim-grid N=%d.",
-                             as.character(N), n_near))
+                     sprintf("N=%s clamped to sim-grid edge N=%d.",
+                             as.character(N), as.integer(N_eff)))
   }
-  if (abs(as.numeric(pi_hat) - m1_near) > 0.05) {
+  if (abs(as.numeric(pi_hat) - m_eff) > 0.05) {
     clamp_notes <- c(clamp_notes,
-                     sprintf("pi_hat=%.3f clamped to nearest sim F_key with M1=%.3f.",
-                             as.numeric(pi_hat), m1_near))
+                     sprintf("pi_hat=%.3f clamped to calibrated prevalence M1=%.3f.",
+                             as.numeric(pi_hat), m_eff))
+  }
+  if (!grepl("^LN_", key0)) {
+    clamp_notes <- c(clamp_notes,
+                     sprintf("prevalence profile matched to preset %s (no interpolation across preset shapes).",
+                             key0))
   }
 
   list(
-    q_true      = as.numeric(sub2$q_true[finite_rows]),
+    q_true      = q_shared[finite_rows],
     quantiles   = qmat[finite_rows, , drop = FALSE],
     probs       = as.numeric(surf$probs),
-    F_key       = F_key_near,
+    F_key       = key0,
     k_nearest   = k_near,
-    N_nearest   = n_near,
-    M1_nearest  = m1_near,
+    N_nearest   = as.integer(N_eff),
+    M1_nearest  = m_eff,
+    interpolated = (wN > 0 && wN < 1) || (wM > 0 && wM < 1),
     clamp_notes = clamp_notes
   )
 }
