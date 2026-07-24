@@ -367,7 +367,9 @@ as.data.frame.grass_asymmetry <- function(x, row.names = NULL, optional = FALSE,
 #'   design)
 #' - `flag`: one of `"aligned"`, `"caution"`, `"divergent"`
 #' - `matched_null`: list describing the matched null cell
-#'   (`k`, `N`, `q`, `prev`, `prev_pooled`, `q_hat_panel`, `n_draws`,
+#'   (`k`, `N`, `q`, `prev` — the bridged true-prevalence estimate the
+#'   lookup conditioned on, `prev_apparent` — the panel's raw positive
+#'   rate, `prev_bridged`, `prev_pooled`, `q_hat_panel`, `n_draws`,
 #'   `snapped`, `interpolated`, `unstable_tail`), or `NULL` if
 #'   uncalibrated
 #' - `thresholds`: named numeric vector of the implied (caution, divergent)
@@ -579,9 +581,23 @@ check_asymmetry <- function(ratings,
   qh <- vapply(positions[names(positions) %in% .DELTA_AGREEMENT_COEFS],
                function(p) p$q_hat, numeric(1L))
   q_hat_panel <- stats::median(qh[is.finite(qh)])
+  # The null grid is indexed by TRUE prevalence; mean(Y) is the APPARENT
+  # positive rate, which sits closer to 0.5 than truth whenever raters
+  # err. Under the reference model the two are related by
+  #   pi_apparent = pi (2q - 1) + (1 - q),
+  # so the lookup conditions on the closed-form inversion at the panel's
+  # estimated quality. Querying at apparent prevalence reads a too-narrow
+  # null and inflates realized flag size ~2x at skewed prevalence
+  # (G2 Tier B, 2026-07-24); the bridged query holds it at nominal. At
+  # low estimated quality the inversion divisor 2q - 1 degenerates, so
+  # the raw rate is kept there (the null is wide at low q regardless).
+  pi_apparent <- mean(Y)
+  pi_bridged <- if (is.finite(q_hat_panel) && (2 * q_hat_panel - 1) > 0.10)
+    min(max((pi_apparent - (1 - q_hat_panel)) / (2 * q_hat_panel - 1), 0), 1)
+  else pi_apparent
   null_cell <- if (!k2_degenerate && is.finite(q_hat_panel))
     lookup_delta_null(k = ncol(Y), N = nrow(Y), q_hat = q_hat_panel,
-                      pi_hat = mean(Y))
+                      pi_hat = pi_bridged)
   else NULL
 
   delta_percentile <- NA_real_
@@ -595,6 +611,8 @@ check_asymmetry <- function(ratings,
                       divergent = unname(null_cell$values[i99]))
     matched_null <- list(k = null_cell$k, N = null_cell$N, q = null_cell$q,
                          prev = null_cell$prev,
+                         prev_apparent = pi_apparent,
+                         prev_bridged = !identical(pi_bridged, pi_apparent),
                          prev_pooled = null_cell$prev_pooled,
                          q_hat_panel = unname(q_hat_panel),
                          n_draws = null_cell$n_draws,

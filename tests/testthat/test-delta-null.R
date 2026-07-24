@@ -116,5 +116,33 @@ test_that("check_asymmetry emits matched-null fields with prevalence", {
   expect_equal(a$thresholds_source, "matched_null_ecdf")
   expect_named(a$thresholds, c("caution", "divergent"))
   expect_false(a$matched_null$prev_pooled)
-  expect_true(abs(a$matched_null$prev - mean(Y)) < 1e-9)
+  expect_equal(a$matched_null$prev_apparent, mean(Y))
+  # mid-prevalence: the bridge barely moves the estimate
+  expect_lt(abs(a$matched_null$prev - mean(Y)), 0.05)
+})
+
+test_that("the lookup conditions on bridged true prevalence, not apparent", {
+  # true pi = 0.15, q = 0.87 -> apparent ~ 0.24; the bridge must recover
+  # ~0.15 (G2 Tier B verdict 2026-07-24: bridged holds realized flag
+  # size at nominal at skewed prevalence; raw runs ~2x)
+  set.seed(42)
+  N <- 2000L; k <- 5L; q <- 0.87
+  z <- rbinom(N, 1L, 0.15)
+  Y <- matrix(rbinom(N * k, 1L, ifelse(z == 1L, q, 1 - q)), N, k)
+  a <- check_asymmetry(Y)
+  expect_true(a$matched_null$prev_bridged)
+  expect_lt(a$matched_null$prev, a$matched_null$prev_apparent)
+  expect_lt(abs(a$matched_null$prev - 0.15), 0.04)
+})
+
+test_that("the bridge falls back to apparent prevalence at degenerate quality", {
+  # near-chance raters: 2q - 1 ~ 0; inversion must not amplify noise
+  set.seed(7)
+  Y <- matrix(rbinom(200 * 5, 1L, 0.5), 200, 5)
+  a <- check_asymmetry(Y)
+  qh <- a$matched_null$q_hat_panel
+  if (is.finite(qh) && (2 * qh - 1) <= 0.10) {
+    expect_false(a$matched_null$prev_bridged)
+    expect_equal(a$matched_null$prev, a$matched_null$prev_apparent)
+  } else succeed("panel estimated above the fallback band; covered elsewhere")
 })
