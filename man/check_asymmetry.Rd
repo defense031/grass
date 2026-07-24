@@ -41,8 +41,9 @@ An S3 object of class \code{grass_asymmetry_panel} with fields:
 design)
 \item \code{flag}: one of \code{"aligned"}, \code{"caution"}, \code{"divergent"}
 \item \code{matched_null}: list describing the matched null cell
-(\code{k}, \code{N}, \code{q}, \code{q_hat_panel}, \code{n_draws}, \code{snapped}, \code{interpolated},
-\code{unstable_tail}), or \code{NULL} if uncalibrated
+(\code{k}, \code{N}, \code{q}, \code{prev}, \code{prev_pooled}, \code{q_hat_panel}, \code{n_draws},
+\code{snapped}, \code{interpolated}, \code{unstable_tail}), or \code{NULL} if
+uncalibrated
 \item \code{thresholds}: named numeric vector of the implied (caution, divergent)
 pp cuts (95th/99th of the matched null)
 \item \code{thresholds_source}: one of \code{"matched_null_ecdf"},

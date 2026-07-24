@@ -367,8 +367,9 @@ as.data.frame.grass_asymmetry <- function(x, row.names = NULL, optional = FALSE,
 #'   design)
 #' - `flag`: one of `"aligned"`, `"caution"`, `"divergent"`
 #' - `matched_null`: list describing the matched null cell
-#'   (`k`, `N`, `q`, `q_hat_panel`, `n_draws`, `snapped`, `interpolated`,
-#'   `unstable_tail`), or `NULL` if uncalibrated
+#'   (`k`, `N`, `q`, `prev`, `prev_pooled`, `q_hat_panel`, `n_draws`,
+#'   `snapped`, `interpolated`, `unstable_tail`), or `NULL` if
+#'   uncalibrated
 #' - `thresholds`: named numeric vector of the implied (caution, divergent)
 #'   pp cuts (95th/99th of the matched null)
 #' - `thresholds_source`: one of `"matched_null_ecdf"`,
@@ -579,7 +580,8 @@ check_asymmetry <- function(ratings,
                function(p) p$q_hat, numeric(1L))
   q_hat_panel <- stats::median(qh[is.finite(qh)])
   null_cell <- if (!k2_degenerate && is.finite(q_hat_panel))
-    lookup_delta_null(k = ncol(Y), N = nrow(Y), q_hat = q_hat_panel)
+    lookup_delta_null(k = ncol(Y), N = nrow(Y), q_hat = q_hat_panel,
+                      pi_hat = mean(Y))
   else NULL
 
   delta_percentile <- NA_real_
@@ -592,14 +594,18 @@ check_asymmetry <- function(ratings,
     implied_cuts <- c(caution = unname(null_cell$values[i95]),
                       divergent = unname(null_cell$values[i99]))
     matched_null <- list(k = null_cell$k, N = null_cell$N, q = null_cell$q,
+                         prev = null_cell$prev,
+                         prev_pooled = null_cell$prev_pooled,
                          q_hat_panel = unname(q_hat_panel),
                          n_draws = null_cell$n_draws,
                          snapped = null_cell$snapped,
                          interpolated = null_cell$interpolated,
                          unstable_tail = null_cell$unstable_tail)
     thresholds_note <- sprintf(
-      "flag from delta_hat's percentile on the matched null (k=%d, N=%d, q=%.2f; %s draws)%s%s%s.",
+      "flag from delta_hat's percentile on the matched null (k=%d, N=%d, q=%.2f%s; %s draws)%s%s%s.",
       null_cell$k, null_cell$N, null_cell$q,
+      if (null_cell$prev_pooled) "; prevalence pooled at this rater count"
+      else sprintf(", prev=%.2f", null_cell$prev),
       format(null_cell$n_draws, big.mark = ","),
       if (null_cell$snapped) "; design snapped to the calibrated grid" else "",
       if (null_cell$interpolated)
