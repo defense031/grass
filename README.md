@@ -49,7 +49,7 @@ The percentile is computed against a reference surface calibrated for
 the study's `(k, N, pi_hat, tau2_hat)` — not against a fixed 1977
 cutoff table. The `aligned` flag (`delta = 0.01 pp`) means the three
 agreement coefficients imply the same panel quality, so a single
-number is safe to cite. ICC carries a `[distribution-sensitive]`
+number is safe to cite. ICC prints a `[distribution-sensitive]`
 marker because its reference surface depends on the full
 subject-prevalence distribution F rather than on `(q, pi_+)` alone,
 and it does not enter `delta_hat` by construction. At the *divergent* tier the headline is

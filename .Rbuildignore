@@ -10,15 +10,12 @@
 ^\.DS_Store$
 ^doc$
 ^Meta$
-^ROADMAP\.md$
 ^data-raw$
-^playground\.R$
 ^Rplots\.pdf$
 ^simulation$
 ^grass\.bak$
 ^design$
 ^texput\.log$
-^vignettes-retired$
 ^vignettes/.*\.orig$
 ^inst/preview$
 ^inst/examples/playground\.R$

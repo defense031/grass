@@ -57,7 +57,7 @@ Semmel</h4>
                         <h4 data-toc-skip class="author">Rachel
 Gidaro</h4>
             
-            <h4 data-toc-skip class="date">2026-07-25</h4>
+            <h4 data-toc-skip class="date">2026-07-26</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/defense031/grassr/blob/HEAD/vignettes/grassr.Rmd" class="external-link"><code>vignettes/grassr.Rmd</code></a></small>
       <div class="d-none name"><code>grassr.Rmd</code></div>
@@ -82,7 +82,7 @@ fields, same object.</p>
 row per subject. One column per rater. Each cell is that rater’s call on
 that subject: 1 (or <code>TRUE</code>, or the positive level of a
 two-level factor) means present, 0 means absent.</p>
-<p>The same shape carries two different questions.</p>
+<p>The same shape answers two different questions.</p>
 <ul>
 <li>
 <strong>Inter-rater agreement</strong> asks whether different raters
@@ -202,7 +202,7 @@ One panel of raters, three published verdicts.
 prevalence reports <em>slight</em> agreement, a balanced study reports
 <em>moderate</em>, a high-prevalence study reports <em>fair</em>, and
 the raters never changed. Rater count and sample size move the value
-too. The label tracks the study design.</p>
+too.</p>
 <p>The three coefficients in common use split the same way on a single
 dataset, because each computes the chance term differently. Fleiss’
 kappa computes it from the panel’s marginal positive rate, PABAK fixes
@@ -213,7 +213,7 @@ numbers, three labels.</p>
 <h2 id="what-grassr-reports-instead">What grassr reports instead<a class="anchor" aria-label="anchor" href="#what-grassr-reports-instead"></a>
 </h2>
 <p>grassr asks where the observed coefficient sits among the values a
-panel could produce at this design. Four terms carry the whole
+panel could produce at this design. Four terms define the whole
 method.</p>
 <ul>
 <li>
@@ -327,7 +327,7 @@ only the labels would conclude they describe three different panels.</p>
 <span><span class="co">#&gt;   See `summary(...)` for full panel and CI details.</span></span>
 <span><span class="co">#&gt;   See `plot(...)` for a surface-position visualization.</span></span></code></pre></div>
 <p>The card gives all three one reading. Each sits at the 74th
-percentile of what this design can produce, and each carries the same
+percentile of what this design can produce, and each returns the same
 band, quality 0.85 to 0.90, which contains the true 0.87. The label
 disagreement was an artifact of reading three prevalence-sensitive
 statistics against one fixed scale.</p>
@@ -588,8 +588,8 @@ point estimates:</p>
 <span><span class="co">#&gt;         without external information. The intervals are</span></span>
 <span><span class="co">#&gt;         Hui-Walter (1980) inequality bounds, not point</span></span>
 <span><span class="co">#&gt;         estimates with sampling uncertainty.</span></span></code></pre></div>
-<p>The bounds carry the same meaning as the k &gt;= 3 point estimates,
-an honest statement of what the data say about each rater. A study that
+<p>The bounds mean the same thing as the k &gt;= 3 point estimates, an
+honest statement of what the data say about each rater. A study that
 needs per-rater points should add a third rater.</p>
 </div>
 </div>
@@ -632,7 +632,7 @@ needs per-rater points should add a third rater.</p>
 <span><span class="co">#&gt;     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   grass version : 0.8.0</span></span>
-<span><span class="co">#&gt;   timestamp     : 2026-07-25 23:48:54</span></span></code></pre></div>
+<span><span class="co">#&gt;   timestamp     : 2026-07-26 00:07:12</span></span></code></pre></div>
 <p><code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> is the audit view: the full panel with
 percentiles and bands, every caveat from the surface lookup, the package
 version, the timestamp.</p>
@@ -839,7 +839,7 @@ exceeds 95% at the designs where the divergent flag is the intended
 deliverable (k of 5 or more at asymmetry 0.2 and above); small panels at
 mild asymmetry (k = 3, A = 0.1) are the structural floor. The package
 reports the per-rater pool size alongside each estimate.</p>
-<p><strong>Where the rest lives.</strong> The accompanying paper carries
+<p><strong>Where the rest lives.</strong> The accompanying paper gives
 the reference-surface construction, the closed-form derivations, the
 calibration grids (44,616 surface cells; a 581-million-draw null program
 and a 22-million-draw power program), the flag’s operating
@@ -859,7 +859,7 @@ null cells, built from more than 700 million simulated panels.</p>
 prevalence. Null readings interpolate quality as well. Rater count snaps
 to the nearest calibrated value, so a panel of 17 raters reads the
 15-rater reference. The ICC reference covers 52 subject-prevalence
-profiles at one distribution shape, which is why the ICC row carries a
+profiles at one distribution shape, which is why the ICC row prints a
 distribution-sensitivity marker and stays out of
 <code>delta_hat</code>.</p>
 <p>Compute sets these bounds. Denser grids, a wider profile compendium,

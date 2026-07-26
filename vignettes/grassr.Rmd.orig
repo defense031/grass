@@ -43,7 +43,7 @@ row per subject. One column per rater. Each cell is that rater's
 call on that subject: 1 (or `TRUE`, or the positive level of a
 two-level factor) means present, 0 means absent.
 
-The same shape carries two different questions.
+The same shape answers two different questions.
 
 - **Inter-rater agreement** asks whether different raters agree with
   each other. Columns are different people. This is the default, and
@@ -154,8 +154,7 @@ par(op)
 One rater panel, three published verdicts. A screening study at 5%
 prevalence reports *slight* agreement, a balanced study reports
 *moderate*, a high-prevalence study reports *fair*, and the raters
-never changed. Rater count and sample size move the value too. The
-label tracks the study design.
+never changed. Rater count and sample size move the value too.
 
 The three coefficients in common use split the same way on a single
 dataset, because each computes the chance term differently. Fleiss'
@@ -166,7 +165,7 @@ data, three numbers, three labels.
 ## What grassr reports instead
 
 grassr asks where the observed coefficient sits among the values a
-panel could produce at this design. Four terms carry the whole
+panel could produce at this design. Four terms define the whole
 method.
 
 - **Panel quality `q`** is the rate at which a rater calls a case
@@ -243,7 +242,7 @@ grass_report(Y1, verbose = FALSE)
 ```
 
 The card gives all three one reading. Each sits at the 74th
-percentile of what this design can produce, and each carries the
+percentile of what this design can produce, and each returns the
 same band, quality 0.85 to 0.90, which contains the true 0.87. The
 label disagreement was an artifact of reading three
 prevalence-sensitive statistics against one fixed scale.
@@ -394,7 +393,7 @@ estimates:
 latent_class_fit(ratings = Y_k2, B = 200)
 ```
 
-The bounds carry the same meaning as the k >= 3 point estimates, an
+The bounds mean the same thing as the k >= 3 point estimates, an
 honest statement of what the data say about each rater. A study that
 needs per-rater points should add a third rater.
 
@@ -559,7 +558,7 @@ small panels at mild asymmetry (k = 3, A = 0.1) are the structural
 floor. The package reports the per-rater pool size alongside each
 estimate.
 
-**Where the rest lives.** The accompanying paper carries the
+**Where the rest lives.** The accompanying paper gives the
 reference-surface construction, the closed-form derivations, the
 calibration grids (44,616 surface cells; a 581-million-draw null
 program and a 22-million-draw power program), the flag's operating
@@ -581,7 +580,7 @@ prevalence. Null readings interpolate quality as well. Rater count
 snaps to the nearest calibrated value, so a panel of 17 raters reads
 the 15-rater reference. The ICC reference covers 52
 subject-prevalence profiles at one distribution shape, which is why
-the ICC row carries a distribution-sensitivity marker and stays out
+the ICC row prints a distribution-sensitivity marker and stays out
 of `delta_hat`.
 
 Compute sets these bounds. Denser
