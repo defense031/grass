@@ -36,6 +36,14 @@ change; on-node readings are unchanged up to storage quantization.
   cells) selected by a rate-distortion audit against exact storage;
   reconstruction error is two orders of magnitude below Monte-Carlo
   noise (`data-raw/build_delta_null_v3.R`).
+* The two large reference arrays -- the 44,616-cell q-hat surface and
+  the fitted-ICC curves -- are stored as integer-delta byte planes
+  rather than doubles, which cuts the bundled data from 8.6 MB to
+  4.9 MB. Reconstruction is exact, not approximate: the decoded arrays
+  are `identical()` to the ones that shipped through 0.7.4, so no
+  percentile, band, or example value moves
+  (`data-raw/encode_sysdata_for_release.R`,
+  `design/v0.8.0_surface_encoding.md`).
 * Validation: a pre-registered hold-out program (280 off-grid
   designs, 25,000 draws each) scores the interpolating lookup
   against direct simulation truth; an end-to-end audit measures

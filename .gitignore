@@ -16,3 +16,7 @@ vignettes/*.R
 texput.log
 simulation/v070_program/tier1/stage6_production_null/null_ecdf_cells.rds
 simulation/v070_program/tier1/stage6_production_null/nulls_production.json
+
+# Pre-encoding sysdata archive: byte-identical to R/sysdata.rda at 8657902,
+# kept on disk for recovery but not re-committed (8.6 MB duplicate blob).
+data-raw/sysdata_plaindouble_v0.8.0.rda

@@ -761,17 +761,18 @@ lookup_empirical_q_sweep <- function(metric, pi_hat, k, N) {
   }
 
   # gather the (N, F_key) corner sweeps and combine them cell-wise
+  qarr <- surface_quantiles(surf)
   fetch <- function(Nn, key) {
     .qs_memo(paste0(pfx, "fetch|", metric, "|", k_near, "|", Nn, "|", key), {
       s <- sub[sub$N == Nn & sub$F_key == key, ]
       s <- s[order(s$q_true), ]
       arr_ids <- .qs_memo(paste0(pfx, "arr_ids"),
-                          as.integer(dimnames(surf$quantiles)$scenario_id))
+                          as.integer(dimnames(qarr)$scenario_id))
       rows <- match(as.integer(s$scenario_id), arr_ids)
       keep <- !is.na(rows)
       if (sum(keep) < 2L) NULL else
         list(q_true = as.numeric(s$q_true[keep]),
-             m = matrix(surf$quantiles[rows[keep], metric, , drop = FALSE],
+             m = matrix(qarr[rows[keep], metric, , drop = FALSE],
                         nrow = sum(keep)))
     })
   }
@@ -1011,7 +1012,7 @@ lookup_fitted_icc_reference_curve <- function(pi_hat, k, N, q_grid,
   M1_near    <- idx$M1[cand_idx]
   F_family   <- idx$F_family[cand_idx]
 
-  ref_curve <- bundle$curves[
+  ref_curve <- fitted_icc_curves(bundle)[
     F_key_near,
     as.character(k_near),
     as.character(N_near),
