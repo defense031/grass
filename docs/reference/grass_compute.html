@@ -11,7 +11,7 @@ Byrt prevalence and bias indices, and two confidence intervals for kappa
 
     <a class="navbar-brand me-2" href="../index.html">grassr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -19,12 +19,8 @@ Byrt prevalence and bias indices, and two confidence intervals for kappa
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/reporting-card.html">GRASS Report Card: a one-call workflow for binary rater reliability</a></li>
-    <li><a class="dropdown-item" href="../articles/methods-companion.html">GRASS methods companion: notation, calibration detail, and auxiliary diagnostics</a></li>
-  </ul></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/grassr.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -100,7 +96,7 @@ positive (=1) class. Defaults to <code>"yes"</code> if present among levels, the
 <p><code>grass_compute()</code> is deprecated in grass 0.2.0. The new headline API is
 <code>grass_report(ratings = Y)</code> returning a <code>grass_card</code> object. The full
 coefficient panel is available via <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> or <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>. See
-<code><a href="../articles/reporting-card.html">vignette("reporting-card")</a></code> and <code><a href="grass_report.html">grass_report()</a></code>.</p>
+<code><a href="../articles/grassr.html">vignette("grassr")</a></code> and <code><a href="grass_report.html">grass_report()</a></code>.</p>
     </div>
 
     <div class="section level2">
@@ -109,7 +105,7 @@ coefficient panel is available via <code><a href="https://rdrr.io/r/base/summary
 <span class="r-in"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">88</span>, <span class="fl">10</span>, <span class="fl">14</span>, <span class="fl">88</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>,</span></span>
 <span class="r-in"><span>              dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>R1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"0"</span>, <span class="st">"1"</span><span class="op">)</span>, R2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"0"</span>, <span class="st">"1"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">grass_compute</span><span class="op">(</span><span class="va">tab</span>, format <span class="op">=</span> <span class="st">"matrix"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> `grass_compute()` is deprecated in grass 0.2.0. The new headline API is `grass_report(ratings = Y)`. See `vignette('reporting-card')` and `?grass_report`.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> `grass_compute()` is deprecated in grass 0.2.0. The new headline API is `grass_report(ratings = Y)`. See `vignette('grassr')` and `?grass_report`.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> grass metrics (N = 200; positive level = '1')</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   2x2 table</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    R2</span>

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">grassr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,12 +15,8 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="articles/reporting-card.html">GRASS Report Card: a one-call workflow for binary rater reliability</a></li>
-    <li><a class="dropdown-item" href="articles/methods-companion.html">GRASS methods companion: notation, calibration detail, and auxiliary diagnostics</a></li>
-  </ul></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="articles/grassr.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json"></form></li>
@@ -81,7 +77,7 @@
 <code class="sourceCode R"><span><span class="fu"><a href="reference/grass_report.html">grass_report</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">spec</span>, <span class="va">...</span><span class="op">)</span>    <span class="co"># → grass_result</span></span></code></pre></div>
 <ul><li>
 <code>spec</code> is an S3 object carrying the metric family and its parameters.</li>
-<li>Today: <code><a href="reference/grass_spec_binary.html">grass_spec_binary()</a></code> is the only constructor that returns a usable spec. The other three (<code><a href="reference/grass_spec_ordinal.html">grass_spec_ordinal()</a></code>, <code><a href="reference/grass_spec_multirater.html">grass_spec_multirater()</a></code>, <code><a href="reference/grass_spec_continuous.html">grass_spec_continuous()</a></code>) return placeholder specs that, when passed to <code><a href="reference/grass_report.html">grass_report()</a></code>, error with a pointer to <code><a href="reference/grass_roadmap.html">?grass_roadmap</a></code>.</li>
+<li>Today: <code>grass_spec_binary()</code> is the only constructor that returns a usable spec. The other three (<code>grass_spec_ordinal()</code>, <code>grass_spec_multirater()</code>, <code>grass_spec_continuous()</code>) return placeholder specs that, when passed to <code><a href="reference/grass_report.html">grass_report()</a></code>, error with a pointer to <code><a href="reference/grass_roadmap.html">?grass_roadmap</a></code>.</li>
 <li>
 <code>grass_result$spec$family</code> carries the family name, which downstream generics (<code>print</code>, <code>plot</code>, <code>as.data.frame</code>, <code>tidy</code>, <code>grass_methods</code>) dispatch on.</li>
 </ul><p>Shared generics, each a single verb that works across every metric family:</p>
@@ -102,7 +98,7 @@
 <ol style="list-style-type: decimal"><li>Introduce <code>grass_spec</code> class with a <code>$family</code> slot and family-specific parameters.</li>
 <li>
 <code>grass_spec_binary(reference_level = 0.85, ...)</code> — the real constructor.</li>
-<li>Stub constructors for <code><a href="reference/grass_spec_ordinal.html">grass_spec_ordinal()</a></code>, <code><a href="reference/grass_spec_multirater.html">grass_spec_multirater()</a></code>, <code><a href="reference/grass_spec_continuous.html">grass_spec_continuous()</a></code> — return valid placeholder specs that error with a <code><a href="reference/grass_roadmap.html">?grass_roadmap</a></code> pointer when passed to <code><a href="reference/grass_report.html">grass_report()</a></code>.</li>
+<li>Stub constructors for <code>grass_spec_ordinal()</code>, <code>grass_spec_multirater()</code>, <code>grass_spec_continuous()</code> — return valid placeholder specs that error with a <code><a href="reference/grass_roadmap.html">?grass_roadmap</a></code> pointer when passed to <code><a href="reference/grass_report.html">grass_report()</a></code>.</li>
 <li>Refactor internals to route through <code>compute_agreement(data, spec)</code> / <code>reference_for(spec, context)</code> / <code>classify_regime(metrics, spec)</code>. All binary today; extensible tomorrow.</li>
 <li>Rename internal <code>thresholds</code> sysdata to <code>reference_binary</code> (preserve loading path).</li>
 <li>

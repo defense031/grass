@@ -15,7 +15,7 @@ independence of the two raters given the true class."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">grassr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -23,12 +23,8 @@ independence of the two raters given the true class."></head><body>
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/reporting-card.html">GRASS Report Card: a one-call workflow for binary rater reliability</a></li>
-    <li><a class="dropdown-item" href="../articles/methods-companion.html">GRASS methods companion: notation, calibration detail, and auxiliary diagnostics</a></li>
-  </ul></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/grassr.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -99,14 +95,14 @@ them as cutoffs.</p>
 
 <p><code>grass_reference()</code> is deprecated in grass 0.2.0. The percentile machinery
 in <code><a href="position_on_surface.html">position_on_surface()</a></code> and the new <code><a href="grass_report.html">grass_report()</a></code> supersede the
-fixed reference-curve lookup. See <code><a href="../articles/reporting-card.html">vignette("reporting-card")</a></code> for the
+fixed reference-curve lookup. See <code><a href="../articles/grassr.html">vignette("grassr")</a></code> for the
 v0.2.0 surface-position workflow.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">grass_reference</span><span class="op">(</span><span class="fl">0.5</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> `grass_reference()` is deprecated in grass 0.2.0. The new headline API is `grass_report(ratings = Y)`; for percentile lookups use `position_on_surface(ratings = Y, metric = ...)`. See `vignette('reporting-card')` and `?grass_report`.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> `grass_reference()` is deprecated in grass 0.2.0. The new headline API is `grass_report(ratings = Y)`; for percentile lookups use `position_on_surface(ratings = Y, metric = ...)`. See `vignette('grassr')` and `?grass_report`.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> grass reference curve at prevalence = 0.5000 (Se = Sp = 0.85)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   kappa     reference = 0.4900    (Youden's J = 0.7000)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   PABAK     reference = 0.4900    (Youden's J = 0.7000)</span>

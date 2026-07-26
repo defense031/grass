@@ -21,7 +21,7 @@ pairwise comparison."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">grassr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,12 +29,8 @@ pairwise comparison."></head><body>
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/reporting-card.html">GRASS Report Card: a one-call workflow for binary rater reliability</a></li>
-    <li><a class="dropdown-item" href="../articles/methods-companion.html">GRASS methods companion: notation, calibration detail, and auxiliary diagnostics</a></li>
-  </ul></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/grassr.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -97,11 +93,12 @@ observed marginal. Diagonal is <code>NA</code>.</p></li>
 <li><p><code>marginal_matrix</code> — \(k \times k\) symmetric
 numeric; \([i, j]\) is \(\hat\pi_{+, ij}\). Diagonal is
 <code>NA</code>.</p></li>
-<li><p><code>band_matrix</code> — \(k \times k\) character matrix;
-four-band label for each pairwise percentile. Diagonal is
-<code>NA</code>.</p></li>
-<li><p><code>qualifier_matrix</code> — \(k \times k\) character;
-decisive / moderate / weak per pairwise percentile.</p></li>
+<li><p><code>band_lo_matrix</code> — \(k \times k\) numeric matrix;
+lower endpoint of each pair's 95\<!-- % consistency band on quality -->
+(v0.7.1 sweep convention). Diagonal is <code>NA</code>.</p></li>
+<li><p><code>band_hi_matrix</code> — \(k \times k\) numeric matrix;
+upper endpoint of each pair's 95\<!-- % consistency band on quality. -->
+Diagonal is <code>NA</code>.</p></li>
 <li><p><code>pooled_per_rater</code> — data frame with \(k\) rows,
 one per rater, columns <code>rater</code>, <code>se_tilde</code>,
 <code>sp_tilde</code>, <code>n_pool_pos</code>, <code>n_pool_neg</code>,
@@ -141,10 +138,10 @@ rater outliers).</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Pairwise PABAK (lower triangle = PABAK_ij; upper triangle = surface percentile):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    R1     R2     R3     R4     R5    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> R1     --   75%    31%    79%    50% </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> R2   0.40     --   38%    38%    69% </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> R3   0.61   0.47     --   69%    56% </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> R4   0.41   0.47   0.52     --   75% </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> R1     --   60%    76%    61%    68% </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> R2   0.40     --   66%    66%    59% </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> R3   0.61   0.47     --   70%    69% </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> R4   0.41   0.47   0.52     --   60% </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> R5   0.49   0.39   0.50   0.40     --</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Per-rater behavior against pooled panel-majority:</span>

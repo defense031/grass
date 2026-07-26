@@ -1,69 +1,59 @@
-# cran-comments.md — grassr 0.7.4
+# cran-comments.md — grassr 0.8.0
 
-## Resubmission
+## Update
 
-This resubmits grassr after the CRAN review of the 0.6.2 tarball
-(Konstanze Lauseker, 2026-07-11) and the incoming pretest of 0.7.3
-(2026-07-12). All requests are addressed:
+This is an update to grassr 0.7.4, currently on CRAN. It is the first
+update since that release.
 
-* **checkRd "Lost braces" fixed.** The 0.7.3 pretest flagged
-  grass_roadmap.Rd line 46 (a stray LaTeX-style thousands separator,
-  "1{,}000"); now plain "1,000". This was the only new issue in that
-  pretest; the remaining NOTE was the new-submission/surname check
-  answered below.
+The package's calibration data is regenerated at much finer resolution,
+and the lookups that read it now interpolate rather than snapping to the
+nearest calibrated cell. The user-facing functions and their arguments
+are unchanged apart from one new argument (`pi_hat` on an internal
+lookup's exported wrapper); no function is removed, renamed, or
+deprecated in this release. Full detail is in NEWS.md:
 
-* **References in the Description field.** The methods' sources are
-  cited in the requested format: Byrt, Bishop, and Carlin (1993)
-  <doi:10.1016/0895-4356(93)90018-V> for PABAK; Gwet (2008)
-  <doi:10.1348/000711006X126600> for AC1; Fleiss (1971)
-  <doi:10.1037/h0031619>; Dawid and Skene (1979) <doi:10.2307/2346806>
-  and Hui and Walter (1980) <doi:10.2307/2530508> for the latent-class
-  fit.
-* **Acronyms explained.** PABAK is expanded in the Description text
-  (prevalence-adjusted bias-adjusted kappa), as is AC1 (first-order
-  agreement coefficient).
-* **\dontrun removed and examples unwrapped.** The latent_class_fit()
-  example runs in well under 5 seconds and is now unwrapped. The four
-  \donttest wrappers elsewhere in the package dated from when those
-  code paths were slower; each example now completes in under a
-  second, so all are unwrapped as well. No \dontrun and no \donttest
-  remain anywhere in the package; every example executes
-  unconditionally during checks.
+* The bundled null distribution for the `delta_hat` diagnostic moves
+  from 385 prevalence-pooled cells to 11,616 fully resolved cells
+  (rater count, sample size, panel quality, prevalence), each at 50,000
+  Monte Carlo draws. The pooled version's realized flag rate ran to
+  roughly twice its nominal level at extreme prevalence; the resolved
+  version removes that by construction.
+* The null and reference-surface lookups interpolate between calibrated
+  nodes. A pre-registered hold-out program (280 off-grid designs, 25,000
+  draws each) scores the interpolated reading within 0.9 percentile
+  points of each design's own simulated truth on average.
+* Reported percentiles at off-grid designs therefore change relative to
+  0.7.4, as intended. On-node readings are unchanged.
 
-## Version change since the reviewed tarball
+## Installed size is smaller than in 0.7.4
 
-The reviewed tarball was 0.6.2; this submission is 0.7.4. While 0.6.2
-waited in the review queue we completed a planned revision of the
-package's two headline statistics and the calibration data behind
-them, so the resubmission carries the current package rather than a
-superseded one. The changes are documented in NEWS.md:
+The size NOTE on the previous release prompted a storage-design pass.
+The two large bundled arrays hold values that are exact multiples of
+1e-5, so storing them as doubles spent 64 bits per value on at most 17
+bits of content. They are now stored as integer-delta byte planes:
 
-* The reported percentile is now the pooled percentile (position of the
-  observed coefficient within the design's full achievable range,
-  monotone in the observed value), replacing the matched-cohort rank.
-  A 95% consistency band on panel quality is reported alongside it.
-* The cross-coefficient diagnostic delta_hat is now the implied-quality
-  spread of the agreement family, flagged by its percentile on a
-  bundled null distribution at the matched design (new sysdata object;
-  385 cells, quantiles stored at 5 significant digits).
-* The two previous vignettes are consolidated into a single package
-  vignette (vignette("grassr")) with two synthetic worked panels. It is
-  precomputed; CRAN machines render static markdown with no
-  computation.
-* At two raters the diagnostic reports not-applicable rather than a
-  flag. Never-released pre-0.7.1 API (the four-band label arguments,
-  the legacy threshold override, and an unwired spec-constructor
-  family) is removed outright; the changes are documented in NEWS.md.
-* Three exported functions (grass_calibration_manifest,
-  grass_contribute, grass_verify_contribution) let users run open,
-  seeded calibration blocks locally and build a submission bundle for
-  the project repository. No network access; writes only to a
-  user-supplied directory; examples run in under a second.
+* R/sysdata.rda: 8.6 MB -> 4.9 MB
+* tarball: 9.1 MB -> 5.4 MB
+* installed size: 5.6 Mb (was ~9 Mb)
 
-The CRAN test posture is unchanged from 0.6.2: a fast deterministic
-smoke subset runs on CRAN (~2 s), and the full suite runs on every
-push on a five-platform CI matrix
-(https://github.com/defense031/grassr/actions).
+Reconstruction is exact rather than approximate — the decoded arrays are
+`identical()` to those in 0.7.4 — so no reported value changes as a
+result of the storage change. The build step is in data-raw/ and the
+measured design record is in design/v0.8.0_surface_encoding.md.
+
+The remaining installed size is the Monte Carlo calibration reference
+surfaces and the null lookup in R/sysdata.rda. These are the package's
+core functionality: without them it cannot position a coefficient
+against its design, which is what the package is for.
+
+## Test posture
+
+Unchanged from 0.7.4. A fast deterministic smoke subset runs on CRAN
+(~2 s); the full suite (849 assertions, 0 failures) runs on every push
+on a five-platform CI matrix
+(https://github.com/defense031/grassr/actions). The vignette is
+precomputed, so CRAN machines render static markdown with no
+computation.
 
 ### "Possibly misspelled words in DESCRIPTION"
 
@@ -74,28 +64,27 @@ for the prevalence-adjusted bias-adjusted kappa, expanded in the text.
 
 ## Test environments
 
-* local: macOS (Darwin 24.6), R 4.3.1
+* local: macOS (Darwin 24.6), R 4.3.1 — R CMD check --as-cran
+  --run-donttest
 * GitHub Actions: windows-latest R-devel and R-release, macos-latest
   R-release, ubuntu-latest R-devel and R-release — R CMD check
-  --as-cran, Status: OK on all five
-  (https://github.com/defense031/grassr/actions). The windows R-devel
-  job currently runs without lme4 (Suggests) because of a confirmed
-  upstream lme4 bug (https://github.com/lme4/lme4/issues/990: two
-  heap-use-after-free defects exposed by Rcpp 1.1.2, causing
-  GC-timing-dependent intermittent glmer failures; fixed in the lme4
-  development version and expected on CRAN shortly). The package
-  degrades gracefully without lme4 by design, and lme4-dependent
-  paths are exercised on the other four platforms. We restore lme4 on
-  that job as soon as the fixed lme4 reaches CRAN.
+  --as-cran, Status: OK on all five. The windows R-devel job runs
+  without lme4 (Suggests) because of a confirmed upstream lme4 bug
+  (https://github.com/lme4/lme4/issues/990: two heap-use-after-free
+  defects exposed by Rcpp 1.1.2, causing GC-timing-dependent
+  intermittent glmer failures; fixed in the lme4 development version).
+  The package degrades gracefully without lme4 by design, and
+  lme4-dependent paths are exercised on the other four platforms. We
+  restore lme4 on that job as soon as the fixed lme4 reaches CRAN.
 
 ## R CMD check results
 
 0 ERRORs, 0 WARNINGs. One NOTE:
 
-* installed size — the bundled Monte Carlo calibration reference
-  surfaces and the delta_hat null lookup in R/sysdata.rda (the
-  package's core functionality) plus the precomputed vignette figures.
+* installed size — the bundled calibration reference surfaces and the
+  delta_hat null lookup in R/sysdata.rda, reduced by 43% in this
+  release as described above.
 
 ## Downstream dependencies
 
-None known (grassr is not yet on CRAN; no packages import it).
+None known; no packages on CRAN import grassr.
