@@ -16,3 +16,18 @@ candidate_lib_v071/
 # Tier 2 delta-B re-run (per_cell already covered by **/per_cell/; DONE/PROGRESS/
 # logs by the patterns above). Only the pooled results dir needs an explicit rule.
 tier2_deltaB/results/
+
+# q=0.99 corner node runs (block rds bundles; regenerable from pinned seeds)
+q99_node/approx12k_bundle/
+q99_node/full50k/
+resolved_null_reduction/*.rds
+g2_holdout/tierA_local/
+g2_holdout/tierA_seb/
+# q99 merged node bundles + runtime detritus (regenerable from pinned seeds)
+q99_node/full50k_bundle/
+q99_node/seb50k_bundle/
+q99_node/g1_status.log
+q99_node/LAPTOP_LAUNCHED
+q99_node/laptop50k_launch.log
+# pkgopt truth/sweep objects (rebuilt by 01_prep/03_run_sweep from reductions)
+pkgopt/*.rds

@@ -18,9 +18,11 @@ CALIB_PREVS <- c(0.05, 0.20, 0.50, 0.80, 0.95)
 #' and \code{\link{grass_contribute}} to run blocks.
 #'
 #' A block is one cell of a null-calibration program. Blocks with
-#' \code{prev = NA} sweep the five calibration prevalences inside the cell
-#' (one fifth of the draws each), exactly like the shipped null. Blocks with
-#' a \code{prev} value run every draw at that single prevalence.
+#' \code{prev = NA} sweep the five original calibration prevalences inside
+#' the cell (one fifth of the draws each), a pooling convention retained
+#' from the program's original definition; the null shipped since 0.8.0 is
+#' fully prevalence-resolved. Blocks with a \code{prev} value run every
+#' draw at that single prevalence.
 #'
 #' The bundled manifest is a snapshot from this package version. The live
 #' manifest, including which blocks are already claimed, is the copy on the

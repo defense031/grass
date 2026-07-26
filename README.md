@@ -39,7 +39,7 @@ GRASS Report Card
   read: this panel agreed more tightly than 62% of what panels at this
         design can produce; the data are consistent with panel quality 0.78-0.85.
   delta       = 0.01 pp implied-quality spread (aligned)
-  matched null = (k=5, N=200, q=0.85): delta_hat at the 19.1 percentile [design snapped]
+  matched null = (k=5, N=200, q=0.82): delta_hat at the 27.1 percentile
 
   See `summary(...)` for full panel and CI details.
   See `plot(...)` for a surface-position visualization.
@@ -47,16 +47,12 @@ GRASS Report Card
 
 The percentile is computed against a reference surface calibrated for
 the study's `(k, N, pi_hat, tau2_hat)` — not against a fixed 1977
-cutoff table. The `aligned` flag (`delta = 1.2 pp`) means the panel
-of unclamped coefficients agrees about where the study lands, so a
-single number is safe to cite. The clamp note in this example is for
-ICC, whose observed value (`0.4642`) sits above the achievable maximum
-of its reference surface at this `(k, N)`; ICC is therefore excluded
-from `delta_hat` per the clamping policy (see vignette section 7).
-ICC also carries a `[distribution-sensitive]` marker because its
-reference surface depends on the full subject-prevalence distribution
-F rather than on `(q, pi_+)` alone, and is excluded from `delta_hat`
-by construction regardless of clamp status. At the *divergent* tier the headline is
+cutoff table. The `aligned` flag (`delta = 0.01 pp`) means the three
+agreement coefficients imply the same panel quality, so a single
+number is safe to cite. ICC carries a `[distribution-sensitive]`
+marker because its reference surface depends on the full
+subject-prevalence distribution F rather than on `(q, pi_+)` alone,
+and it does not enter `delta_hat` by construction. At the *divergent* tier the headline is
 replaced with the per-rater sensitivity / specificity table from a
 latent-class fit (point estimates at `k >= 3`, bounded estimates at
 `k = 2`).
@@ -127,9 +123,9 @@ for planned future families (ordinal, multi-rater nominal, continuous).
 
 ## Status
 
-v0.7.1 (in development). The pooled-percentile + consistency-band card
-redesign and the implied-quality `delta_hat` (see NEWS.md); the CRAN
-submission line is the 0.6.2 series. Binary inter-rater and intra-rater
+v0.8.0. The calibration release: the `delta_hat` null is a fully
+resolved 11,616-cell lattice and all lookups interpolate between
+calibrated cells (see NEWS.md); v0.7.4 is the release on CRAN. Binary inter-rater and intra-rater
 families fully implemented. For the intra-rater axis, the inter-rater
 diagonal calibration is exact for the idealized intra model (an
 equivalence proposition); drift and within-subject dependence bounds are

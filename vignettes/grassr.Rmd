@@ -3,7 +3,7 @@ title: "grassr: rater reliability on binary outcomes, from rating matrix to Repo
 author:
   - Austin Semmel
   - Rachel Gidaro
-date: "2026-07-12"
+date: "2026-07-25"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{grassr: rater reliability on binary outcomes, from rating matrix to Report Card}
@@ -206,12 +206,12 @@ grass_report(ratings = Y0)
 #>   ICC          = 0.62  ->  72nd percentile | quality 0.81-0.90  [distribution-sensitive]
 #>   read: this panel agreed more tightly than 70% of what panels at this design can produce; the data are consistent with panel quality 0.80-0.90.
 #>   delta       =   0 pp implied-quality spread (aligned)
-#>   matched null = (k=3, N=150, q=0.85): delta_hat at the 10.1 percentile [design snapped]
+#>   matched null = (k=3, N=150, q=0.86): delta_hat at the 11.6 percentile
 #> 
 #>   Notes:
 #>     - N=150 clamped to nearest sim-grid N=100.
 #>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is reported on the panel but does not enter delta_hat (v0.5.0 scope: ICC's reference depends on the full subject-prevalence distribution F and does not share the (q, pi_+) sufficient statistic the agreement family does).
-#>     - flag from delta_hat's percentile on the matched null (k=3, N=150, q=0.85; 50,000 draws); design snapped to nearest calibrated cell.
+#>     - flag from delta_hat's percentile on the matched null (k=3, N=150, q=0.86, prev=0.31; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   See `summary(...)` for full panel and CI details.
 #>   See `plot(...)` for a surface-position visualization.
@@ -275,12 +275,12 @@ grass_report(Y1, verbose = FALSE)
 #>   ICC          = 0.48  ->  63rd percentile | quality 0.80-0.85  [distribution-sensitive]
 #>   read: this panel agreed more tightly than 74% of what panels at this design can produce; the data are consistent with panel quality 0.85-0.90.
 #>   delta       =   0 pp implied-quality spread (aligned)
-#>   matched null = (k=5, N=1000, q=0.85): delta_hat at the 42.2 percentile [design snapped]
+#>   matched null = (k=5, N=1000, q=0.87): delta_hat at the 36.4 percentile
 #> 
 #>   Notes:
 #>     - Consistency band narrower than the calibrated q-grid spacing; endpoints interpolated within one grid gap.
 #>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is reported on the panel but does not enter delta_hat (v0.5.0 scope: ICC's reference depends on the full subject-prevalence distribution F and does not share the (q, pi_+) sufficient statistic the agreement family does).
-#>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.85; 50,000 draws); design snapped to nearest calibrated cell.
+#>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   See `summary(...)` for full panel and CI details.
 #>   See `plot(...)` for a surface-position visualization.
@@ -336,7 +336,7 @@ grass_report(Y_differ, bootstrap_B = 200, verbose = FALSE)
 #>   ICC           = 0.46  ->  58th percentile  [distribution-sensitive]
 #>   panel-agg.  = suppressed (divergent)
 #>   delta       = 0.42 pp (divergent)
-#>   matched null = (k=5, N=1000, q=0.85): delta_hat at the 99.5 percentile [design snapped]
+#>   matched null = (k=5, N=1000, q=0.80): delta_hat at the 99.5 percentile
 #> 
 #>   pairwise PABAK / surface percentile (lower / upper):
 #>     R1     R2     R3     R4     R5    
@@ -362,7 +362,7 @@ grass_report(Y_differ, bootstrap_B = 200, verbose = FALSE)
 #> 
 #>   Notes:
 #>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is reported on the panel but does not enter delta_hat (v0.5.0 scope: ICC's reference depends on the full subject-prevalence distribution F and does not share the (q, pi_+) sufficient statistic the agreement family does).
-#>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.85; 50,000 draws); design snapped to nearest calibrated cell.
+#>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.80, prev=0.45; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   See `summary(...)` for full panel and CI details.
 #>   See `plot(...)` for a surface-position visualization.
@@ -390,11 +390,11 @@ grass_report(Y_agree, verbose = FALSE)
 #>   ICC          = 0.47  ->  61st percentile | quality 0.76-0.85  [distribution-sensitive]
 #>   read: this panel agreed more tightly than 56% of what panels at this design can produce; the data are consistent with panel quality 0.75-0.85.
 #>   delta       =   0 pp implied-quality spread (aligned)
-#>   matched null = (k=5, N=1000, q=0.75): delta_hat at the 35.6 percentile [design snapped]
+#>   matched null = (k=5, N=1000, q=0.80): delta_hat at the 29.2 percentile
 #> 
 #>   Notes:
 #>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is reported on the panel but does not enter delta_hat (v0.5.0 scope: ICC's reference depends on the full subject-prevalence distribution F and does not share the (q, pi_+) sufficient statistic the agreement family does).
-#>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.75; 50,000 draws); design snapped to nearest calibrated cell.
+#>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.80, prev=0.48; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   See `summary(...)` for full panel and CI details.
 #>   See `plot(...)` for a surface-position visualization.
@@ -432,7 +432,7 @@ card_div
 #>   ICC           = 0.62  ->  65th percentile  [distribution-sensitive]
 #>   panel-agg.  = suppressed (divergent)
 #>   delta       = 0.25 pp (divergent)
-#>   matched null = (k=5, N=1000, q=0.85): delta_hat at the 99.5 percentile [design snapped]
+#>   matched null = (k=5, N=1000, q=0.85): delta_hat at the 99.5 percentile
 #> 
 #>   pairwise PABAK / surface percentile (lower / upper):
 #>     R1     R2     R3     R4     R5    
@@ -458,7 +458,7 @@ card_div
 #> 
 #>   Notes:
 #>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is reported on the panel but does not enter delta_hat (v0.5.0 scope: ICC's reference depends on the full subject-prevalence distribution F and does not share the (q, pi_+) sufficient statistic the agreement family does).
-#>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.85; 50,000 draws); design snapped to nearest calibrated cell.
+#>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.85, prev=0.50; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   See `summary(...)` for full panel and CI details.
 #>   See `plot(...)` for a surface-position visualization.
@@ -600,7 +600,7 @@ summary(card1)
 #>   delta (cross-coefficient asymmetry)
 #>     implied-q spread (pp) : 0.00
 #>     flag             : aligned
-#>     delta percentile : 42.2 pctile on matched null (k=5, N=1000, q=0.85)
+#>     delta percentile : 36.4 pctile on matched null (k=5, N=1000, q=0.87)
 #> 
 #>   panel (full table)
 #>     pabak           observed = 0.537  q_hat = 0.866  pct = 73.86 pp  quality 0.85-0.90              ref = closed-form
@@ -613,10 +613,10 @@ summary(card1)
 #>     - Fitted-ICC F_key picked via glmer: mu_hat=-1.775, tau2_hat=3.089 -> F_key tau2=4.0000, mu=-1.386.
 #>     - Fitted-ICC reference (GLMM-gap corrected) at F_key=LN_mu=-1.386_tau2=4.0000, k=5, N=1000 (family=logit_normal, M1=0.300).
 #>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is reported on the panel but does not enter delta_hat (v0.5.0 scope: ICC's reference depends on the full subject-prevalence distribution F and does not share the (q, pi_+) sufficient statistic the agreement family does).
-#>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.85; 50,000 draws); design snapped to nearest calibrated cell.
+#>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
-#>   grass version : 0.7.4
-#>   timestamp     : 2026-07-12 08:27:47
+#>   grass version : 0.8.0
+#>   timestamp     : 2026-07-25 21:46:00
 ```
 
 `summary()` is the audit view: the full panel with percentiles and
@@ -637,15 +637,15 @@ head(as.data.frame(card1), 5)
 #> 3          FALSE 0.8664693 0.005014575   FALSE    closed-form         TRUE
 #> 4          FALSE 0.8217253 0.002468171   FALSE     fitted-icc        FALSE
 #>   is_primary  delta_hat delta_percentile delta_flag matched_null_k
-#> 1       TRUE 0.00221665         42.21665    aligned              5
-#> 2      FALSE 0.00221665         42.21665    aligned              5
-#> 3      FALSE 0.00221665         42.21665    aligned              5
-#> 4      FALSE 0.00221665         42.21665    aligned              5
+#> 1       TRUE 0.00221665         36.38975    aligned              5
+#> 2      FALSE 0.00221665         36.38975    aligned              5
+#> 3      FALSE 0.00221665         36.38975    aligned              5
+#> 4      FALSE 0.00221665         36.38975    aligned              5
 #>   matched_null_N matched_null_q
-#> 1           1000           0.85
-#> 2           1000           0.85
-#> 3           1000           0.85
-#> 4           1000           0.85
+#> 1           1000      0.8664693
+#> 2           1000      0.8664693
+#> 3           1000      0.8664693
+#> 4           1000      0.8664693
 ```
 
 `as.data.frame()` is the tidy view, one row per coefficient, for
@@ -696,7 +696,7 @@ check_asymmetry(ratings = Y1)
 #> GRASS panel asymmetry diagnostic
 #> 
 #>   delta_hat = 0.0 pp  (spread of the implied panel qualities)
-#>   flag      = aligned  (42.2 percentile of matched null: k=5, N=1000, q=0.85)
+#>   flag      = aligned  (36.4 percentile of matched null: k=5, N=1000, q=0.87)
 #> 
 #>   panel:
 #>     coefficient        observed   implied q   pooled pctile   in delta_hat
@@ -710,7 +710,7 @@ check_asymmetry(ratings = Y1)
 #>     - Fitted-ICC F_key picked via glmer: mu_hat=-1.775, tau2_hat=3.089 -> F_key tau2=4.0000, mu=-1.386.
 #>     - Fitted-ICC reference (GLMM-gap corrected) at F_key=LN_mu=-1.386_tau2=4.0000, k=5, N=1000 (family=logit_normal, M1=0.300).
 #>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is reported on the panel but does not enter delta_hat (v0.5.0 scope: ICC's reference depends on the full subject-prevalence distribution F and does not share the (q, pi_+) sufficient statistic the agreement family does).
-#>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.85; 50,000 draws); design snapped to nearest calibrated cell.
+#>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.
 ```
 
 `check_asymmetry()` returns the spread and its flag without per-rater
@@ -764,9 +764,9 @@ card_edge <- grass_report(Y_edge, bootstrap_B = 50)
 card_edge$panel[, c("coefficient", "surface_percentile",
                     "clamped", "reference_used")]
 #>    coefficient surface_percentile clamped reference_used
-#> 1        pabak           67.75846   FALSE    closed-form
-#> 2     mean_ac1           67.67121   FALSE    closed-form
-#> 3 fleiss_kappa           67.78692   FALSE    closed-form
+#> 1        pabak           67.75940   FALSE    closed-form
+#> 2     mean_ac1           67.67115   FALSE    closed-form
+#> 3 fleiss_kappa           67.78800   FALSE    closed-form
 #> 4          icc           51.13636   FALSE     fitted-icc
 ```
 
@@ -818,13 +818,17 @@ includes a point mass at zero, so no fixed cut in quality points
 works everywhere. The package reads the observed spread's percentile
 on a bundled null at the matched `(k, N, q_hat)` cell, exactly how
 every coefficient on the card is already read. The nulls are
-generated through the production pipeline itself, pooled over
-prevalence: 440 cells at 50,000 draws each, with the 385 cells at
-k >= 3 shipped (the flag is `not_applicable` at k = 2). Monte Carlo
-error on a reported percentile stays under a quarter of a percentile
-point at the shipped draw counts, and cells with unstable extreme
-tails carry a transparency flag in the bundled object. The card
-prints the matched cell, its draw count, and any design snap.
+generated through the production pipeline itself, resolved at every
+combination of design and prevalence: 11,616 cells at 50,000 draws
+each, spanning eleven rater counts, twelve sample sizes, eleven
+quality levels, and eight prevalence levels (the flag is
+`not_applicable` at k = 2). Monte Carlo error on a reported
+percentile stays under a quarter of a percentile point at the
+shipped draw counts. Designs between calibrated cells are read by
+interpolation in quality, log sample size, and prevalence; rater
+count snaps to the nearest calibrated value. The card prints the
+matched cell, its draw count, and whether the reading interpolated
+or clamped at a grid edge.
 
 **Pairwise PABAK and pooled-reference identifiability.** PABAK is
 the pairwise coefficient because under symmetric raters its
@@ -845,8 +849,9 @@ estimate.
 
 **Where the rest lives.** The accompanying paper carries the
 reference-surface construction, the closed-form derivations, the
-calibration grids (44,616 surface cells; 22-million-draw null and
-power programs), the flag's operating characteristics, and two
+calibration grids (44,616 surface cells; a 581-million-draw null
+program and a 22-million-draw power program), the flag's operating
+characteristics, and two
 published-panel reanalyses. The three case studies above are the
 paper's worked examples, regenerated from the same seeds; the
 quick-start and two-rater demonstration panels are this vignette's
@@ -856,15 +861,16 @@ own.
 
 Every number above is read from a simulated reference, and the
 reference is only as fine as the compute that built it. The bundled
-calibration holds 44,616 surface cells and 385 `delta_hat` null
-cells, built from 133 million simulated panels. Its bounds are
-compute limits, not method limits. Designs between grid
-points snap to the nearest calibrated cell. The ICC reference covers
-52 subject-prevalence profiles. The `delta_hat` null pools five
-calibration prevalences, and 21 of its 385 cells flag unstable
-extreme tails. Denser grids, a wider profile compendium, a
-prevalence-stratified null, and deeper draws would each tighten the
-readings, and each needs replication rather than new theory.
+calibration holds 44,616 surface cells and 11,616 `delta_hat` null
+cells, built from more than 700 million simulated panels. Its
+bounds are compute limits, not method limits. Surface readings
+between grid points interpolate log sample size and prevalence, and
+null readings interpolate quality as well; rater count snaps to the
+nearest calibrated value. The ICC reference covers 52
+subject-prevalence profiles at a fixed distribution shape. Denser
+grids, a wider profile compendium, and deeper draws would each
+tighten the readings, and each needs replication rather than new
+theory.
 
 The package includes the tools to close these gaps. The bundled
 manifest lists every open calibration block. Each block is one
@@ -895,41 +901,61 @@ plan <- grass_contribute(dir = tempdir(), hours = 5, dry_run = TRUE)
 plan[, c("block_id", "program", "k", "N", "q", "prev", "draws")]
 #>    block_id     program  k    N    q prev draws
 #> 1        33 prev_strata  3   15 0.85 0.20 50000
-#> 2       149 prev_strata  3  100 0.65 0.50 50000
-#> 3       161 prev_strata  3  100 0.85 0.95 50000
-#> 4       197 prev_strata  3  200 0.65 0.05 50000
-#> 5       232 prev_strata  3  300 0.85 0.05 50000
-#> 6       244 prev_strata  3  300 0.97 0.50 50000
-#> 7       253 prev_strata  3  500 0.75 0.20 50000
-#> 8       327 prev_strata  5   20 0.75 0.05 50000
-#> 9       335 prev_strata  5   20 0.85 0.80 50000
-#> 10      337 prev_strata  5   20 0.92 0.05 50000
-#> 11      342 prev_strata  5   20 0.97 0.05 50000
-#> 12      440 prev_strata  5  100 0.92 0.80 50000
-#> 13      464 prev_strata  5  150 0.92 0.50 50000
-#> 14      489 prev_strata  5  200 0.92 0.50 50000
-#> 15      550 prev_strata  5 1000 0.65 0.80 50000
-#> 16      583 prev_strata  6   15 0.85 0.20 50000
-#> 17      777 prev_strata  6  300 0.75 0.05 50000
-#> 18      904 prev_strata  8   30 0.75 0.50 50000
-#> 19     1024 prev_strata  8  200 0.65 0.50 50000
-#> 20     1030 prev_strata  8  200 0.75 0.80 50000
-#> 21     1068 prev_strata  8  300 0.97 0.20 50000
-#> 22     1122 prev_strata 10   15 0.65 0.05 50000
-#> 23     1151 prev_strata 10   20 0.65 0.95 50000
-#> 24     1174 prev_strata 10   30 0.65 0.50 50000
-#> 25     1215 prev_strata 10   50 0.92 0.80 50000
-#> 26     1216 prev_strata 10   50 0.92 0.95 50000
-#> 27     1427 prev_strata 15   20 0.75 0.05 50000
-#> 28     1483 prev_strata 15   50 0.85 0.20 50000
-#> 29     1500 prev_strata 15   75 0.65 0.80 50000
-#> 30     1634 prev_strata 15  500 0.85 0.50 50000
-#> 31     1706 prev_strata 25   20 0.75 0.95 50000
-#> 32     1765 prev_strata 25   50 0.92 0.80 50000
-#> 33     1869 prev_strata 25  200 0.97 0.50 50000
-#> 34     1872 prev_strata 25  300 0.65 0.05 50000
-#> 35     1928 prev_strata 25 1000 0.75 0.20 50000
-#> 36     2062   lattice_k 12   20 0.65   NA 50000
+#> 2        41 prev_strata  3   15 0.92 0.95 50000
+#> 3       149 prev_strata  3  100 0.65 0.50 50000
+#> 4       161 prev_strata  3  100 0.85 0.95 50000
+#> 5       197 prev_strata  3  200 0.65 0.05 50000
+#> 6       221 prev_strata  3  200 0.97 0.95 50000
+#> 7       232 prev_strata  3  300 0.85 0.05 50000
+#> 8       244 prev_strata  3  300 0.97 0.50 50000
+#> 9       253 prev_strata  3  500 0.75 0.20 50000
+#> 10      327 prev_strata  5   20 0.75 0.05 50000
+#> 11      335 prev_strata  5   20 0.85 0.80 50000
+#> 12      337 prev_strata  5   20 0.92 0.05 50000
+#> 13      342 prev_strata  5   20 0.97 0.05 50000
+#> 14      369 prev_strata  5   30 0.97 0.50 50000
+#> 15      380 prev_strata  5   50 0.75 0.80 50000
+#> 16      438 prev_strata  5  100 0.92 0.20 50000
+#> 17      440 prev_strata  5  100 0.92 0.80 50000
+#> 18      464 prev_strata  5  150 0.92 0.50 50000
+#> 19      487 prev_strata  5  200 0.92 0.05 50000
+#> 20      489 prev_strata  5  200 0.92 0.50 50000
+#> 21      550 prev_strata  5 1000 0.65 0.80 50000
+#> 22      583 prev_strata  6   15 0.85 0.20 50000
+#> 23      698 prev_strata  6  100 0.65 0.20 50000
+#> 24      777 prev_strata  6  300 0.75 0.05 50000
+#> 25      811 prev_strata  6  500 0.85 0.95 50000
+#> 26      870 prev_strata  8   15 0.97 0.80 50000
+#> 27      890 prev_strata  8   20 0.92 0.80 50000
+#> 28      904 prev_strata  8   30 0.75 0.50 50000
+#> 29      979 prev_strata  8  100 0.75 0.50 50000
+#> 30      994 prev_strata  8  100 0.97 0.50 50000
+#> 31     1024 prev_strata  8  200 0.65 0.50 50000
+#> 32     1030 prev_strata  8  200 0.75 0.80 50000
+#> 33     1068 prev_strata  8  300 0.97 0.20 50000
+#> 34     1122 prev_strata 10   15 0.65 0.05 50000
+#> 35     1151 prev_strata 10   20 0.65 0.95 50000
+#> 36     1160 prev_strata 10   20 0.85 0.80 50000
+#> 37     1174 prev_strata 10   30 0.65 0.50 50000
+#> 38     1215 prev_strata 10   50 0.92 0.80 50000
+#> 39     1216 prev_strata 10   50 0.92 0.95 50000
+#> 40     1310 prev_strata 10  200 0.85 0.80 50000
+#> 41     1427 prev_strata 15   20 0.75 0.05 50000
+#> 42     1483 prev_strata 15   50 0.85 0.20 50000
+#> 43     1500 prev_strata 15   75 0.65 0.80 50000
+#> 44     1634 prev_strata 15  500 0.85 0.50 50000
+#> 45     1706 prev_strata 25   20 0.75 0.95 50000
+#> 46     1765 prev_strata 25   50 0.92 0.80 50000
+#> 47     1779 prev_strata 25   75 0.75 0.50 50000
+#> 48     1862 prev_strata 25  200 0.92 0.05 50000
+#> 49     1869 prev_strata 25  200 0.97 0.50 50000
+#> 50     1872 prev_strata 25  300 0.65 0.05 50000
+#> 51     1928 prev_strata 25 1000 0.75 0.20 50000
+#> 52     2014   lattice_k  7   30 0.85   NA 50000
+#> 53     2015   lattice_k  7   30 0.92   NA 50000
+#> 54     2016   lattice_k  7   30 0.97   NA 50000
+#> 55     2062   lattice_k 12   20 0.65   NA 50000
+#> 56     2069   lattice_k 12   30 0.85   NA 50000
 ```
 
 The same call without `dry_run = TRUE` runs the selected blocks from
