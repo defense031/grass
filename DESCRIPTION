@@ -6,9 +6,10 @@ Authors@R: c(
     person("Austin", "Semmel", email = "austinsemmel@gmail.com",
            role = c("aut", "cre")),
     person("Rachel", "Gidaro", role = "aut"))
-Description: Generates a Report Card for rater reliability on binary
-    outcomes from an N x k subject-by-rater rating matrix, on both the
-    inter-rater and intra-rater axes. Each panel coefficient is
+Description: The name abbreviates "Guide for Rater Agreement under
+    Structural Skew". Generates a Report Card for rater reliability on
+    binary outcomes from an N x k subject-by-rater rating matrix, on both
+    the inter-rater and intra-rater axes. Each panel coefficient is
     positioned on a data-generating-process-calibrated reference surface
     conditioned on the study's rater count, sample size, and prevalence,
     yielding a pooled percentile (the coefficient's position within the

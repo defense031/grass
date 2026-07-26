@@ -69,13 +69,15 @@ Gidaro</h4>
 <h2 id="the-data-a-rater-panel">The data: a rater panel<a class="anchor" aria-label="anchor" href="#the-data-a-rater-panel"></a>
 </h2>
 <p>A <strong>rater panel</strong> is <code>k</code> raters who each
-score the same <code>N</code> subjects on one binary question. The
-subjects are whatever is being rated. The raters are whoever rates them,
-human or machine. Each rater sees every subject exactly once and answers
-the same yes-or-no question about it, so the study produces
-<code>N x k</code> binary calls and nothing else. Chest films read for a
-finding, adverse events judged preventable or not, transcripts coded for
-a symptom mention: different fields, same object.</p>
+score the same <code>N</code> subjects on one binary question. grassr (a
+Guide for Rater Agreement under Structural Skew) reads that panel and
+reports how much the raters agree. The subjects are whatever is being
+rated. The raters are whoever rates them, human or machine. Each rater
+sees every subject exactly once and answers the same yes-or-no question
+about it, so the study produces <code>N x k</code> binary calls and
+nothing else. Chest films read for a finding, adverse events judged
+preventable or not, transcripts coded for a symptom mention: different
+fields, same object.</p>
 <p>That object is the package’s entire input, laid out as a matrix. One
 row per subject. One column per rater. Each cell is that rater’s call on
 that subject: 1 (or <code>TRUE</code>, or the positive level of a
@@ -84,13 +86,13 @@ two-level factor) means present, 0 means absent.</p>
 <ul>
 <li>
 <strong>Inter-rater agreement</strong> asks whether different raters
-agree with each other. Columns are different people; this is the default
-and everything below is this case.</li>
+agree with each other. Columns are different people. This is the
+default, and every example below is this case.</li>
 <li>
 <strong>Intra-rater agreement</strong> asks whether one rater agrees
 with herself on re-reading. Columns are one person’s repeated viewings
 of the same subjects, and the call is
-<code>grass_report(Y, axis = "intra")</code>; the printed card has the
+<code>grass_report(Y, axis = "intra")</code>. The printed card has the
 same fields.</li>
 </ul>
 <p>What the functions accept, completely:</p>
@@ -130,8 +132,7 @@ Those are variance-component analyses, outside this package’s
 calibration.</li>
 </ul>
 <p>A 0/1 matrix does not say which rows share a patient, so grassr
-cannot detect either design. You enforce this part of the contract, not
-an error message.</p>
+cannot detect either design.</p>
 <p>In practice you load your scores from a file. Here we simulate the
 panel instead, so the truth is known and every claim below can be
 checked against it: 150 subjects at 30% prevalence, three raters who
@@ -160,11 +161,11 @@ stamps a label on it from a fixed scale: 0.21 to 0.40 is <em>fair</em>,
 0.41 to 0.60 <em>moderate</em>, 0.61 to 0.80 <em>substantial</em>.</p>
 </div>
 <div class="section level2">
-<h2 id="the-problem-the-label-tracks-the-study-not-the-raters">The problem: the label tracks the study, not the raters<a class="anchor" aria-label="anchor" href="#the-problem-the-label-tracks-the-study-not-the-raters"></a>
+<h2 id="the-problem-the-label-tracks-the-study-design">The problem: the label tracks the study design<a class="anchor" aria-label="anchor" href="#the-problem-the-label-tracks-the-study-design"></a>
 </h2>
 <p>Every chance-corrected coefficient is the same fraction, written in
 plain terms as</p>
-<pre><code>coefficient = (observed agreement − chance agreement) / (1 − chance agreement)</code></pre>
+<pre><code>coefficient = (observed agreement - chance agreement) / (1 - chance agreement)</code></pre>
 <p>The catch is the chance term. It depends on how often the finding
 appears in front of the raters, so the coefficient moves when prevalence
 moves, with the raters unchanged. At two raters the expected value has a
@@ -190,8 +191,10 @@ closed form, and four lines of code show the problem:</p>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">pts</span>, <span class="va">ptk</span>, pch <span class="op">=</span> <span class="fl">19</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/text.html" class="external-link">text</a></span><span class="op">(</span><span class="va">pts</span>, <span class="va">ptk</span> <span class="op">+</span> <span class="fl">0.05</span>, <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.2f"</span>, <span class="va">ptk</span><span class="op">)</span>, cex <span class="op">=</span> <span class="fl">0.85</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="grassr-hook-figure-1.png" alt="plot of chunk hook-figure"><div class="figcaption">plot of chunk hook-figure</div>
+<div class="figure">
+<img src="grassr-hook-figure-1.png" alt="Expected Cohen's kappa plotted against prevalence for raters fixed at quality 0.87. The curve rises from near zero at 2 percent prevalence, peaks around 0.62 at balanced prevalence, and falls again toward 98 percent, crossing the slight, fair, and moderate bands on the way."><p class="caption">
+One panel of raters, three published verdicts.
+</p>
 </div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
@@ -199,7 +202,7 @@ closed form, and four lines of code show the problem:</p>
 prevalence reports <em>slight</em> agreement, a balanced study reports
 <em>moderate</em>, a high-prevalence study reports <em>fair</em>, and
 the raters never changed. Rater count and sample size move the value
-too. The label tracks the study design, not the people.</p>
+too. The label tracks the study design.</p>
 <p>The three coefficients in common use split the same way on a single
 dataset, because each computes the chance term differently. Fleiss’
 kappa computes it from the panel’s marginal positive rate, PABAK fixes
@@ -220,8 +223,8 @@ under the calibration model). This is the thing we actually want to
 know.</li>
 <li>The <strong>reference surface</strong> holds the coefficient values
 a quality-<code>q</code> panel produces at the design (prevalence,
-raters <code>k</code>, subjects <code>N</code>). It is derived from a
-data-generating process, not stipulated.</li>
+raters <code>k</code>, subjects <code>N</code>). A data-generating
+process determines it.</li>
 <li>The <strong>percentile</strong> is where the observed coefficient
 falls within everything the design can produce. This is the headline
 number.</li>
@@ -267,18 +270,17 @@ rate.</li>
 <strong>The coefficient lines</strong> show each observed value, its
 percentile, and its consistency band. The <code>read:</code> line
 restates the headline in plain language. There is no bootstrap qualifier
-and no labeled band between the percentile and the reader; the band
-width is the uncertainty statement.</li>
+and no labeled band between the percentile and the reader. The band’s
+width quantifies the uncertainty.</li>
 <li>
 <strong><code>delta</code></strong> is the implied-quality spread
 across the agreement family (PABAK, mean AC1, Fleiss kappa; ICC excluded
 by construction). Each coefficient implies a panel quality, and the
 spread is judged by its percentile on a bundled null distribution at the
 matched design: <strong>caution at the 95th percentile, divergent at the
-99th</strong>, with mid-p at ties. A panel just under a cut should be
-read by its printed percentile, not the flag word alone. At two raters
-the spread is <code>not_applicable</code>, because PABAK and AC1 imply
-identical quality by construction.</li>
+99th</strong>, with mid-p at ties. At two raters the spread is
+<code>not_applicable</code>, because PABAK and AC1 imply identical
+quality by construction.</li>
 </ul>
 <p>Every panel below is synthetic, so the truth is planted and every
 claim the card makes can be checked against it. The cards print exactly
@@ -354,8 +356,11 @@ operating point.</p>
 <span><span class="va">Y_agree</span>  <span class="op">&lt;-</span> <span class="fu">gen_logitnormal</span><span class="op">(</span><span class="fl">151L</span>, <span class="fl">5L</span>, <span class="fl">1000L</span>,</span>
 <span>                            Se <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.95</span>, <span class="fl">5</span><span class="op">)</span>,</span>
 <span>                            Sp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.70</span>, <span class="fl">5</span><span class="op">)</span>, pi <span class="op">=</span> <span class="fl">0.30</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="grassr-case2-scatter-1.png" alt="plot of chunk case2-scatter"><div class="figcaption">plot of chunk case2-scatter</div>
+<div class="figure">
+<img src="grassr-case2-scatter-1.png" alt="Sensitivity against specificity for two five-rater panels that both return Fleiss kappa 0.36. Three raters of the first panel sit together at 0.92 sensitivity and 0.92 specificity while two fall into the shaded low-specificity zone near 0.51. All five raters of the second panel sit together at 0.95 sensitivity and 0.70 specificity."><p class="caption">
+Two panels with one coefficient value and two different internal
+structures.
+</p>
 </div>
 <p>The first panel splits across the low-specificity zone, and the card
 routes to per-rater output.</p>
@@ -490,12 +495,12 @@ roughly the same observed value, yet the qualities they imply split.</p>
 <span><span class="co">#&gt;   See `plot(...)` for a surface-position visualization.</span></span></code></pre></div>
 <p>Three things change in the printed output. The panel-aggregate
 summary is marked <code>suppressed (divergent)</code>. The pairwise
-PABAK matrix and the per-rater pooled-reference table appear, exposing
-the structure pair by pair and rater by rater. And the latent-class
-table appears alongside, pinning R1, R3, R5 near (0.95, 0.75) and R2, R4
-near (0.75, 0.95); its bootstrap intervals are wide near balanced
-prevalence because the resamples visit both the correct mode and its
-label-switched mirror.</p>
+PABAK matrix and the per-rater pooled-reference table appear. They
+expose the structure pair by pair and rater by rater. And the
+latent-class table appears alongside, pinning R1, R3, R5 near (0.95,
+0.75) and R2, R4 near (0.75, 0.95); its bootstrap intervals are wide
+near balanced prevalence because the resamples visit both the correct
+mode and its label-switched mirror.</p>
 <p>Under the divergent flag the recommended primary deliverable is
 <code><a href="../reference/pairwise_agreement.html">pairwise_agreement()</a></code>:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
@@ -532,8 +537,8 @@ over-caller shows high <code>Se_tilde</code> and lower
 lower triangle holds the pairwise agreements and the upper triangle
 their percentiles at each pair’s own marginal. The same PABAK value can
 land at different percentiles across pairs because each pair sees a
-different positive rate; the flag is exposing exactly the structure a
-panel average would have hidden.</p>
+different positive rate. The flag exposes exactly the structure a panel
+average would have hidden.</p>
 </div>
 <div class="section level3">
 <h3 id="two-raters">Two raters<a class="anchor" aria-label="anchor" href="#two-raters"></a>
@@ -591,8 +596,7 @@ needs per-rater points should add a third rater.</p>
 <div class="section level2">
 <h2 id="layered-access">Layered access<a class="anchor" aria-label="anchor" href="#layered-access"></a>
 </h2>
-<p>Every field beneath the printed card is available on demand. The
-examples reuse the aligned case.</p>
+<p>Every field beneath the printed card is available on demand.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">card1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/grass_report.html">grass_report</a></span><span class="op">(</span><span class="va">Y1</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">card1</span><span class="op">)</span></span>
@@ -628,7 +632,7 @@ examples reuse the aligned case.</p>
 <span><span class="co">#&gt;     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   grass version : 0.8.0</span></span>
-<span><span class="co">#&gt;   timestamp     : 2026-07-25 23:07:12</span></span></code></pre></div>
+<span><span class="co">#&gt;   timestamp     : 2026-07-25 23:48:54</span></span></code></pre></div>
 <p><code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> is the audit view: the full panel with
 percentiles and bands, every caveat from the surface lookup, the package
 version, the timestamp.</p>
@@ -659,8 +663,8 @@ coefficient, for binding many studies’ cards into one table.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">card1</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
-<img src="grassr-plot-surface-card-1.png" alt="Surface position plot"><p class="caption">
-plot of chunk plot-surface-card
+<img src="grassr-plot-surface-card-1.png" alt="The expected-value surface for PABAK at this design, with the observed panel pinned on it and its consistency band marked along the quality axis."><p class="caption">
+The aligned panel pinned on its PABAK reference surface.
 </p>
 </div>
 <p>The default <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> view places the panel on the
@@ -739,17 +743,20 @@ at a planned design and can pin a hypothetical observed value; see
 <h2 id="reference-resolution-and-the-clamp-guard">Reference resolution and the clamp guard<a class="anchor" aria-label="anchor" href="#reference-resolution-and-the-clamp-guard"></a>
 </h2>
 <p><code>delta_hat</code> inverts each coefficient to an implied panel
-quality. If an observed value falls outside the achievable range of its
-reference surface at the study’s design, the inversion clamps to the
-boundary and flags <code>clamped = TRUE</code>, and
-<code><a href="../reference/grass_report.html">grass_report()</a></code> excludes clamped coefficients from
-<code>delta_hat</code> whenever at least two unclamped ones remain.
-Otherwise a single boundary-clamped coefficient could inflate the spread
-and fire a false divergent flag.</p>
-<p>Clamping is the exception, and the example below does not clamp. When
-the exact design is not a calibrated grid point, the reference resolves
-to the nearest calibrated cell and the resolution is disclosed in the
-<code>Notes</code>:</p>
+quality. Every design has a range of coefficient values it can produce,
+and an observed value occasionally lands outside that range. The
+inversion then has no quality to return, so it reports the nearest edge
+of the range and marks the reading <code>clamped = TRUE</code>.
+<strong>That substitution is a clamp:</strong> an edge value standing in
+for an answer the reference surface cannot give.</p>
+<p>A clamped reading is a floor or a ceiling rather than a measurement,
+so <code><a href="../reference/grass_report.html">grass_report()</a></code> drops clamped coefficients from
+<code>delta_hat</code> whenever at least two unclamped ones remain. One
+coefficient pinned to an edge could otherwise stretch the spread and
+fire a false divergent flag.</p>
+<p>Clamping is rare. When the exact design is not a calibrated grid
+point, the reference resolves to the nearest calibrated cell and the
+resolution is disclosed in the <code>Notes</code>:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Y_edge</span> <span class="op">&lt;-</span> <span class="fu">gen_logitnormal</span><span class="op">(</span><span class="fl">5L</span>, <span class="fl">5L</span>, <span class="fl">1000L</span>,</span>
 <span>                          Se <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.85</span>, <span class="fl">5</span><span class="op">)</span>, Sp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.85</span>, <span class="fl">5</span><span class="op">)</span>, pi <span class="op">=</span> <span class="fl">0.08</span><span class="op">)</span></span>
@@ -771,19 +778,17 @@ reflects genuine disagreement rather than a boundary artifact.</p>
 <div class="section level2">
 <h2 id="the-machinery">The machinery<a class="anchor" aria-label="anchor" href="#the-machinery"></a>
 </h2>
-<p>The sections above are everything a practitioner needs. This section
-records the definitions and calibration facts behind them; the
-accompanying paper carries the derivations and the full calibration
+<p>The accompanying paper gives the derivations and the full calibration
 appendices.</p>
 <p><strong>Notation.</strong> <code>Y</code> is the N x k binary rating
 matrix. <code>pi_hat</code> is the observed marginal positive rate.
 <code>Se_j</code> and <code>Sp_j</code> are per-rater sensitivity and
-specificity inferred from the matrix, not against external truth.
-<code>q</code> is diagonal rater quality (<code>Se = Sp = q</code> for
-every rater under the calibration case). <code>q_hat</code> is the
-implied panel quality recovered from an observed coefficient.
-<code>delta_hat</code> is the spread of implied qualities, in quality
-percentage points, over PABAK, mean AC1, and Fleiss kappa.</p>
+specificity, inferred from the matrix alone. <code>q</code> is diagonal
+rater quality (<code>Se = Sp = q</code> for every rater under the
+calibration case). <code>q_hat</code> is the implied panel quality
+recovered from an observed coefficient. <code>delta_hat</code> is the
+spread of implied qualities, in quality percentage points, over PABAK,
+mean AC1, and Fleiss kappa.</p>
 <p><strong>Recovering <code>q_hat</code>.</strong> PABAK has an
 algebraic inverse, <code>q_hat = (1 + sqrt(PABAK)) / 2</code>. Fleiss
 kappa, AC1, Krippendorff alpha, and ICC invert by a 501-point grid
@@ -796,8 +801,8 @@ subject-level positive probabilities: two studies can share a 30%
 positive rate and differ on whether it comes from obvious positives or
 borderline cases. The bundled reference covers a 48-point logit-normal
 grid plus four discrete-mixture profiles; a panel whose true
-distribution sits elsewhere carries a mismatch cost the agreement family
-does not. That is why ICC carries its
+distribution sits elsewhere pays a mismatch cost that the agreement
+family escapes. That is why ICC prints a
 <code>[distribution-sensitive]</code> marker and stays out of
 <code>delta_hat</code>. Variant selection (ICC(1,1), ICC(2,1), ICC(3,1))
 follows the Koo and Li (2016) decision tree through the
@@ -857,11 +862,10 @@ to the nearest calibrated value, so a panel of 17 raters reads the
 profiles at one distribution shape, which is why the ICC row carries a
 distribution-sensitivity marker and stays out of
 <code>delta_hat</code>.</p>
-<p>These bounds are compute limits rather than method limits. Denser
-grids, a wider profile compendium, and deeper draws would each tighten
-the readings, and none of them needs new theory. The simulation programs
-that produced the bundled references are in the source repository under
-<code>simulation/</code>.</p>
+<p>Compute sets these bounds. Denser grids, a wider profile compendium,
+and deeper draws would each tighten the readings, and none of them needs
+new theory. The simulation programs that produced the bundled references
+are in the source repository under <code>simulation/</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
