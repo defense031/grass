@@ -369,7 +369,7 @@ as.data.frame.grass_asymmetry <- function(x, row.names = NULL, optional = FALSE,
 #' - `matched_null`: list describing the matched null cell
 #'   (`k`, `N`, `q`, `prev` — the bridged true-prevalence estimate the
 #'   lookup conditioned on, `prev_apparent` — the panel's raw positive
-#'   rate, `prev_bridged`, `prev_pooled`, `q_hat_panel`, `n_draws`,
+#'   rate, `prev_bridged`, `q_hat_panel`, `n_draws`,
 #'   `snapped`, `interpolated`, `unstable_tail`), or `NULL` if
 #'   uncalibrated
 #' - `thresholds`: named numeric vector of the implied (caution, divergent)
@@ -613,7 +613,6 @@ check_asymmetry <- function(ratings,
                          prev = null_cell$prev,
                          prev_apparent = pi_apparent,
                          prev_bridged = !identical(pi_bridged, pi_apparent),
-                         prev_pooled = null_cell$prev_pooled,
                          q_hat_panel = unname(q_hat_panel),
                          n_draws = null_cell$n_draws,
                          snapped = null_cell$snapped,
@@ -622,8 +621,7 @@ check_asymmetry <- function(ratings,
     thresholds_note <- sprintf(
       "flag from delta_hat's percentile on the matched null (k=%d, N=%d, q=%.2f%s; %s draws)%s%s%s.",
       null_cell$k, null_cell$N, null_cell$q,
-      if (null_cell$prev_pooled) "; prevalence pooled at this rater count"
-      else sprintf(", prev=%.2f", null_cell$prev),
+      sprintf(", prev=%.2f", null_cell$prev),
       format(null_cell$n_draws, big.mark = ","),
       if (null_cell$snapped) "; design snapped to the calibrated grid" else "",
       if (null_cell$interpolated)

@@ -43,7 +43,7 @@ design)
 \item \code{matched_null}: list describing the matched null cell
 (\code{k}, \code{N}, \code{q}, \code{prev} — the bridged true-prevalence estimate the
 lookup conditioned on, \code{prev_apparent} — the panel's raw positive
-rate, \code{prev_bridged}, \code{prev_pooled}, \code{q_hat_panel}, \code{n_draws},
+rate, \code{prev_bridged}, \code{q_hat_panel}, \code{n_draws},
 \code{snapped}, \code{interpolated}, \code{unstable_tail}), or \code{NULL} if
 uncalibrated
 \item \code{thresholds}: named numeric vector of the implied (caution, divergent)

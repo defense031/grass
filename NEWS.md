@@ -1,3 +1,55 @@
+# grassr 0.8.0
+
+The calibration release. The delta-hat null moves from 385
+prevalence-pooled cells to a fully resolved 11,616-cell lattice, and
+the lookups interpolate instead of snapping. The lattice combines the
+completed open calibration program (2,166 blocks, contributed and
+maintainer-run) with a 9,306-block maintainer campaign that resolved
+every rater count, added quality nodes at 0.885, 0.945, and 0.98, a
+prevalence node at 0.875, and a sample-size node at 25 (581 million
+null draws in total, 50,000 per cell). Off-grid Report Card readings
+change; on-node readings are unchanged up to storage quantization.
+
+* The delta-hat null is prevalence-resolved everywhere. The bundled
+  `delta_null_ecdf` holds 11,616 cells: eleven rater counts (3-25),
+  twelve sample sizes (15-1,000), eleven quality levels (0.65-0.99),
+  and eight prevalence levels (0.05-0.95), every cell
+  prevalence-resolved at 50,000 draws. No cell pools prevalence and
+  no card ever discloses pooling, because there is none. The pooled
+  null's realized flag size ran to roughly twice nominal at extreme
+  prevalence; the resolved null removes that by construction
+  (realized rates on 144,000 audit panels are at or below nominal in
+  every prevalence and quality stratum).
+* `lookup_delta_null()` gains a `pi_hat` argument and interpolates
+  between the calibrated cells bracketing the panel's design in
+  quality, log sample size, and prevalence; rater count snaps; edge
+  queries clamp with a card disclosure. On 280 held-out off-grid
+  designs the interpolated percentile lands within 0.9 percentile
+  points of each design's own 25,000-draw truth on average (worst
+  design 7.6, in the direction of under-flagging).
+* The surface q-sweep lookup interpolates log sample size and
+  prevalence (within the fixed-shape logit-normal family; preset
+  profiles stay nearest-key with a note), so surface percentiles and
+  consistency bands are computed for the panel's own design rather
+  than the nearest simulated one.
+* The null ships in an integer-delta layout (1.7 MB for 11,616
+  cells) selected by a rate-distortion audit against exact storage;
+  reconstruction error is two orders of magnitude below Monte-Carlo
+  noise (`data-raw/build_delta_null_v3.R`).
+* Validation: a pre-registered hold-out program (280 off-grid
+  designs, 25,000 draws each) scores the interpolating lookup
+  against direct simulation truth; an end-to-end audit measures
+  realized flag size through the production path on 144,000 panels;
+  and the aligned-case out-of-bag re-measurement fires 5.25% and
+  1.15% against nominal 5% and 1%
+  (`simulation/v070_program/g2_holdout/`). Two defects found by the
+  hold-out program during development were fixed before release:
+  a prevalence-bridge omission in the matched-null selection and a
+  near-ceiling quality gap closed by the 0.945/0.98 nodes.
+* Thanks to the open-calibration contributors whose blocks are part
+  of the shipped lattice; contributed blocks are credited in the
+  repository's contributor record.
+
 # grassr 0.7.4
 
 CRAN resubmission fixes. No computational changes; cards are identical

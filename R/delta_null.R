@@ -27,46 +27,41 @@
 }
 
 # Resolve the calibrated null at (k, N, q_hat, pi_hat) on the v0.8.0
-# hybrid grid. k snaps to the nearest calibrated rater count (resolved
-# preferred on ties). At the prevalence-resolved rater counts the stored
-# quantile vectors interpolate trilinearly between the bracketing nodes
-# in q, log10 N, and prevalence; at the prevalence-pooled fill counts
-# (k = 4, 7, 12, 20) the same interpolation runs over q and log10 N and
-# the pooling is disclosed via prev_pooled. Queries outside the grid
-# clamp to the edge node and are disclosed via `snapped`. Exact node
-# hits reproduce the stored (decoded) cell.
+# resolved lattice (v3: every cell prevalence-resolved; the v2 pooled-k
+# machinery is gone). k snaps to the nearest calibrated rater count;
+# the stored quantile vectors interpolate trilinearly between the
+# bracketing nodes in q, log10 N, and prevalence. Queries outside the
+# grid clamp to the edge node and are disclosed via `snapped`. Exact
+# node hits reproduce the stored (decoded) cell.
 lookup_delta_null <- function(k, N, q_hat, pi_hat) {
   # k = 2 is NOT calibrated and must never snap to k = 3: at k = 2 the
   # agreement family is PABAK + AC1, whose implied qualities coincide by
   # construction (delta_hat is identically zero — 2.75M Option-B null
   # draws produced no exception). delta_hat carries no information at
   # k = 2; check_asymmetry() reports not_applicable there.
+  if (!all(is.finite(c(as.numeric(k), as.numeric(N), as.numeric(q_hat),
+                       as.numeric(pi_hat))))) return(NULL)
   if (as.numeric(k) < 3) return(NULL)
   obj <- tryCatch(
     get("delta_null_ecdf", envir = asNamespace("grassr"), inherits = FALSE),
     error = function(e) NULL)
-  if (is.null(obj) || !identical(obj$version, "v2-hybrid-intdelta"))
+  if (is.null(obj) || !identical(obj$version, "v3-resolved-lattice-intdelta"))
     return(NULL)
   vals <- .delta_null_values(obj)
   idx <- obj$index
 
   ks <- sort(unique(idx$k))
   kd <- abs(ks - as.numeric(k))
-  cand <- ks[kd == min(kd)]
-  pooled_ks <- sort(unique(idx$k[idx$prev_pooled]))
-  k_node <- if (any(!cand %in% pooled_ks)) cand[!cand %in% pooled_ks][1L]
-            else cand[1L]
-  pooled <- k_node %in% pooled_ks
+  k_node <- ks[kd == min(kd)][1L]
 
-  sub <- idx$k == k_node & (if (pooled) idx$prev_pooled else !idx$prev_pooled)
+  sub <- idx$k == k_node
   Ns <- sort(unique(idx$N[sub]))
   qs <- sort(unique(idx$q[sub]))
-  prevs <- if (pooled) NA_real_ else sort(unique(idx$prev[sub]))
+  prevs <- sort(unique(idx$prev[sub]))
 
   q_eff <- min(max(as.numeric(q_hat), qs[1L]), qs[length(qs)])
   N_eff <- min(max(as.numeric(N), Ns[1L]), Ns[length(Ns)])
-  p_eff <- if (pooled) NA_real_ else
-    min(max(as.numeric(pi_hat), prevs[1L]), prevs[length(prevs)])
+  p_eff <- min(max(as.numeric(pi_hat), prevs[1L]), prevs[length(prevs)])
 
   bracket <- function(nodes, x, transform = identity) {
     i <- findInterval(x, nodes, rightmost.closed = TRUE)
@@ -77,14 +72,14 @@ lookup_delta_null <- function(k, N, q_hat, pi_hat) {
   }
   qb <- bracket(qs, q_eff)
   Nb <- bracket(Ns, N_eff, transform = log10)
-  pb <- if (pooled) list(lo = NA, hi = NA, w = 0) else bracket(prevs, p_eff)
+  pb <- bracket(prevs, p_eff)
 
   corners <- expand.grid(
     q = c(qb$lo, qb$hi), N = c(Nb$lo, Nb$hi),
-    p = if (pooled) NA_real_ else c(pb$lo, pb$hi))
+    p = c(pb$lo, pb$hi))
   corners$w <- ifelse(corners$q == qb$lo, 1 - qb$w, qb$w) *
     ifelse(corners$N == Nb$lo, 1 - Nb$w, Nb$w) *
-    (if (pooled) 1 else ifelse(corners$p == pb$lo, 1 - pb$w, pb$w))
+    ifelse(corners$p == pb$lo, 1 - pb$w, pb$w)
   # collapse duplicated corners from degenerate (exact-hit) brackets
   corners <- corners[!duplicated(corners[, c("q", "N", "p")]), , drop = FALSE]
 
@@ -92,14 +87,14 @@ lookup_delta_null <- function(k, N, q_hat, pi_hat) {
   n_draws <- integer(0)
   for (j in which(corners$w > 0)) {
     cell_i <- which(sub & idx$N == corners$N[j] & idx$q == corners$q[j] &
-                      (if (pooled) TRUE else idx$prev == corners$p[j]))
+                      idx$prev == corners$p[j])
     if (length(cell_i) != 1L) return(NULL)
     values <- values + corners$w[j] * vals[cell_i, ]
     n_draws <- c(n_draws, idx$n_draws[cell_i])
   }
   list(
     k = k_node, N = as.integer(N_eff), q = q_eff,
-    prev = p_eff, prev_pooled = pooled,
+    prev = p_eff,
     n_draws = min(n_draws),
     unstable_tail = FALSE,
     # snapped = the resolved design differs from the query (k off the
@@ -107,9 +102,9 @@ lookup_delta_null <- function(k, N, q_hat, pi_hat) {
     # off-node queries are served by interpolation, not snapping.
     snapped = (k_node != as.numeric(k) || N_eff != as.numeric(N) ||
                  abs(q_eff - as.numeric(q_hat)) > 1e-9 ||
-                 (!pooled && abs(p_eff - as.numeric(pi_hat)) > 1e-9)),
+                 abs(p_eff - as.numeric(pi_hat)) > 1e-9),
     interpolated = (qb$w > 0 && qb$w < 1) || (Nb$w > 0 && Nb$w < 1) ||
-      (!pooled && pb$w > 0 && pb$w < 1),
+      (pb$w > 0 && pb$w < 1),
     probs = obj$probs,
     values = values,
     conventions = obj$flag_conventions

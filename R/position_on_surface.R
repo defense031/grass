@@ -1,3 +1,20 @@
+# Session cache for q-sweep lookups (same pattern as .delta_null_env in
+# delta_null.R). Every cached value is a pure function of the bundled
+# surface sysdata and a small discrete key (metric, k, N node, F_key), so
+# caching cannot change any result; it only stops the surface index from
+# being re-decoded on every call. The null-calibration workers call
+# lookup_empirical_q_sweep three times per draw at a fixed design, where
+# the uncached decode dominated ~95% of per-draw wall time.
+.q_sweep_env <- new.env(parent = emptyenv())
+
+.qs_memo <- function(key, expr) {
+  if (exists(key, envir = .q_sweep_env, inherits = FALSE))
+    return(get(key, envir = .q_sweep_env, inherits = FALSE))
+  val <- expr
+  assign(key, val, envir = .q_sweep_env)
+  val
+}
+
 # Target-2 surface-position reporting convention (v0.7.1 sweep redesign).
 # Takes an observed agreement coefficient together with the design context
 # (pi_hat, k, N) and positions it against the DGP-calibrated reference
@@ -709,19 +726,22 @@ lookup_empirical_q_sweep <- function(metric, pi_hat, k, N) {
   # axis never smuggles in an F-shape change; the discrete-mixture
   # presets stay nearest-key with a note. The q axis is returned whole
   # (the sweep convention) and band endpoints interpolate downstream.
-  k_grid <- sort(unique(idx$k))
+  pfx <- paste0("qs", nrow(idx), "x", length(surf$probs), "|")
+  k_grid <- .qs_memo(paste0(pfx, "k_grid"), sort(unique(idx$k)))
   k_near <- k_grid[which.min(abs(k_grid - as.numeric(k)))]
 
-  n_grid <- sort(unique(idx$N))
+  n_grid <- .qs_memo(paste0(pfx, "n_grid"), sort(unique(idx$N)))
   N_eff <- min(max(as.numeric(N), n_grid[1L]), n_grid[length(n_grid)])
   ni <- findInterval(N_eff, n_grid, rightmost.closed = TRUE)
   ni <- max(1L, min(ni, length(n_grid) - 1L))
   N_lo <- n_grid[ni]; N_hi <- n_grid[ni + 1L]
   wN <- (log10(N_eff) - log10(N_lo)) / (log10(N_hi) - log10(N_lo))
 
-  sub <- idx[idx$k == k_near & idx$N %in% c(N_lo, N_hi), ]
+  sub <- .qs_memo(paste0(pfx, "sub|", k_near, "|", N_lo, "|", N_hi),
+                  idx[idx$k == k_near & idx$N %in% c(N_lo, N_hi), ])
   if (nrow(sub) == 0L) return(NULL)
-  F_keys <- unique(sub[, c("F_key", "M1")])
+  F_keys <- .qs_memo(paste0(pfx, "fkeys|", k_near, "|", N_lo, "|", N_hi),
+                     unique(sub[, c("F_key", "M1")]))
   fi <- which.min(abs(F_keys$M1 - as.numeric(pi_hat)))
   key0 <- F_keys$F_key[fi]
 
@@ -742,15 +762,18 @@ lookup_empirical_q_sweep <- function(metric, pi_hat, k, N) {
 
   # gather the (N, F_key) corner sweeps and combine them cell-wise
   fetch <- function(Nn, key) {
-    s <- sub[sub$N == Nn & sub$F_key == key, ]
-    s <- s[order(s$q_true), ]
-    arr_ids <- as.integer(dimnames(surf$quantiles)$scenario_id)
-    rows <- match(as.integer(s$scenario_id), arr_ids)
-    keep <- !is.na(rows)
-    if (sum(keep) < 2L) return(NULL)
-    m <- matrix(surf$quantiles[rows[keep], metric, , drop = FALSE],
-                nrow = sum(keep))
-    list(q_true = as.numeric(s$q_true[keep]), m = m)
+    .qs_memo(paste0(pfx, "fetch|", metric, "|", k_near, "|", Nn, "|", key), {
+      s <- sub[sub$N == Nn & sub$F_key == key, ]
+      s <- s[order(s$q_true), ]
+      arr_ids <- .qs_memo(paste0(pfx, "arr_ids"),
+                          as.integer(dimnames(surf$quantiles)$scenario_id))
+      rows <- match(as.integer(s$scenario_id), arr_ids)
+      keep <- !is.na(rows)
+      if (sum(keep) < 2L) NULL else
+        list(q_true = as.numeric(s$q_true[keep]),
+             m = matrix(surf$quantiles[rows[keep], metric, , drop = FALSE],
+                        nrow = sum(keep)))
+    })
   }
   corners <- list(
     list(f = fetch(N_lo, keys[1L]), w = (1 - wN) * (1 - wM)),

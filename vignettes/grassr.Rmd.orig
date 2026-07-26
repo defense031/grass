@@ -530,13 +530,17 @@ includes a point mass at zero, so no fixed cut in quality points
 works everywhere. The package reads the observed spread's percentile
 on a bundled null at the matched `(k, N, q_hat)` cell, exactly how
 every coefficient on the card is already read. The nulls are
-generated through the production pipeline itself, pooled over
-prevalence: 440 cells at 50,000 draws each, with the 385 cells at
-k >= 3 shipped (the flag is `not_applicable` at k = 2). Monte Carlo
-error on a reported percentile stays under a quarter of a percentile
-point at the shipped draw counts, and cells with unstable extreme
-tails carry a transparency flag in the bundled object. The card
-prints the matched cell, its draw count, and any design snap.
+generated through the production pipeline itself, resolved at every
+combination of design and prevalence: 11,616 cells at 50,000 draws
+each, spanning eleven rater counts, twelve sample sizes, eleven
+quality levels, and eight prevalence levels (the flag is
+`not_applicable` at k = 2). Monte Carlo error on a reported
+percentile stays under a quarter of a percentile point at the
+shipped draw counts. Designs between calibrated cells are read by
+interpolation in quality, log sample size, and prevalence; rater
+count snaps to the nearest calibrated value. The card prints the
+matched cell, its draw count, and whether the reading interpolated
+or clamped at a grid edge.
 
 **Pairwise PABAK and pooled-reference identifiability.** PABAK is
 the pairwise coefficient because under symmetric raters its
@@ -557,8 +561,9 @@ estimate.
 
 **Where the rest lives.** The accompanying paper carries the
 reference-surface construction, the closed-form derivations, the
-calibration grids (44,616 surface cells; 22-million-draw null and
-power programs), the flag's operating characteristics, and two
+calibration grids (44,616 surface cells; a 581-million-draw null
+program and a 22-million-draw power program), the flag's operating
+characteristics, and two
 published-panel reanalyses. The three case studies above are the
 paper's worked examples, regenerated from the same seeds; the
 quick-start and two-rater demonstration panels are this vignette's
@@ -568,15 +573,16 @@ own.
 
 Every number above is read from a simulated reference, and the
 reference is only as fine as the compute that built it. The bundled
-calibration holds 44,616 surface cells and 385 `delta_hat` null
-cells, built from 133 million simulated panels. Its bounds are
-compute limits, not method limits. Designs between grid
-points snap to the nearest calibrated cell. The ICC reference covers
-52 subject-prevalence profiles. The `delta_hat` null pools five
-calibration prevalences, and 21 of its 385 cells flag unstable
-extreme tails. Denser grids, a wider profile compendium, a
-prevalence-stratified null, and deeper draws would each tighten the
-readings, and each needs replication rather than new theory.
+calibration holds 44,616 surface cells and 11,616 `delta_hat` null
+cells, built from more than 700 million simulated panels. Its
+bounds are compute limits, not method limits. Surface readings
+between grid points interpolate log sample size and prevalence, and
+null readings interpolate quality as well; rater count snaps to the
+nearest calibrated value. The ICC reference covers 52
+subject-prevalence profiles at a fixed distribution shape. Denser
+grids, a wider profile compendium, and deeper draws would each
+tighten the readings, and each needs replication rather than new
+theory.
 
 The package includes the tools to close these gaps. The bundled
 manifest lists every open calibration block. Each block is one
