@@ -628,7 +628,7 @@ examples reuse the aligned case.</p>
 <span><span class="co">#&gt;     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   grass version : 0.8.0</span></span>
-<span><span class="co">#&gt;   timestamp     : 2026-07-25 21:46:00</span></span></code></pre></div>
+<span><span class="co">#&gt;   timestamp     : 2026-07-25 23:07:12</span></span></code></pre></div>
 <p><code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> is the audit view: the full panel with
 percentiles and bands, every caveat from the surface lookup, the package
 version, the timestamp.</p>
@@ -844,117 +844,24 @@ seeds; the quick-start and two-rater demonstration panels are this
 vignette’s own.</p>
 </div>
 <div class="section level2">
-<h2 id="extending-the-calibration">Extending the calibration<a class="anchor" aria-label="anchor" href="#extending-the-calibration"></a>
+<h2 id="what-the-calibration-covers">What the calibration covers<a class="anchor" aria-label="anchor" href="#what-the-calibration-covers"></a>
 </h2>
 <p>Every number above is read from a simulated reference, and the
 reference is only as fine as the compute that built it. The bundled
 calibration holds 44,616 surface cells and 11,616 <code>delta_hat</code>
-null cells, built from more than 700 million simulated panels. Its
-bounds are compute limits, not method limits. Surface readings between
-grid points interpolate log sample size and prevalence, and null
-readings interpolate quality as well; rater count snaps to the nearest
-calibrated value. The ICC reference covers 52 subject-prevalence
-profiles at a fixed distribution shape. Denser grids, a wider profile
-compendium, and deeper draws would each tighten the readings, and each
-needs replication rather than new theory.</p>
-<p>The package includes the tools to close these gaps. The bundled
-manifest lists every open calibration block. Each block is one seeded
-simulation cell, small enough to run on any machine with grassr
-installed:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">manifest</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/grass_calibration_manifest.html">grass_calibration_manifest</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">manifest</span><span class="op">$</span><span class="va">program</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   lattice_k prev_strata  tail_topup </span></span>
-<span><span class="co">#&gt;         220        1925          21</span></span></code></pre></div>
-<p><code>tail_topup</code> deepens the 21 flagged null cells,
-<code>prev_strata</code> rebuilds the <code>delta_hat</code> null with
-full draws in every prevalence stratum, and <code>lattice_k</code> adds
-rater counts between the shipped grid points. To see what a time budget
-buys on your machine, ask for a plan. Block selection is randomized so
-uncoordinated contributors rarely collide; we pin the selection here so
-the vignette reproduces:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">7</span><span class="op">)</span></span>
-<span><span class="va">plan</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/grass_contribute.html">grass_contribute</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, hours <span class="op">=</span> <span class="fl">5</span>, dry_run <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">plan</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"block_id"</span>, <span class="st">"program"</span>, <span class="st">"k"</span>, <span class="st">"N"</span>, <span class="st">"q"</span>, <span class="st">"prev"</span>, <span class="st">"draws"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;    block_id     program  k    N    q prev draws</span></span>
-<span><span class="co">#&gt; 1        33 prev_strata  3   15 0.85 0.20 50000</span></span>
-<span><span class="co">#&gt; 2        41 prev_strata  3   15 0.92 0.95 50000</span></span>
-<span><span class="co">#&gt; 3       149 prev_strata  3  100 0.65 0.50 50000</span></span>
-<span><span class="co">#&gt; 4       161 prev_strata  3  100 0.85 0.95 50000</span></span>
-<span><span class="co">#&gt; 5       197 prev_strata  3  200 0.65 0.05 50000</span></span>
-<span><span class="co">#&gt; 6       221 prev_strata  3  200 0.97 0.95 50000</span></span>
-<span><span class="co">#&gt; 7       232 prev_strata  3  300 0.85 0.05 50000</span></span>
-<span><span class="co">#&gt; 8       244 prev_strata  3  300 0.97 0.50 50000</span></span>
-<span><span class="co">#&gt; 9       253 prev_strata  3  500 0.75 0.20 50000</span></span>
-<span><span class="co">#&gt; 10      327 prev_strata  5   20 0.75 0.05 50000</span></span>
-<span><span class="co">#&gt; 11      335 prev_strata  5   20 0.85 0.80 50000</span></span>
-<span><span class="co">#&gt; 12      337 prev_strata  5   20 0.92 0.05 50000</span></span>
-<span><span class="co">#&gt; 13      342 prev_strata  5   20 0.97 0.05 50000</span></span>
-<span><span class="co">#&gt; 14      369 prev_strata  5   30 0.97 0.50 50000</span></span>
-<span><span class="co">#&gt; 15      380 prev_strata  5   50 0.75 0.80 50000</span></span>
-<span><span class="co">#&gt; 16      438 prev_strata  5  100 0.92 0.20 50000</span></span>
-<span><span class="co">#&gt; 17      440 prev_strata  5  100 0.92 0.80 50000</span></span>
-<span><span class="co">#&gt; 18      464 prev_strata  5  150 0.92 0.50 50000</span></span>
-<span><span class="co">#&gt; 19      487 prev_strata  5  200 0.92 0.05 50000</span></span>
-<span><span class="co">#&gt; 20      489 prev_strata  5  200 0.92 0.50 50000</span></span>
-<span><span class="co">#&gt; 21      550 prev_strata  5 1000 0.65 0.80 50000</span></span>
-<span><span class="co">#&gt; 22      583 prev_strata  6   15 0.85 0.20 50000</span></span>
-<span><span class="co">#&gt; 23      698 prev_strata  6  100 0.65 0.20 50000</span></span>
-<span><span class="co">#&gt; 24      777 prev_strata  6  300 0.75 0.05 50000</span></span>
-<span><span class="co">#&gt; 25      811 prev_strata  6  500 0.85 0.95 50000</span></span>
-<span><span class="co">#&gt; 26      870 prev_strata  8   15 0.97 0.80 50000</span></span>
-<span><span class="co">#&gt; 27      890 prev_strata  8   20 0.92 0.80 50000</span></span>
-<span><span class="co">#&gt; 28      904 prev_strata  8   30 0.75 0.50 50000</span></span>
-<span><span class="co">#&gt; 29      979 prev_strata  8  100 0.75 0.50 50000</span></span>
-<span><span class="co">#&gt; 30      994 prev_strata  8  100 0.97 0.50 50000</span></span>
-<span><span class="co">#&gt; 31     1024 prev_strata  8  200 0.65 0.50 50000</span></span>
-<span><span class="co">#&gt; 32     1030 prev_strata  8  200 0.75 0.80 50000</span></span>
-<span><span class="co">#&gt; 33     1068 prev_strata  8  300 0.97 0.20 50000</span></span>
-<span><span class="co">#&gt; 34     1122 prev_strata 10   15 0.65 0.05 50000</span></span>
-<span><span class="co">#&gt; 35     1151 prev_strata 10   20 0.65 0.95 50000</span></span>
-<span><span class="co">#&gt; 36     1160 prev_strata 10   20 0.85 0.80 50000</span></span>
-<span><span class="co">#&gt; 37     1174 prev_strata 10   30 0.65 0.50 50000</span></span>
-<span><span class="co">#&gt; 38     1215 prev_strata 10   50 0.92 0.80 50000</span></span>
-<span><span class="co">#&gt; 39     1216 prev_strata 10   50 0.92 0.95 50000</span></span>
-<span><span class="co">#&gt; 40     1310 prev_strata 10  200 0.85 0.80 50000</span></span>
-<span><span class="co">#&gt; 41     1427 prev_strata 15   20 0.75 0.05 50000</span></span>
-<span><span class="co">#&gt; 42     1483 prev_strata 15   50 0.85 0.20 50000</span></span>
-<span><span class="co">#&gt; 43     1500 prev_strata 15   75 0.65 0.80 50000</span></span>
-<span><span class="co">#&gt; 44     1634 prev_strata 15  500 0.85 0.50 50000</span></span>
-<span><span class="co">#&gt; 45     1706 prev_strata 25   20 0.75 0.95 50000</span></span>
-<span><span class="co">#&gt; 46     1765 prev_strata 25   50 0.92 0.80 50000</span></span>
-<span><span class="co">#&gt; 47     1779 prev_strata 25   75 0.75 0.50 50000</span></span>
-<span><span class="co">#&gt; 48     1862 prev_strata 25  200 0.92 0.05 50000</span></span>
-<span><span class="co">#&gt; 49     1869 prev_strata 25  200 0.97 0.50 50000</span></span>
-<span><span class="co">#&gt; 50     1872 prev_strata 25  300 0.65 0.05 50000</span></span>
-<span><span class="co">#&gt; 51     1928 prev_strata 25 1000 0.75 0.20 50000</span></span>
-<span><span class="co">#&gt; 52     2014   lattice_k  7   30 0.85   NA 50000</span></span>
-<span><span class="co">#&gt; 53     2015   lattice_k  7   30 0.92   NA 50000</span></span>
-<span><span class="co">#&gt; 54     2016   lattice_k  7   30 0.97   NA 50000</span></span>
-<span><span class="co">#&gt; 55     2062   lattice_k 12   20 0.65   NA 50000</span></span>
-<span><span class="co">#&gt; 56     2069   lattice_k 12   30 0.85   NA 50000</span></span></code></pre></div>
-<p>The same call without <code>dry_run = TRUE</code> runs the selected
-blocks from their declared seeds and writes a submission bundle to
-<code>dir</code>: one result file per block plus a manifest with
-checksums and session information.
-<code><a href="../reference/grass_verify_contribution.html">grass_verify_contribution()</a></code> checks the bundle before you
-send it. Submission is a pull request against the
-<code>calibration-contrib</code> branch of the source repository (<a href="https://github.com/defense031/grassr" class="external-link uri">https://github.com/defense031/grassr</a>). The maintainers
-verify a submission by re-executing its seeds, which reproduce bit for
-bit at the same package version, and merged cells fold into the bundled
-calibration in a future data release. The pipeline is already live.
-Outside contributors had run and verified 165 of the 2,166 blocks when
-this release was built. The repository manifest tracks which blocks
-remain open. Duplicate runs of a block are not wasted, they
-cross-verify. For a large budget, claim a block range through a
-repository issue first; the full protocol is in the CONTRIBUTING file.
-The bundled surfaces were themselves computed on two machines and merged
-by cell. The wider simulation programs (the reference surfaces and the
-ICC profile compendium) are in the repository under
-<code>simulation/</code> for contributors who want more than the
-packaged blocks.</p>
+null cells, built from more than 700 million simulated panels.</p>
+<p>Surface readings between grid points interpolate log sample size and
+prevalence. Null readings interpolate quality as well. Rater count snaps
+to the nearest calibrated value, so a panel of 17 raters reads the
+15-rater reference. The ICC reference covers 52 subject-prevalence
+profiles at one distribution shape, which is why the ICC row carries a
+distribution-sensitivity marker and stays out of
+<code>delta_hat</code>.</p>
+<p>These bounds are compute limits rather than method limits. Denser
+grids, a wider profile compendium, and deeper draws would each tighten
+the readings, and none of them needs new theory. The simulation programs
+that produced the bundled references are in the source repository under
+<code>simulation/</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

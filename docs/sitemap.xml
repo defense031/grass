@@ -1,6 +1,5 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://defense031.github.io/grassr/404.html</loc></url>
-<url><loc>https://defense031.github.io/grassr/CONTRIBUTING.html</loc></url>
 <url><loc>https://defense031.github.io/grassr/LICENSE-text.html</loc></url>
 <url><loc>https://defense031.github.io/grassr/LICENSE.html</loc></url>
 <url><loc>https://defense031.github.io/grassr/ROADMAP.html</loc></url>
@@ -15,16 +14,13 @@
 <url><loc>https://defense031.github.io/grassr/reference/check_asymmetry.html</loc></url>
 <url><loc>https://defense031.github.io/grassr/reference/check_rater_asymmetry.html</loc></url>
 <url><loc>https://defense031.github.io/grassr/reference/format.grass_card.html</loc></url>
-<url><loc>https://defense031.github.io/grassr/reference/grass_calibration_manifest.html</loc></url>
 <url><loc>https://defense031.github.io/grassr/reference/grass_compute.html</loc></url>
-<url><loc>https://defense031.github.io/grassr/reference/grass_contribute.html</loc></url>
 <url><loc>https://defense031.github.io/grassr/reference/grass_plot.html</loc></url>
 <url><loc>https://defense031.github.io/grassr/reference/grass_prevalence.html</loc></url>
 <url><loc>https://defense031.github.io/grassr/reference/grass_reference.html</loc></url>
 <url><loc>https://defense031.github.io/grassr/reference/grass_reference_table.html</loc></url>
 <url><loc>https://defense031.github.io/grassr/reference/grass_report.html</loc></url>
 <url><loc>https://defense031.github.io/grassr/reference/grass_roadmap.html</loc></url>
-<url><loc>https://defense031.github.io/grassr/reference/grass_verify_contribution.html</loc></url>
 <url><loc>https://defense031.github.io/grassr/reference/grassr-package.html</loc></url>
 <url><loc>https://defense031.github.io/grassr/reference/index.html</loc></url>
 <url><loc>https://defense031.github.io/grassr/reference/latent_class_fit.html</loc></url>

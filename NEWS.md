@@ -54,9 +54,14 @@ change; on-node readings are unchanged up to storage quantization.
   hold-out program during development were fixed before release:
   a prevalence-bridge omission in the matched-null selection and a
   near-ceiling quality gap closed by the 0.945/0.98 nodes.
-* Thanks to the open-calibration contributors whose blocks are part
-  of the shipped lattice; contributed blocks are credited in the
-  repository's contributor record.
+* The open calibration program is complete, and its three functions
+  (`grass_calibration_manifest()`, `grass_contribute()`,
+  `grass_verify_contribution()`) are removed along with the bundled
+  block manifest. The program's blocks were defined against the
+  earlier pooled null; the lattice that supersedes it is finished, so
+  the manifest no longer describes work that needs doing. Thanks to
+  the contributors whose blocks are part of the shipped lattice;
+  they are credited in the repository's contributor record.
 
 # grassr 0.7.4
 

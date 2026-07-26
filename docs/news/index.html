@@ -43,7 +43,7 @@
 <li>The null ships in an integer-delta layout (1.7 MB for 11,616 cells) selected by a rate-distortion audit against exact storage; reconstruction error is two orders of magnitude below Monte-Carlo noise (<code>data-raw/build_delta_null_v3.R</code>).</li>
 <li>The two large reference arrays – the 44,616-cell q-hat surface and the fitted-ICC curves – are stored as integer-delta byte planes rather than doubles, which cuts the bundled data from 8.6 MB to 4.9 MB. Reconstruction is exact, not approximate: the decoded arrays are <code><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical()</a></code> to the ones that shipped through 0.7.4, so no percentile, band, or example value moves (<code>data-raw/encode_sysdata_for_release.R</code>, <code>design/v0.8.0_surface_encoding.md</code>).</li>
 <li>Validation: a pre-registered hold-out program (280 off-grid designs, 25,000 draws each) scores the interpolating lookup against direct simulation truth; an end-to-end audit measures realized flag size through the production path on 144,000 panels; and the aligned-case out-of-bag re-measurement fires 5.25% and 1.15% against nominal 5% and 1% (<code>simulation/v070_program/g2_holdout/</code>). Two defects found by the hold-out program during development were fixed before release: a prevalence-bridge omission in the matched-null selection and a near-ceiling quality gap closed by the 0.945/0.98 nodes.</li>
-<li>Thanks to the open-calibration contributors whose blocks are part of the shipped lattice; contributed blocks are credited in the repository’s contributor record.</li>
+<li>The open calibration program is complete, and its three functions (<code>grass_calibration_manifest()</code>, <code>grass_contribute()</code>, <code>grass_verify_contribution()</code>) are removed along with the bundled block manifest. The program’s blocks were defined against the earlier pooled null; the lattice that supersedes it is finished, so the manifest no longer describes work that needs doing. Thanks to the contributors whose blocks are part of the shipped lattice; they are credited in the repository’s contributor record.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.7.4" id="grassr-074">grassr 0.7.4<a class="anchor" aria-label="anchor" href="#grassr-074"></a></h2><p class="text-muted">CRAN release: 2026-07-21</p>
@@ -60,11 +60,11 @@
 <h3 id="contribute-compute-from-the-installed-package-0-7-2">Contribute compute from the installed package<a class="anchor" aria-label="anchor" href="#contribute-compute-from-the-installed-package-0-7-2"></a></h3>
 <p>Three new functions:</p>
 <ul><li>
-<code><a href="../reference/grass_calibration_manifest.html">grass_calibration_manifest()</a></code> – the 2,166 open calibration blocks (null tail top-ups, a prevalence-stratified null, intermediate rater counts), each a seeded bite-sized cell.</li>
+<code>grass_calibration_manifest()</code> – the 2,166 open calibration blocks (null tail top-ups, a prevalence-stratified null, intermediate rater counts), each a seeded bite-sized cell.</li>
 <li>
-<code><a href="../reference/grass_contribute.html">grass_contribute()</a></code> – benchmarks the machine, answers “what would five hours buy?” (<code>dry_run = TRUE</code>), runs selected blocks from their declared seeds, and writes a submission bundle with checksums and session information. Runs are bit-reproducible at a pinned package version. No network access; writes only to the caller’s directory.</li>
+<code>grass_contribute()</code> – benchmarks the machine, answers “what would five hours buy?” (<code>dry_run = TRUE</code>), runs selected blocks from their declared seeds, and writes a submission bundle with checksums and session information. Runs are bit-reproducible at a pinned package version. No network access; writes only to the caller’s directory.</li>
 <li>
-<code><a href="../reference/grass_verify_contribution.html">grass_verify_contribution()</a></code> – checks a bundle by checksum, completeness, and seed replay, for contributors before submission and maintainers at intake.</li>
+<code>grass_verify_contribution()</code> – checks a bundle by checksum, completeness, and seed replay, for contributors before submission and maintainers at intake.</li>
 </ul><p>Submissions land as pull requests on the repository’s <code>calibration-contrib</code> branch; see CONTRIBUTING.md (new). Every block’s seed (20300000 + block_id) is disjoint from the shipped programs’ seeds, so contributed draws can never replay shipped draws.</p>
 <p>The vignette gains a closing section, “Extending the calibration”, that walks the contributor path from the bundled manifest to the pull request.</p>
 </div>
