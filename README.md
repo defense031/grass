@@ -2,16 +2,23 @@
 
 **G**uide for **R**ater **A**greement under **S**tructural **S**kew.
 
-Rater-reliability coefficients for binary outcomes are routinely
-interpreted using fixed labels from published scales, but those labels
-drift with prevalence, rater count, sample size, and latent rater
-asymmetry. The same panel can land in different conventional categories
-just because prevalence changes. `grassr` replaces fixed cutoffs with
-context-conditioned **surface-position reporting**: the rating matrix
-goes in, and a four-field **Report Card** comes out — sample summary,
-primary coefficient with calibrated percentile, cross-coefficient
-asymmetry diagnostic, and (when the panel disagrees with itself) a
-per-rater latent-class fit.
+Fixed labels for rater-reliability coefficients, the Landis-Koch bands
+and their descendants, drift with prevalence, rater count, and sample
+size: the same rater panel can land in a different category because the
+finding got rarer. grassr replaces the fixed scale with a calibrated
+reference. The rating matrix goes in, and a Report Card comes out that
+positions each coefficient among the values the study's own design can
+produce, bounds the panel qualities consistent with the observation,
+and flags panels whose coefficients disagree about the quality they
+imply.
+
+## Install
+
+```r
+install.packages("grassr")                    # CRAN release (0.7.4)
+
+remotes::install_github("defense031/grassr")  # development head (0.8.0)
+```
 
 ## A 30-second example
 
@@ -45,89 +52,60 @@ GRASS Report Card
   See `plot(...)` for a surface-position visualization.
 ```
 
-The percentile is computed against a reference surface calibrated for
-the study's `(k, N, pi_hat, tau2_hat)` — not against a fixed 1977
-cutoff table. The `aligned` flag (`delta = 0.01 pp`) means the three
-agreement coefficients imply the same panel quality, so a single
-number is safe to cite. ICC prints a `[distribution-sensitive]`
-marker because its reference surface depends on the full
-subject-prevalence distribution F rather than on `(q, pi_+)` alone,
-and it does not enter `delta_hat` by construction. At the *divergent* tier the headline is
-replaced with the per-rater sensitivity / specificity table from a
-latent-class fit (point estimates at `k >= 3`, bounded estimates at
-`k = 2`).
+The percentile reads against a reference calibrated at the study's
+rater count, sample size, and observed positive rate, not against a
+fixed cutoff table. The consistency band (quality 0.78 to 0.85, which
+contains the planted 0.85) is the set of panel qualities consistent
+with the observed coefficient at this design; its width is the
+precision this design can achieve. `delta = 0.01 pp (aligned)` means the three
+agreement coefficients imply the same panel quality, so any one of
+them can be cited as the panel's agreement level. When they diverge, the card suppresses the panel summary
+and routes to per-rater output: a pairwise PABAK matrix,
+pooled-reference sensitivity and specificity per rater, and a
+latent-class fit.
 
-The full walkthrough — the easy case, the killer case, layered access
-via `summary()` / `as.data.frame()` / `plot()`, granular building blocks
-(`position_on_surface()`, `check_asymmetry()`, `latent_class_fit()`),
-and the two-rater branch — is in
-[`vignette("grassr")`](vignettes/grassr.Rmd).
+## The functions
 
-## Install (local dev)
+- `grass_report(ratings = Y)` returns the card. `summary()`,
+  `as.data.frame()`, and seven `plot()` views are available on the
+  result.
+- `position_on_surface(ratings = Y, metric = ...)` positions one
+  coefficient and returns its percentile, consistency band, and
+  implied quality.
+- `check_asymmetry(ratings = Y)` returns the implied-quality spread
+  `delta_hat` and its aligned / caution / divergent flag, read from
+  the spread's percentile on a null distribution matched to the
+  design (caution at the 95th percentile, divergent at the 99th).
+- `pairwise_agreement(ratings = Y)` gives the per-rater breakdown
+  when the coefficients diverge.
+- `latent_class_fit(ratings = Y)` returns per-rater Dawid-Skene
+  estimates at k >= 3 and Hui-Walter bounds at k = 2, with bootstrap
+  intervals.
+- `plot_surface(metric, ...)` draws a coefficient's reference surface
+  before any data exist, for prospective design.
 
-```r
-remotes::install_github("defense031/grassr")
+The full walkthrough is `vignette("grassr")`.
 
-# from the package directory:
-devtools::load_all()
+## Calibration
 
-# the command above installs the repository default branch (development
-# head); the CRAN submission line is the 0.7.x series.
-```
-
-## What you get in v0.7.x
-
-- **Headline API.** `grass_report(ratings = Y)` — single-call
-  workflow returning a four-field Report Card object (`grass_card`)
-  with `print` / `summary` / `as.data.frame` / `plot` methods. Seven
-  `plot()` view types: `surface` (default), `panel`, `thermometer`,
-  `intervals`, `per_rater`, `pairwise`, `diagnostic`.
-- **Surface-position primitive.** `position_on_surface(ratings = Y,
-  metric = ...)` places one observed coefficient on its
-  context-conditioned reference surface and returns the pooled
-  percentile (the coefficient's position within the design's achievable
-  agreement range) together with a 95% test-inversion consistency band
-  on panel quality -- the quality levels whose sampling distributions
-  are consistent with the observed value at this design. The pooled
-  percentile is the categorical score; no four-way labeled band is
-  interposed between the percentile and the reader. Closed-form
-  references for PABAK, AC1, Fleiss kappa; bundled fitted-ICC reference
-  for ICC across `k in {3, 5, 8, 15, 25} x N in {30, 50, 75, 100, 200,
-  300, 500, 1000}` on a 14-point q-grid.
-- **Cross-coefficient stability signal.** `check_asymmetry(ratings = Y)`
-  returns the cross-coefficient implied-quality spread `delta_hat` (in
-  pp of quality) computed over the three-coefficient agreement family
-  (PABAK, AC1, Fleiss kappa) plus an aligned / caution / divergent flag
-  set by `delta_hat`'s percentile on the matched (k, N, q_hat) null
-  distribution (>= 95th caution, >= 99th divergent). ICC is reported on
-  the panel with a `[distribution-sensitive]` marker but does not
-  enter `delta_hat` by construction, because its reference surface
-  depends on the full subject-prevalence distribution F rather than
-  on `(q, pi_+)` alone.
-- **Divergent-flag recovery path.** `pairwise_agreement()` returns a
-  pairwise PABAK matrix on the `k = 2` reference surface plus
-  per-rater pooled-reference `(Se_tilde, Sp_tilde)` against the
-  panel-majority of the other `k - 1` raters. Auto-triggered from
-  `grass_report()` under the divergent flag.
-- **Latent-class fit.** `latent_class_fit()` returns per-rater
-  Dawid-Skene `(Se_hat, Sp_hat)` point estimates at `k >= 3` and
-  Hui-Walter bounds at `k = 2`, with bootstrap CIs.
-- **Prospective design.** `plot_surface(metric, pi_hat, observed)`
-  renders the closed-form reference surface as a heatmap with an
-  optional pin marker at the observed value; useful for
-  "what does my reference surface look like at this design, before
-  I collect data?"
-
-See `NEWS.md` for the release history and `?grass_roadmap`
-for planned future families (ordinal, multi-rater nominal, continuous).
+The bundled reference holds 44,616 surface cells at 2,000 draws each
+and an 11,616-cell null lattice for `delta_hat` at 50,000 draws each,
+spanning rater counts 2 through 25 and sample sizes 15 through 1,000.
+Designs between calibrated cells are read by interpolation; rater
+count snaps to the nearest calibrated value, and the card discloses
+the cell it read. ICC is reported beside the agreement family with a
+`[distribution-sensitive]` marker: its reference depends on the full
+subject-prevalence distribution, represented by 52 calibrated
+profiles, and it stays out of `delta_hat`.
 
 ## Status
 
-v0.8.0. The calibration release: the `delta_hat` null is a fully
-resolved 11,616-cell lattice and all lookups interpolate between
-calibrated cells (see NEWS.md); v0.7.4 is the release on CRAN. Binary inter-rater and intra-rater
-families fully implemented. For the intra-rater axis, the inter-rater
-diagonal calibration is exact for the idealized intra model (an
-equivalence proposition); drift and within-subject dependence bounds are
-published rather than conditioned on. See `?grass_roadmap` for planned
-families.
+v0.8.0 (development head): the `delta_hat` null now varies with
+prevalence, and lookups interpolate between calibrated cells. v0.7.4 is the release on CRAN. Binary
+inter-rater and intra-rater families are implemented; `?grass_roadmap`
+lists planned families (ordinal, multi-rater nominal, continuous), and
+`NEWS.md` has the release history.
+
+The package implements the method of Semmel & Gidaro (2026), *A context-conditioned
+reporting convention for rater reliability on binary outcomes*
+(working paper).

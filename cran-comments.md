@@ -49,7 +49,7 @@ against its design, which is what the package is for.
 ## Test posture
 
 Unchanged from 0.7.4. A fast deterministic smoke subset runs on CRAN
-(~2 s); the full suite (849 assertions, 0 failures) runs on every push
+(~2 s); the full suite (804 assertions, 0 failures) runs on every push
 on a five-platform CI matrix
 (https://github.com/defense031/grassr/actions). The vignette is
 precomputed, so CRAN machines render static markdown with no
@@ -68,14 +68,13 @@ for the prevalence-adjusted bias-adjusted kappa, expanded in the text.
   --run-donttest
 * GitHub Actions: windows-latest R-devel and R-release, macos-latest
   R-release, ubuntu-latest R-devel and R-release — R CMD check
-  --as-cran, Status: OK on all five. The windows R-devel job runs
-  without lme4 (Suggests) because of a confirmed upstream lme4 bug
-  (https://github.com/lme4/lme4/issues/990: two heap-use-after-free
-  defects exposed by Rcpp 1.1.2, causing GC-timing-dependent
-  intermittent glmer failures; fixed in the lme4 development version).
-  The package degrades gracefully without lme4 by design, and
-  lme4-dependent paths are exercised on the other four platforms. We
-  restore lme4 on that job as soon as the fixed lme4 reaches CRAN.
+  --as-cran, Status: OK on all five. The windows R-devel job had run
+  without lme4 (Suggests) since 2026-07-11 because of a confirmed
+  upstream lme4 bug (https://github.com/lme4/lme4/issues/990). lme4
+  2.0-6 (CRAN, 2026-07-16) fixes both defects; we verified the fix
+  with 13 consecutive clean R-devel Windows check runs against lme4
+  2.0.6 + Rcpp 1.1.2 and restored lme4 on that job, so all five
+  platforms now check with the full Suggests set.
 
 ## R CMD check results
 

@@ -57,7 +57,7 @@ Semmel</h4>
                         <h4 data-toc-skip class="author">Rachel
 Gidaro</h4>
             
-            <h4 data-toc-skip class="date">2026-07-26</h4>
+            <h4 data-toc-skip class="date">2026-08-29</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/defense031/grassr/blob/HEAD/vignettes/grassr.Rmd" class="external-link"><code>vignettes/grassr.Rmd</code></a></small>
       <div class="d-none name"><code>grassr.Rmd</code></div>
@@ -68,21 +68,21 @@ Gidaro</h4>
 <div class="section level2">
 <h2 id="the-data-a-rater-panel">The data: a rater panel<a class="anchor" aria-label="anchor" href="#the-data-a-rater-panel"></a>
 </h2>
-<p>A <strong>rater panel</strong> is <code>k</code> raters who each
-score the same <code>N</code> subjects on one binary question. grassr (a
-Guide for Rater Agreement under Structural Skew) reads that panel and
-reports how much the raters agree. The subjects are whatever is being
-rated. The raters are whoever rates them, human or machine. Each rater
-sees every subject exactly once and answers the same yes-or-no question
-about it, so the study produces <code>N x k</code> binary calls and
-nothing else. Chest films read for a finding, adverse events judged
-preventable or not, transcripts coded for a symptom mention: different
-fields, same object.</p>
+<p>A <strong>rater panel</strong> is <code>k</code> raters, human or
+machine, who each score the same <code>N</code> subjects on one binary
+question. grassr (a Guide for Rater Agreement under Structural Skew)
+reads that panel and reports how much the raters agree. Each rater sees
+every subject exactly once and answers the same yes-or-no question about
+it, so the study produces <code>N x k</code> binary calls and nothing
+else. Chest films read for a finding, adverse events judged preventable
+or not, transcripts coded for a symptom mention: different fields, same
+object.</p>
 <p>That object is the package’s entire input, laid out as a matrix. One
 row per subject. One column per rater. Each cell is that rater’s call on
 that subject: 1 (or <code>TRUE</code>, or the positive level of a
 two-level factor) means present, 0 means absent.</p>
-<p>The same shape answers two different questions.</p>
+<p>The matrix answers two different questions, depending on what its
+columns are.</p>
 <ul>
 <li>
 <strong>Inter-rater agreement</strong> asks whether different raters
@@ -95,7 +95,7 @@ of the same subjects, and the call is
 <code>grass_report(Y, axis = "intra")</code>. The printed card has the
 same fields.</li>
 </ul>
-<p>What the functions accept, completely:</p>
+<p>The functions accept exactly this:</p>
 <ul>
 <li>a <code>matrix</code> or <code>data.frame</code>, subjects in rows,
 raters in columns, at least 2 raters and one row per subject;</li>
@@ -133,10 +133,9 @@ calibration.</li>
 </ul>
 <p>A 0/1 matrix does not say which rows share a patient, so grassr
 cannot detect either design.</p>
-<p>In practice you load your scores from a file. Here we simulate the
-panel instead, so the truth is known and every claim below can be
-checked against it: 150 subjects at 30% prevalence, three raters who
-each call 87% of cases correctly.</p>
+<p>The examples simulate the panel, so the truth is known and every
+claim below can be checked against it: 150 subjects at 30% prevalence,
+three raters who each call 87% of cases correctly.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://defense031.github.io/grassr/">grassr</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">7</span><span class="op">)</span></span>
@@ -154,17 +153,16 @@ each call 87% of cases correctly.</p>
 <span><span class="co">#&gt; [6,]  1  1  1</span></span>
 <span><span class="co">#&gt; [7,]  0  0  0</span></span>
 <span><span class="co">#&gt; [8,]  1  1  0</span></span></code></pre></div>
-<p>Row 6 is unanimous. Rows 1, 3, and 8 split. The question every
-reliability study asks is whether these raters agree well enough to
-trust the scores. The conventional answer computes one coefficient and
-stamps a label on it from a fixed scale: 0.21 to 0.40 is <em>fair</em>,
-0.41 to 0.60 <em>moderate</em>, 0.61 to 0.80 <em>substantial</em>.</p>
+<p>Row 6 is unanimous. Rows 1, 3, and 8 split. Do these raters agree
+well enough to trust the scores? The conventional answer computes one
+coefficient and stamps a label on it from a fixed scale: 0.21 to 0.40 is
+<em>fair</em>, 0.41 to 0.60 <em>moderate</em>, 0.61 to 0.80
+<em>substantial</em>.</p>
 </div>
 <div class="section level2">
 <h2 id="the-problem-the-label-tracks-the-study-design">The problem: the label tracks the study design<a class="anchor" aria-label="anchor" href="#the-problem-the-label-tracks-the-study-design"></a>
 </h2>
-<p>Every chance-corrected coefficient is the same fraction, written in
-plain terms as</p>
+<p>Every chance-corrected coefficient is the same fraction:</p>
 <pre><code>coefficient = (observed agreement - chance agreement) / (1 - chance agreement)</code></pre>
 <p>The catch is the chance term. It depends on how often the finding
 appears in front of the raters, so the coefficient moves when prevalence
@@ -213,33 +211,31 @@ numbers, three labels.</p>
 <h2 id="what-grassr-reports-instead">What grassr reports instead<a class="anchor" aria-label="anchor" href="#what-grassr-reports-instead"></a>
 </h2>
 <p>grassr asks where the observed coefficient sits among the values a
-panel could produce at this design. Four terms define the whole
-method.</p>
+panel could produce at this design.</p>
 <ul>
 <li>
 <strong>Panel quality <code>q</code></strong> is the rate at which a
 rater calls a case correctly (sensitivity = specificity = <code>q</code>
-under the calibration model). This is the thing we actually want to
-know.</li>
+under the calibration model). <code>q</code>, not the coefficient, is
+the quantity of interest.</li>
 <li>The <strong>reference surface</strong> holds the coefficient values
 a quality-<code>q</code> panel produces at the design (prevalence,
 raters <code>k</code>, subjects <code>N</code>). A data-generating
 process determines it.</li>
 <li>The <strong>percentile</strong> is where the observed coefficient
-falls within everything the design can produce. This is the headline
-number.</li>
+falls within everything the design can produce, and it is the card’s
+headline.</li>
 <li>The <strong>consistency band</strong> holds the qualities
 <code>q</code> consistent with the observation (95%). Its width is the
-design’s resolving power. A small study cannot produce a narrow band,
-and the reader sees that directly.</li>
+design’s resolving power. A small study cannot produce a narrow
+band.</li>
 </ul>
 <p>A fifth term, the spread <code>delta_hat</code>, measures how much
 the family’s coefficients disagree about <code>q</code>. When the spread
 is small against chance, one number is a fair summary. When it is large,
 no single number is honest and the card decomposes the panel rater by
 rater.</p>
-<p>The whole workflow is one call on the matrix from the opening
-section:</p>
+<p>The whole workflow is one call:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/grass_report.html">grass_report</a></span><span class="op">(</span>ratings <span class="op">=</span> <span class="va">Y0</span><span class="op">)</span></span>
 <span><span class="co">#&gt; GRASS Report Card</span></span>
@@ -260,7 +256,6 @@ section:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   See `summary(...)` for full panel and CI details.</span></span>
 <span><span class="co">#&gt;   See `plot(...)` for a surface-position visualization.</span></span></code></pre></div>
-<p>Reading the card:</p>
 <ul>
 <li>
 <strong><code>sample</code></strong> is the study: rater count
@@ -269,9 +264,9 @@ rate.</li>
 <li>
 <strong>The coefficient lines</strong> show each observed value, its
 percentile, and its consistency band. The <code>read:</code> line
-restates the headline in plain language. There is no bootstrap qualifier
-and no labeled band between the percentile and the reader. The band’s
-width quantifies the uncertainty.</li>
+restates the headline in plain language. No fixed verdict label stands
+between the percentile and the reader; the band’s width is the
+uncertainty statement.</li>
 <li>
 <strong><code>delta</code></strong> is the implied-quality spread
 across the agreement family (PABAK, mean AC1, Fleiss kappa; ICC excluded
@@ -282,9 +277,6 @@ matched design: <strong>caution at the 95th percentile, divergent at the
 <code>not_applicable</code>, because PABAK and AC1 imply identical
 quality by construction.</li>
 </ul>
-<p>Every panel below is synthetic, so the truth is planted and every
-claim the card makes can be checked against it. The cards print exactly
-as <code><a href="../reference/grass_report.html">grass_report()</a></code> returns them.</p>
 </div>
 <div class="section level2">
 <h2 id="case-studies">Case studies<a class="anchor" aria-label="anchor" href="#case-studies"></a>
@@ -337,10 +329,10 @@ statistics against one fixed scale.</p>
 </h3>
 <p>Two five-rater panels, both at true prevalence 0.30 with 1,000
 subjects, both returning Fleiss kappa 0.36. The fixed scale gives one
-verdict, <em>fair</em>, for both. The panels could hardly be more
-different: in the first, three raters operate near-ideally and two have
-a severe specificity problem; in the second, all five raters share one
-operating point.</p>
+verdict, <em>fair</em>, for both. The panels differ sharply: in the
+first, three raters operate near-ideally and two have a severe
+specificity problem; in the second, all five raters share one operating
+point.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen_logitnormal</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">seed</span>, <span class="va">k</span>, <span class="va">N</span>, <span class="va">Se</span>, <span class="va">Sp</span>, <span class="va">pi</span>, <span class="va">F_sigma2</span> <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span></span>
@@ -412,7 +404,7 @@ panel into one number. The latent-class fit names the structure, R4 and
 R5 near specificity 0.51 against 0.91 to 0.93 for the rest. This panel
 does not need more raters or more subjects. It needs R4 and R5 retrained
 on the negative-call criterion.</p>
-<p>The second panel is the honest limit of any internal diagnostic.</p>
+<p>The second panel shows what agreement diagnostics cannot see.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/grass_report.html">grass_report</a></span><span class="op">(</span><span class="va">Y_agree</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; GRASS Report Card</span></span>
@@ -437,9 +429,9 @@ subjects positive against a true prevalence of 0.30. Every rater shares
 the same specificity deficit, so the shared error shifts all marginals
 in unison and no internal comparison can see it. Agreement diagnostics
 detect raters who disagree with each other, not a panel that is wrong
-together. Only an external reference standard reaches the second
-failure; the card’s job is to make the first kind visible instead of
-averaging it away.</p>
+together. Only an external reference standard catches the shared error;
+the card’s job is to make the disagreement visible instead of averaging
+it away.</p>
 </div>
 <div class="section level3">
 <h3 id="a-divergent-panel-and-the-per-rater-route">A divergent panel and the per-rater route<a class="anchor" aria-label="anchor" href="#a-divergent-panel-and-the-per-rater-route"></a>
@@ -495,14 +487,12 @@ roughly the same observed value, yet the qualities they imply split.</p>
 <span><span class="co">#&gt;   See `plot(...)` for a surface-position visualization.</span></span></code></pre></div>
 <p>Three things change in the printed output. The panel-aggregate
 summary is marked <code>suppressed (divergent)</code>. The pairwise
-PABAK matrix and the per-rater pooled-reference table appear. They
-expose the structure pair by pair and rater by rater. And the
+PABAK matrix and the per-rater pooled-reference table appear. And the
 latent-class table appears alongside, pinning R1, R3, R5 near (0.95,
 0.75) and R2, R4 near (0.75, 0.95); its bootstrap intervals are wide
 near balanced prevalence because the resamples visit both the correct
 mode and its label-switched mirror.</p>
-<p>Under the divergent flag the recommended primary deliverable is
-<code><a href="../reference/pairwise_agreement.html">pairwise_agreement()</a></code>:</p>
+<p>With a divergent panel, report <code><a href="../reference/pairwise_agreement.html">pairwise_agreement()</a></code>:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pairwise_agreement.html">pairwise_agreement</a></span><span class="op">(</span><span class="va">Y_div</span><span class="op">)</span></span>
 <span><span class="va">pw</span></span>
@@ -537,13 +527,12 @@ over-caller shows high <code>Se_tilde</code> and lower
 lower triangle holds the pairwise agreements and the upper triangle
 their percentiles at each pair’s own marginal. The same PABAK value can
 land at different percentiles across pairs because each pair sees a
-different positive rate. The flag exposes exactly the structure a panel
-average would have hidden.</p>
+different positive rate.</p>
 </div>
 <div class="section level3">
 <h3 id="two-raters">Two raters<a class="anchor" aria-label="anchor" href="#two-raters"></a>
 </h3>
-<p>The headline call works at k = 2 with no signature change.</p>
+<p><code><a href="../reference/grass_report.html">grass_report()</a></code> works the same way at k = 2.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">200</span></span>
@@ -588,15 +577,13 @@ point estimates:</p>
 <span><span class="co">#&gt;         without external information. The intervals are</span></span>
 <span><span class="co">#&gt;         Hui-Walter (1980) inequality bounds, not point</span></span>
 <span><span class="co">#&gt;         estimates with sampling uncertainty.</span></span></code></pre></div>
-<p>The bounds mean the same thing as the k &gt;= 3 point estimates, an
-honest statement of what the data say about each rater. A study that
+<p>The bounds state what a two-rater matrix can support. A study that
 needs per-rater points should add a third rater.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="layered-access">Layered access<a class="anchor" aria-label="anchor" href="#layered-access"></a>
 </h2>
-<p>Every field beneath the printed card is available on demand.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">card1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/grass_report.html">grass_report</a></span><span class="op">(</span><span class="va">Y1</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">card1</span><span class="op">)</span></span>
@@ -632,7 +619,7 @@ needs per-rater points should add a third rater.</p>
 <span><span class="co">#&gt;     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   grass version : 0.8.0</span></span>
-<span><span class="co">#&gt;   timestamp     : 2026-07-26 00:07:12</span></span></code></pre></div>
+<span><span class="co">#&gt;   timestamp     : 2026-08-29 23:16:03</span></span></code></pre></div>
 <p><code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> is the audit view: the full panel with
 percentiles and bands, every caveat from the surface lookup, the package
 version, the timestamp.</p>
@@ -642,7 +629,7 @@ version, the timestamp.</p>
 <span><span class="co">#&gt; 1        pabak      0.5372000           73.86364 0.85125 0.89875         FALSE</span></span>
 <span><span class="co">#&gt; 2     mean_ac1      0.6372062           73.86364 0.85125 0.89875         FALSE</span></span>
 <span><span class="co">#&gt; 3 fleiss_kappa      0.3609191           73.86364 0.85125 0.89875         FALSE</span></span>
-<span><span class="co">#&gt; 4          icc      0.4842582           62.50000 0.80125 0.84875         FALSE</span></span>
+<span><span class="co">#&gt; 4          icc      0.4842583           62.50000 0.80125 0.84875         FALSE</span></span>
 <span><span class="co">#&gt;   band_open_high     q_hat    se_q_hat clamped reference_used in_delta_hat</span></span>
 <span><span class="co">#&gt; 1          FALSE 0.8664693 0.005014575   FALSE    closed-form         TRUE</span></span>
 <span><span class="co">#&gt; 2          FALSE 0.8664471 0.005014821   FALSE    closed-form         TRUE</span></span>
@@ -677,8 +664,7 @@ gauge, <code>"panel"</code>, <code>"intervals"</code>,
 <div class="section level2">
 <h2 id="building-blocks">Building blocks<a class="anchor" aria-label="anchor" href="#building-blocks"></a>
 </h2>
-<p>Three of the internals <code><a href="../reference/grass_report.html">grass_report()</a></code> calls are
-exported.</p>
+<p>Each stage of <code><a href="../reference/grass_report.html">grass_report()</a></code> is exported on its own.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/position_on_surface.html">position_on_surface</a></span><span class="op">(</span>ratings <span class="op">=</span> <span class="va">Y1</span>, metric <span class="op">=</span> <span class="st">"pabak"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; grass surface-position report (sweep convention, v0.7.1)</span></span>
@@ -691,9 +677,8 @@ exported.</p>
 <span><span class="co">#&gt;   sampling method      : empirical</span></span>
 <span><span class="co">#&gt;   notes                :</span></span>
 <span><span class="co">#&gt;     - Consistency band narrower than the calibrated q-grid spacing; endpoints interpolated within one grid gap.</span></span></code></pre></div>
-<p><code><a href="../reference/position_on_surface.html">position_on_surface()</a></code> does the lookup for one
-coefficient and returns the percentile, the band, the implied quality,
-and the full sweep profile.</p>
+<p><code><a href="../reference/position_on_surface.html">position_on_surface()</a></code> returns the percentile, the band,
+the implied quality, and the full sweep profile for one coefficient.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/check_asymmetry.html">check_asymmetry</a></span><span class="op">(</span>ratings <span class="op">=</span> <span class="va">Y1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; GRASS panel asymmetry diagnostic</span></span>
@@ -841,31 +826,27 @@ mild asymmetry (k = 3, A = 0.1) are the structural floor. The package
 reports the per-rater pool size alongside each estimate.</p>
 <p><strong>Where the rest lives.</strong> The accompanying paper gives
 the reference-surface construction, the closed-form derivations, the
-calibration grids (44,616 surface cells; a 581-million-draw null program
-and a 22-million-draw power program), the flag’s operating
-characteristics, and two published-panel reanalyses. The three case
-studies above are the paper’s worked examples, regenerated from the same
-seeds; the quick-start and two-rater demonstration panels are this
-vignette’s own.</p>
+calibration grids, the flag’s operating characteristics, and two
+published-panel reanalyses. The three case studies above are the paper’s
+worked examples, regenerated from the same seeds; the quick-start and
+two-rater demonstration panels are this vignette’s own.</p>
 </div>
 <div class="section level2">
 <h2 id="what-the-calibration-covers">What the calibration covers<a class="anchor" aria-label="anchor" href="#what-the-calibration-covers"></a>
 </h2>
 <p>Every number above is read from a simulated reference, and the
 reference is only as fine as the compute that built it. The bundled
-calibration holds 44,616 surface cells and 11,616 <code>delta_hat</code>
-null cells, built from more than 700 million simulated panels.</p>
-<p>Surface readings between grid points interpolate log sample size and
-prevalence. Null readings interpolate quality as well. Rater count snaps
-to the nearest calibrated value, so a panel of 17 raters reads the
-15-rater reference. The ICC reference covers 52 subject-prevalence
-profiles at one distribution shape, which is why the ICC row prints a
-distribution-sensitivity marker and stays out of
-<code>delta_hat</code>.</p>
-<p>Compute sets these bounds. Denser grids, a wider profile compendium,
-and deeper draws would each tighten the readings, and none of them needs
-new theory. The simulation programs that produced the bundled references
-are in the source repository under <code>simulation/</code>.</p>
+calibration holds 44,616 surface cells at 2,000 draws each and 11,616
+<code>delta_hat</code> null cells at 50,000 draws each: an
+89-million-draw surface program, a 581-million-draw null program, and a
+22-million-draw power program behind the flag’s operating
+characteristics. Rater count snaps to the nearest calibrated value, so a
+panel of 17 raters reads the 15-rater reference; the other design axes
+interpolate (previous section).</p>
+<p>Denser grids, a wider subject-prevalence compendium for ICC, and
+deeper draws would each tighten the readings, and none of them needs new
+theory. The simulation programs that produced the bundled references are
+in the source repository under <code>simulation/</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

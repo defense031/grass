@@ -51,11 +51,19 @@
 <div class="page-header"><h1 id="grassr">grassr<a class="anchor" aria-label="anchor" href="#grassr"></a>
 </h1></div>
 <p><strong>G</strong>uide for <strong>R</strong>ater <strong>A</strong>greement under <strong>S</strong>tructural <strong>S</strong>kew.</p>
-<p>Rater-reliability coefficients for binary outcomes are routinely interpreted using fixed labels from published scales, but those labels drift with prevalence, rater count, sample size, and latent rater asymmetry. The same panel can land in different conventional categories just because prevalence changes. <code>grassr</code> replaces fixed cutoffs with context-conditioned <strong>surface-position reporting</strong>: the rating matrix goes in, and a four-field <strong>Report Card</strong> comes out — sample summary, primary coefficient with calibrated percentile, cross-coefficient asymmetry diagnostic, and (when the panel disagrees with itself) a per-rater latent-class fit.</p>
+<p>Fixed labels for rater-reliability coefficients, the Landis-Koch bands and their descendants, drift with prevalence, rater count, and sample size: the same rater panel can land in a different category because the finding got rarer. grassr replaces the fixed scale with a calibrated reference. The rating matrix goes in, and a Report Card comes out that positions each coefficient among the values the study’s own design can produce, bounds the panel qualities consistent with the observation, and flags panels whose coefficients disagree about the quality they imply.</p>
+<div class="section level2">
+<h2 id="install">Install<a class="anchor" aria-label="anchor" href="#install"></a>
+</h2>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"grassr"</span><span class="op">)</span>                    <span class="co"># CRAN release (0.7.4)</span></span>
+<span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"defense031/grassr"</span><span class="op">)</span>  <span class="co"># development head (0.8.0)</span></span></code></pre></div>
+</div>
 <div class="section level2">
 <h2 id="a-30-second-example">A 30-second example<a class="anchor" aria-label="anchor" href="#a-30-second-example"></a>
 </h2>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://defense031.github.io/grassr/">grassr</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">29</span><span class="op">)</span></span>
 <span></span>
@@ -80,44 +88,37 @@
 
   See `summary(...)` for full panel and CI details.
   See `plot(...)` for a surface-position visualization.</code></pre>
-<p>The percentile is computed against a reference surface calibrated for the study’s <code>(k, N, pi_hat, tau2_hat)</code> — not against a fixed 1977 cutoff table. The <code>aligned</code> flag (<code>delta = 0.01 pp</code>) means the three agreement coefficients imply the same panel quality, so a single number is safe to cite. ICC prints a <code>[distribution-sensitive]</code> marker because its reference surface depends on the full subject-prevalence distribution F rather than on <code>(q, pi_+)</code> alone, and it does not enter <code>delta_hat</code> by construction. At the <em>divergent</em> tier the headline is replaced with the per-rater sensitivity / specificity table from a latent-class fit (point estimates at <code>k &gt;= 3</code>, bounded estimates at <code>k = 2</code>).</p>
-<p>The full walkthrough — the easy case, the killer case, layered access via <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> / <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> / <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>, granular building blocks (<code><a href="reference/position_on_surface.html">position_on_surface()</a></code>, <code><a href="reference/check_asymmetry.html">check_asymmetry()</a></code>, <code><a href="reference/latent_class_fit.html">latent_class_fit()</a></code>), and the two-rater branch — is in <a href="vignettes/grassr.Rmd"><code>vignette("grassr")</code></a>.</p>
+<p>The percentile reads against a reference calibrated at the study’s rater count, sample size, and observed positive rate, not against a fixed cutoff table. The consistency band (quality 0.78 to 0.85, which contains the planted 0.85) is the set of panel qualities consistent with the observed coefficient at this design; its width is the precision this design can achieve. <code>delta = 0.01 pp (aligned)</code> means the three agreement coefficients imply the same panel quality, so any one of them can be cited as the panel’s agreement level. When they diverge, the card suppresses the panel summary and routes to per-rater output: a pairwise PABAK matrix, pooled-reference sensitivity and specificity per rater, and a latent-class fit.</p>
 </div>
 <div class="section level2">
-<h2 id="install-local-dev">Install (local dev)<a class="anchor" aria-label="anchor" href="#install-local-dev"></a>
-</h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"defense031/grassr"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># from the package directory:</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/load_all.html" class="external-link">load_all</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># the command above installs the repository default branch (development</span></span>
-<span><span class="co"># head); the CRAN submission line is the 0.7.x series.</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="what-you-get-in-v07x">What you get in v0.7.x<a class="anchor" aria-label="anchor" href="#what-you-get-in-v07x"></a>
+<h2 id="the-functions">The functions<a class="anchor" aria-label="anchor" href="#the-functions"></a>
 </h2>
 <ul>
 <li>
-<strong>Headline API.</strong> <code>grass_report(ratings = Y)</code> — single-call workflow returning a four-field Report Card object (<code>grass_card</code>) with <code>print</code> / <code>summary</code> / <code>as.data.frame</code> / <code>plot</code> methods. Seven <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> view types: <code>surface</code> (default), <code>panel</code>, <code>thermometer</code>, <code>intervals</code>, <code>per_rater</code>, <code>pairwise</code>, <code>diagnostic</code>.</li>
+<code>grass_report(ratings = Y)</code> returns the card. <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>, and seven <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> views are available on the result.</li>
 <li>
-<strong>Surface-position primitive.</strong> <code>position_on_surface(ratings = Y, metric = ...)</code> places one observed coefficient on its context-conditioned reference surface and returns the pooled percentile (the coefficient’s position within the design’s achievable agreement range) together with a 95% test-inversion consistency band on panel quality – the quality levels whose sampling distributions are consistent with the observed value at this design. The pooled percentile is the categorical score; no four-way labeled band is interposed between the percentile and the reader. Closed-form references for PABAK, AC1, Fleiss kappa; bundled fitted-ICC reference for ICC across <code>k in {3, 5, 8, 15, 25} x N in {30, 50, 75, 100, 200, 300, 500, 1000}</code> on a 14-point q-grid.</li>
+<code>position_on_surface(ratings = Y, metric = ...)</code> positions one coefficient and returns its percentile, consistency band, and implied quality.</li>
 <li>
-<strong>Cross-coefficient stability signal.</strong> <code>check_asymmetry(ratings = Y)</code> returns the cross-coefficient implied-quality spread <code>delta_hat</code> (in pp of quality) computed over the three-coefficient agreement family (PABAK, AC1, Fleiss kappa) plus an aligned / caution / divergent flag set by <code>delta_hat</code>’s percentile on the matched (k, N, q_hat) null distribution (&gt;= 95th caution, &gt;= 99th divergent). ICC is reported on the panel with a <code>[distribution-sensitive]</code> marker but does not enter <code>delta_hat</code> by construction, because its reference surface depends on the full subject-prevalence distribution F rather than on <code>(q, pi_+)</code> alone.</li>
+<code>check_asymmetry(ratings = Y)</code> returns the implied-quality spread <code>delta_hat</code> and its aligned / caution / divergent flag, read from the spread’s percentile on a null distribution matched to the design (caution at the 95th percentile, divergent at the 99th).</li>
 <li>
-<strong>Divergent-flag recovery path.</strong> <code><a href="reference/pairwise_agreement.html">pairwise_agreement()</a></code> returns a pairwise PABAK matrix on the <code>k = 2</code> reference surface plus per-rater pooled-reference <code>(Se_tilde, Sp_tilde)</code> against the panel-majority of the other <code>k - 1</code> raters. Auto-triggered from <code><a href="reference/grass_report.html">grass_report()</a></code> under the divergent flag.</li>
+<code>pairwise_agreement(ratings = Y)</code> gives the per-rater breakdown when the coefficients diverge.</li>
 <li>
-<strong>Latent-class fit.</strong> <code><a href="reference/latent_class_fit.html">latent_class_fit()</a></code> returns per-rater Dawid-Skene <code>(Se_hat, Sp_hat)</code> point estimates at <code>k &gt;= 3</code> and Hui-Walter bounds at <code>k = 2</code>, with bootstrap CIs.</li>
+<code>latent_class_fit(ratings = Y)</code> returns per-rater Dawid-Skene estimates at k &gt;= 3 and Hui-Walter bounds at k = 2, with bootstrap intervals.</li>
 <li>
-<strong>Prospective design.</strong> <code>plot_surface(metric, pi_hat, observed)</code> renders the closed-form reference surface as a heatmap with an optional pin marker at the observed value; useful for “what does my reference surface look like at this design, before I collect data?”</li>
+<code>plot_surface(metric, ...)</code> draws a coefficient’s reference surface before any data exist, for prospective design.</li>
 </ul>
-<p>See <code>NEWS.md</code> for the release history and <code><a href="reference/grass_roadmap.html">?grass_roadmap</a></code> for planned future families (ordinal, multi-rater nominal, continuous).</p>
+<p>The full walkthrough is <code><a href="articles/grassr.html">vignette("grassr")</a></code>.</p>
+</div>
+<div class="section level2">
+<h2 id="calibration">Calibration<a class="anchor" aria-label="anchor" href="#calibration"></a>
+</h2>
+<p>The bundled reference holds 44,616 surface cells at 2,000 draws each and an 11,616-cell null lattice for <code>delta_hat</code> at 50,000 draws each, spanning rater counts 2 through 25 and sample sizes 15 through 1,000. Designs between calibrated cells are read by interpolation; rater count snaps to the nearest calibrated value, and the card discloses the cell it read. ICC is reported beside the agreement family with a <code>[distribution-sensitive]</code> marker: its reference depends on the full subject-prevalence distribution, represented by 52 calibrated profiles, and it stays out of <code>delta_hat</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="status">Status<a class="anchor" aria-label="anchor" href="#status"></a>
 </h2>
-<p>v0.8.0. The calibration release: the <code>delta_hat</code> null is a fully resolved 11,616-cell lattice and all lookups interpolate between calibrated cells (see NEWS.md); v0.7.4 is the release on CRAN. Binary inter-rater and intra-rater families fully implemented. For the intra-rater axis, the inter-rater diagonal calibration is exact for the idealized intra model (an equivalence proposition); drift and within-subject dependence bounds are published rather than conditioned on. See <code><a href="reference/grass_roadmap.html">?grass_roadmap</a></code> for planned families.</p>
+<p>v0.8.0 (development head): the <code>delta_hat</code> null now varies with prevalence, and lookups interpolate between calibrated cells. v0.7.4 is the release on CRAN. Binary inter-rater and intra-rater families are implemented; <code><a href="reference/grass_roadmap.html">?grass_roadmap</a></code> lists planned families (ordinal, multi-rater nominal, continuous), and <code>NEWS.md</code> has the release history.</p>
+<p>The package implements the method of Semmel &amp; Gidaro (2026), <em>A context-conditioned reporting convention for rater reliability on binary outcomes</em> (working paper).</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">

@@ -27,11 +27,10 @@ library(grassr)
 
 ## The data: a rater panel
 
-A **rater panel** is `k` raters who each score the same `N`
-subjects on one binary question. grassr (a Guide for Rater Agreement
-under Structural Skew) reads that panel and reports how much the
-raters agree. The subjects are whatever is being
-rated. The raters are whoever rates them, human or machine. Each
+A **rater panel** is `k` raters, human or machine, who each score
+the same `N` subjects on one binary question. grassr (a Guide for
+Rater Agreement under Structural Skew) reads that panel and reports
+how much the raters agree. Each
 rater sees every subject exactly once and answers the same yes-or-no
 question about it, so the study produces `N x k` binary calls and
 nothing else. Chest films read for a finding, adverse events judged
@@ -43,7 +42,8 @@ row per subject. One column per rater. Each cell is that rater's
 call on that subject: 1 (or `TRUE`, or the positive level of a
 two-level factor) means present, 0 means absent.
 
-The same shape answers two different questions.
+The matrix answers two different questions, depending on what its
+columns are.
 
 - **Inter-rater agreement** asks whether different raters agree with
   each other. Columns are different people. This is the default, and
@@ -54,7 +54,7 @@ The same shape answers two different questions.
   `grass_report(Y, axis = "intra")`. The printed card has the same
   fields.
 
-What the functions accept, completely:
+The functions accept exactly this:
 
 - a `matrix` or `data.frame`, subjects in rows, raters in columns,
   at least 2 raters and one row per subject;
@@ -91,9 +91,8 @@ clinical designs break that assumption.
 A 0/1 matrix does not say which rows share a patient, so grassr
 cannot detect either design.
 
-In practice you load your scores from a file. Here we simulate the
-panel instead, so the truth is known and every claim below can be
-checked against it: 150 subjects at 30% prevalence, three raters who
+The examples simulate the panel, so the truth is known and every
+claim below can be checked against it: 150 subjects at 30% prevalence, three raters who
 each call 87% of cases correctly.
 
 ```{r the-data}
@@ -106,16 +105,14 @@ colnames(Y0) <- c("R1", "R2", "R3")
 head(Y0, 8)
 ```
 
-Row 6 is unanimous. Rows 1, 3, and 8 split. The question every
-reliability study asks is whether these raters agree well enough to
-trust the scores. The conventional answer computes one coefficient
+Row 6 is unanimous. Rows 1, 3, and 8 split. Do these raters agree
+well enough to trust the scores? The conventional answer computes one coefficient
 and stamps a label on it from a fixed scale: 0.21 to 0.40 is
 *fair*, 0.41 to 0.60 *moderate*, 0.61 to 0.80 *substantial*.
 
 ## The problem: the label tracks the study design
 
-Every chance-corrected coefficient is the same fraction, written in
-plain terms as
+Every chance-corrected coefficient is the same fraction:
 
 ```
 coefficient = (observed agreement - chance agreement) / (1 - chance agreement)
@@ -165,43 +162,37 @@ data, three numbers, three labels.
 ## What grassr reports instead
 
 grassr asks where the observed coefficient sits among the values a
-panel could produce at this design. Four terms define the whole
-method.
+panel could produce at this design.
 
 - **Panel quality `q`** is the rate at which a rater calls a case
   correctly (sensitivity = specificity = `q` under the calibration
-  model). This is the thing we actually want to know.
+  model). `q`, not the coefficient, is the quantity of interest.
 - The **reference surface** holds the coefficient values a
   quality-`q` panel produces at the design (prevalence, raters `k`,
   subjects `N`). A data-generating process determines it.
 - The **percentile** is where the observed coefficient falls within
-  everything the design can produce. This is the headline number.
+  everything the design can produce, and it is the card's headline.
 - The **consistency band** holds the qualities `q` consistent with
   the observation (95%). Its width is the design's resolving power. A
-  small study cannot produce a narrow band, and the reader sees that
-  directly.
+  small study cannot produce a narrow band.
 
 A fifth term, the spread `delta_hat`, measures how much the family's
 coefficients disagree about `q`. When the spread is small against
 chance, one number is a fair summary. When it is large, no single
 number is honest and the card decomposes the panel rater by rater.
 
-The whole workflow is one call on the matrix from the opening
-section:
+The whole workflow is one call:
 
 ```{r headline}
 grass_report(ratings = Y0)
 ```
 
-Reading the card:
-
 - **`sample`** is the study: rater count `k`, subject count `N`, and
   the observed positive rate.
 - **The coefficient lines** show each observed value, its percentile,
   and its consistency band. The `read:` line restates the headline in
-  plain language. There is no bootstrap qualifier and no labeled band
-  between the percentile and the reader. The band's width quantifies
-  the uncertainty.
+  plain language. No fixed verdict label stands between the percentile
+  and the reader; the band's width is the uncertainty statement.
 - **`delta`** is the implied-quality spread across the agreement
   family (PABAK, mean AC1, Fleiss kappa; ICC excluded by
   construction). Each coefficient implies a panel quality, and the
@@ -210,10 +201,6 @@ Reading the card:
   at the 99th**, with mid-p at ties. At two
   raters the spread is `not_applicable`, because PABAK and AC1 imply
   identical quality by construction.
-
-Every panel below is synthetic, so the truth is planted and every
-claim the card makes can be checked against it. The cards print
-exactly as `grass_report()` returns them.
 
 ## Case studies
 
@@ -251,8 +238,8 @@ prevalence-sensitive statistics against one fixed scale.
 
 Two five-rater panels, both at true prevalence 0.30 with 1,000
 subjects, both returning Fleiss kappa 0.36. The fixed scale gives
-one verdict, *fair*, for both. The panels could hardly be more
-different: in the first, three raters operate near-ideally and two
+one verdict, *fair*, for both. The panels differ sharply: in the
+first, three raters operate near-ideally and two
 have a severe specificity problem; in the second, all five raters
 share one operating point.
 
@@ -309,7 +296,7 @@ and R5 near specificity 0.51 against 0.91 to 0.93 for the rest. This
 panel does not need more raters or more subjects. It needs R4 and R5
 retrained on the negative-call criterion.
 
-The second panel is the honest limit of any internal diagnostic.
+The second panel shows what agreement diagnostics cannot see.
 
 ```{r case2b-card}
 grass_report(Y_agree, verbose = FALSE)
@@ -320,8 +307,8 @@ subjects positive against a true prevalence of 0.30. Every rater
 shares the same specificity deficit, so the shared error shifts all
 marginals in unison and no internal comparison can see it. Agreement
 diagnostics detect raters who disagree with each other, not a panel
-that is wrong together. Only an external reference standard reaches
-the second failure; the card's job is to make the first kind visible
+that is wrong together. Only an external reference standard catches
+the shared error; the card's job is to make the disagreement visible
 instead of averaging it away.
 
 ### A divergent panel and the per-rater route
@@ -341,15 +328,13 @@ card_div
 
 Three things change in the printed output. The panel-aggregate
 summary is marked `suppressed (divergent)`. The pairwise PABAK matrix
-and the per-rater pooled-reference table appear. They expose the
-structure pair by pair and rater by rater. And the latent-class
+and the per-rater pooled-reference table appear. And the latent-class
 table appears alongside, pinning R1, R3, R5 near (0.95, 0.75) and
 R2, R4 near (0.75, 0.95); its bootstrap intervals are wide near
 balanced prevalence because the resamples visit both the correct
 mode and its label-switched mirror.
 
-Under the divergent flag the recommended primary deliverable is
-`pairwise_agreement()`:
+With a divergent panel, report `pairwise_agreement()`:
 
 ```{r pairwise}
 pw <- pairwise_agreement(Y_div)
@@ -363,12 +348,11 @@ under-caller the mirror. In the matrix, the lower triangle holds the
 pairwise agreements and the upper triangle their percentiles at each
 pair's own marginal. The same PABAK value can land at different
 percentiles across pairs because each pair sees a different positive
-rate. The flag exposes exactly the structure a panel average
-would have hidden.
+rate.
 
 ### Two raters
 
-The headline call works at k = 2 with no signature change.
+`grass_report()` works the same way at k = 2.
 
 ```{r k2}
 set.seed(42)
@@ -393,13 +377,10 @@ estimates:
 latent_class_fit(ratings = Y_k2, B = 200)
 ```
 
-The bounds mean the same thing as the k >= 3 point estimates, an
-honest statement of what the data say about each rater. A study that
+The bounds state what a two-rater matrix can support. A study that
 needs per-rater points should add a third rater.
 
 ## Layered access
-
-Every field beneath the printed card is available on demand.
 
 ```{r layered-summary}
 card1 <- grass_report(Y1, verbose = FALSE)
@@ -429,15 +410,14 @@ surface at its design, with the observation pinned. Other views
 
 ## Building blocks
 
-Three of the internals `grass_report()` calls are exported.
+Each stage of `grass_report()` is exported on its own.
 
 ```{r blocks-position}
 position_on_surface(ratings = Y1, metric = "pabak")
 ```
 
-`position_on_surface()` does the lookup for one coefficient and
-returns the percentile, the band, the implied quality, and the full
-sweep profile.
+`position_on_surface()` returns the percentile, the band, the implied
+quality, and the full sweep profile for one coefficient.
 
 ```{r blocks-asymmetry}
 check_asymmetry(ratings = Y1)
@@ -560,8 +540,7 @@ estimate.
 
 **Where the rest lives.** The accompanying paper gives the
 reference-surface construction, the closed-form derivations, the
-calibration grids (44,616 surface cells; a 581-million-draw null
-program and a 22-million-draw power program), the flag's operating
+calibration grids, the flag's operating
 characteristics, and two
 published-panel reanalyses. The three case studies above are the
 paper's worked examples, regenerated from the same seeds; the
@@ -572,22 +551,18 @@ own.
 
 Every number above is read from a simulated reference, and the
 reference is only as fine as the compute that built it. The bundled
-calibration holds 44,616 surface cells and 11,616 `delta_hat` null
-cells, built from more than 700 million simulated panels.
+calibration holds 44,616 surface cells at 2,000 draws each and
+11,616 `delta_hat` null cells at 50,000 draws each: an 89-million-draw
+surface program, a 581-million-draw null program, and a
+22-million-draw power program behind the flag's operating
+characteristics. Rater count snaps to the nearest calibrated value,
+so a panel of 17 raters reads the 15-rater reference; the other
+design axes interpolate (previous section).
 
-Surface readings between grid points interpolate log sample size and
-prevalence. Null readings interpolate quality as well. Rater count
-snaps to the nearest calibrated value, so a panel of 17 raters reads
-the 15-rater reference. The ICC reference covers 52
-subject-prevalence profiles at one distribution shape, which is why
-the ICC row prints a distribution-sensitivity marker and stays out
-of `delta_hat`.
-
-Compute sets these bounds. Denser
-grids, a wider profile compendium, and deeper draws would each
-tighten the readings, and none of them needs new theory. The
-simulation programs that produced the bundled references are in the
-source repository under `simulation/`.
+Denser grids, a wider subject-prevalence compendium for ICC, and
+deeper draws would each tighten the readings, and none of them needs
+new theory. The simulation programs that produced the bundled
+references are in the source repository under `simulation/`.
 
 ## References
 
