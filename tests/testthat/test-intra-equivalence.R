@@ -44,6 +44,6 @@ test_that("intra axis note states exactness, not approximation", {
   card <- suppressWarnings(grass_report(Y, axis = "intra", bootstrap_B = 0))
   intra_notes <- grep("Intra-rater axis", card$notes, value = TRUE)
   expect_length(intra_notes, 1L)
-  expect_match(intra_notes, "EXACT")
+  expect_match(intra_notes, "exact when the rater is stable")
   expect_false(any(grepl("approximation|queued|provisional", intra_notes)))
 })
