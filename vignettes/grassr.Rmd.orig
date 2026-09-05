@@ -32,12 +32,12 @@ performance of `N` subjects for the successful completion of a binary
 task, as defined by a study protocol. Raters observe each subject
 exactly once, which produces an `N x k` rating matrix of yes-or-no
 responses. Of primary concern is both the level of agreement across
-the panel and the consistency of individual raters over time. Those
-are the inter- and intra-rater reliability questions. Traditionally,
-practitioners have answered them with a single coefficient and a label
-from Landis and Koch (1977), where 0.00 to 0.20 is *slight*, 0.21 to
-0.40 *fair*, 0.41 to 0.60 *moderate*, and 0.61 to 0.80 *substantial*.
-Koo and Li (2016) give the analogous ranges for ICC.
+the panel and the consistency of individual raters over time.
+Traditionally, this is referred to as inter- and intra-rater
+reliability and is answered with a single coefficient and a label from
+Landis and Koch (1977), where 0.00 to 0.20 is *slight*, 0.21 to 0.40
+*fair*, 0.41 to 0.60 *moderate*, and 0.61 to 0.80 *substantial*. Koo
+and Li (2016) give the analogous ranges for ICC.
 
 Those labels have a problem. Every chance-corrected coefficient is the
 same fraction, observed agreement minus chance agreement over one
