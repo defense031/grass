@@ -155,12 +155,12 @@ grass_report(ratings = Y0)
   panels. A wide band means the study cannot tell those qualities
   apart, and a small study always gives a wide band.
 - **`<- primary`** marks the coefficient to report: PABAK at moderate
-  prevalence, AC1 when the positive rate is below 0.15 or above 0.85,
-  where its percentile is less noisy. ICC is tagged
-  `[distribution-sensitive]` because its reference depends on how the
-  positives are spread across subjects, a few obvious cases or many
-  borderline ones, and not just on how many there are, so its
-  percentile is less certain than the other three.
+  prevalence, AC1 when the positive rate is below 0.15 or above 0.85
+  (0.20 or 0.80 at two raters), where its percentile is less noisy.
+  ICC is tagged `[distribution-sensitive]` because its reference
+  depends on how the positives are spread across subjects, a few
+  obvious cases or many borderline ones, and not just on how many
+  there are, so its percentile is less certain than the other three.
 - **The `read:` line** restates the headline in plain language. The
   card prints no verdict label, and the band's width states the
   uncertainty.
@@ -284,7 +284,10 @@ retrained on when to call a case negative.
 
 ### Case 3: when coefficients cannot disagree (k = 2)
 
-`grass_report()` works the same way at k = 2.
+`grass_report()` works the same way at k = 2, with a shorter card. The
+package computes Cohen's kappa for a pair but has no calibrated
+reference for it, so it is not positioned, and Fleiss' kappa and the
+ICC are computed for three or more raters.
 
 ```{r k2}
 set.seed(42)
@@ -336,6 +339,16 @@ percentile) and 0.17 to 0.27 for every pair involving R4 or R5 (35th to
 specificity 0.51 and 0.50 versus 0.91 to 0.93 for the rest; a
 latent-class fit placed them at 0.51 and 0.50 (95% bootstrap intervals
 0.47 to 0.55 and 0.46 to 0.54)."
+
+A two-rater card has no flag to report. From Case 3: "Two raters
+rated 200 subjects, observed positive rate 0.39. PABAK was 0.50, at the
+69th percentile of what a two-rater, 200-subject study at this positive
+rate can produce, and the data are consistent with panel quality 0.80
+to 0.90. With two raters the coefficients cannot disagree about
+quality, so no consistency check applies, and each rater's sensitivity
+and specificity are reported as the Hui and Walter bounds rather than
+as point estimates." Check the numbers against your own card; the ones
+here are the Case 3 card's.
 
 The intervals on the latent-class table are 95% percentile bootstrap
 intervals, from `bootstrap_B` resamples (1,000 by default; the
@@ -448,11 +461,11 @@ The dotted lines mark the quality bands the card uses. A screening
 study plans three raters, 80 subjects, and a positive rate near 10%,
 and asks what a Fleiss' kappa of 0.45 would mean.
 
-```{r plan-fleiss, fig.cap = "Planning view: Fleiss' kappa for three raters and 80 subjects, with an observed 0.45 pinned at a 10% positive rate.", fig.alt = "A heatmap of expected Fleiss' kappa over mean prevalence on the horizontal axis and rater quality on the vertical axis. The surface is highest at balanced prevalence and falls toward both edges. A point pinned at prevalence 0.10 and quality near 0.92 marks where an observed kappa of 0.45 lands."}
+```{r plan-fleiss, fig.cap = "Planning view: Fleiss' kappa for three raters and 80 subjects, with an observed 0.45 pinned at a 10% positive rate.", fig.alt = "A heatmap of expected Fleiss' kappa over mean prevalence on the horizontal axis and rater quality on the vertical axis. The surface is highest at balanced prevalence and falls toward both edges. A point pinned at prevalence 0.10 and quality near 0.95 marks where an observed kappa of 0.45 lands."}
 plot_surface("fleiss_kappa", pi_hat = 0.10, k = 3, N = 80, observed = 0.45)
 ```
 
-At 10% prevalence the pinned 0.45 implies a panel near quality 0.92.
+At 10% prevalence the pinned 0.45 implies a panel near quality 0.95.
 The same 0.45 at balanced prevalence would imply a panel near 0.84,
 because the surface falls away from 50% on both sides. A protocol that
 fixes a kappa target without fixing the prevalence it applies to has
@@ -462,6 +475,18 @@ prevalence.
 
 ```{r plan-pabak, fig.cap = "Planning view: PABAK for the same study, with the same observed 0.45 pinned.", fig.alt = "A heatmap of expected PABAK over mean prevalence and rater quality for the same planned study. The surface is flat across prevalence and rises with quality, and the pinned observed value of 0.45 lands at the same quality at every prevalence."}
 plot_surface("pabak", pi_hat = 0.10, k = 3, N = 80, observed = 0.45)
+```
+
+The same question with a number instead of a picture:
+`position_on_surface()` takes the hypothetical value and the planned
+study context, with no rating matrix, and returns the implied quality,
+its percentile, and the consistency band the planned study would give.
+The metric names are `"pabak"`, `"mean_ac1"`, `"fleiss_kappa"`, and
+`"icc"`. In a script, assign and `print()` this result and the plots
+above, as with the card.
+
+```{r plan-position}
+position_on_surface(0.45, "fleiss_kappa", pi_hat = 0.10, k = 3, N = 80)
 ```
 
 **Each stage of `grass_report()` on its own.**

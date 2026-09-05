@@ -210,14 +210,33 @@ plot_surface <- function(metric,
       stop("`observed` requires `pi_hat` to invert to q_hat for the pin.",
            call. = FALSE)
     }
-    q_grid_pin <- seq(0.5, 1.0, length.out = 501L)
-    ref_curve  <- closed_form_reference_curve(
-      metric  = if (metric == "kappa") "fleiss_kappa" else metric,
-      pi_plus = pi_hat, q_grid = q_grid_pin
-    )
-    inv <- invert_metric_to_q(observed, ref_curve, q_grid_pin)
-    if (is.finite(inv$q_hat)) {
-      pin <- data.frame(M1 = pi_hat, q = inv$q_hat)
+    # Pin the observed value at the quality the package itself would
+    # report. With k and N given, that is position_on_surface()'s
+    # inversion on the simulated reference for that study context, so the
+    # picture and the printed q_hat agree; without them, fall back to the
+    # closed-form expected-value curve.
+    q_pin <- NA_real_
+    if (!is.null(k) && !is.null(N)) {
+      pos_metric <- switch(metric, kappa = "fleiss_kappa", ac1 = "mean_ac1",
+                           mean_pabak = "pabak", metric)
+      pos <- tryCatch(
+        suppressMessages(position_on_surface(observed, pos_metric,
+                                             pi_hat = pi_hat,
+                                             k = as.integer(k), N = as.integer(N))),
+        error = function(e) NULL)
+      if (!is.null(pos) && is.finite(pos$q_hat %||% NA_real_)) q_pin <- pos$q_hat
+    }
+    if (!is.finite(q_pin)) {
+      q_grid_pin <- seq(0.5, 1.0, length.out = 501L)
+      ref_curve  <- closed_form_reference_curve(
+        metric  = if (metric == "kappa") "fleiss_kappa" else metric,
+        pi_plus = pi_hat, q_grid = q_grid_pin
+      )
+      inv <- invert_metric_to_q(observed, ref_curve, q_grid_pin)
+      if (is.finite(inv$q_hat)) q_pin <- inv$q_hat
+    }
+    if (is.finite(q_pin)) {
+      pin <- data.frame(M1 = pi_hat, q = q_pin)
     }
   }
 
@@ -234,9 +253,14 @@ plot_surface <- function(metric,
                                          sprintf("observed = %.3f", observed))
   subtitle <- paste(sub_parts, collapse = ",  ")
 
+  # na.rm and inherit.aes = FALSE keep ggplot quiet about the grid's NA
+  # cells and about carrying `fill` into the contour statistic; both
+  # warnings were harmless and both alarmed first-time users.
   p <- ggplot2::ggplot(grid, ggplot2::aes(x = M1, y = q, fill = value)) +
-    ggplot2::geom_raster(interpolate = TRUE) +
-    ggplot2::geom_contour(ggplot2::aes(z = q),
+    ggplot2::geom_raster(interpolate = TRUE, na.rm = TRUE) +
+    ggplot2::geom_contour(data = grid,
+                          ggplot2::aes(x = M1, y = q, z = q),
+                          inherit.aes = FALSE, na.rm = TRUE,
                           breaks = bands,
                           color = "white", linetype = "dotted",
                           linewidth = 0.5)
@@ -347,9 +371,14 @@ plot_surface <- function(metric,
 
   bands <- c(0.5, 0.625, 0.75, 0.875, 1.0)  # q reference gridlines
 
+  # na.rm and inherit.aes = FALSE keep ggplot quiet about the grid's NA
+  # cells and about carrying `fill` into the contour statistic; both
+  # warnings were harmless and both alarmed first-time users.
   p <- ggplot2::ggplot(grid, ggplot2::aes(x = M1, y = q, fill = value)) +
-    ggplot2::geom_raster(interpolate = TRUE) +
-    ggplot2::geom_contour(ggplot2::aes(z = q),
+    ggplot2::geom_raster(interpolate = TRUE, na.rm = TRUE) +
+    ggplot2::geom_contour(data = grid,
+                          ggplot2::aes(x = M1, y = q, z = q),
+                          inherit.aes = FALSE, na.rm = TRUE,
                           breaks = bands,
                           color = "white", linetype = "dotted",
                           linewidth = 0.5)

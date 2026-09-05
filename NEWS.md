@@ -28,6 +28,12 @@ change; on-node readings are unchanged up to storage quantization.
   to nearest sim-grid" notes now say that only the ICC reference uses a
   nearest calibrated k or N and that the agreement family interpolates.
   Percentiles are no longer labelled "pp".
+* `plot_surface()`: when `k` and `N` are given, the pinned `observed`
+  value sits at the quality `position_on_surface()` reports for that
+  study context (the simulated reference), not at the closed-form
+  inversion, so the picture and the printed `q_hat` agree. The two
+  ggplot warnings the surface plots used to emit (a dropped `fill`
+  aesthetic, removed NA raster cells) are gone.
 * The delta-hat null is prevalence-resolved everywhere. The bundled
   `delta_null_ecdf` holds 11,616 cells: eleven rater counts (3-25),
   twelve sample sizes (15-1,000), eleven quality levels (0.65-0.99),
