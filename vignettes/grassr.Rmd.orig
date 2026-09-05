@@ -166,7 +166,8 @@ Every coefficient on the card can be turned back into a panel quality.
 PABAK has a formula, `q_hat = (1 + sqrt(PABAK)) / 2`; the others are
 looked up on their reference surfaces. `delta_hat` is the gap between
 the highest and lowest of those qualities across PABAK, AC1, and
-Fleiss' kappa, in percentage points. ICC is left out because its
+Fleiss' kappa, in percentage points of quality, so a spread of 0.42 pp
+is 0.0042 on the 0-to-1 quality scale. ICC is left out because its
 reference depends on more than prevalence and quality.
 
 Some spread happens by chance even when every rater is equally good,
@@ -442,8 +443,9 @@ pairwise_agreement(Y_split)
 `pairwise_agreement()` returns the pairwise matrix and the majority
 table for any panel, flagged or not, and is the table to report in
 place of a panel coefficient when the flag is `divergent`.
-`latent_class_fit()` produces the per-rater latent-class table
-directly, as shown in Case 3.
+`latent_class_fit()` is what the divergent card runs to produce its
+latent-class table; called on its own it returns that table for any
+panel, and at two raters the Hui and Walter bounds, as in Case 3.
 
 **Other views of a card.**
 
