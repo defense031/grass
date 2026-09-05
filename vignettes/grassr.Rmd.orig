@@ -230,13 +230,10 @@ three statistics with three different chance terms.
 
 ### Case 2: the latent split
 
-Two five-rater panels score 1,000 subjects at true prevalence 0.30,
-and both return Fleiss' kappa 0.36. A fixed scale would label each as
-*fair*. In the first, three raters sit at sensitivity and specificity
-0.92 and two keep that sensitivity but drop to specificity 0.51. In
-the second, all five raters share sensitivity 0.95 and specificity
-0.70. This case works the first panel; the second returns in the
-boundaries section.
+Five raters score 1,000 subjects at true prevalence 0.30. Three sit
+at sensitivity and specificity 0.92, and two keep that sensitivity but
+drop to specificity 0.51. The panel returns Fleiss' kappa 0.36, which
+a fixed scale would label *fair*.
 
 ```{r case2-data}
 gen_logitnormal <- function(seed, k, N, Se, Sp, pi, F_sigma2 = 0.25) {
@@ -247,37 +244,13 @@ gen_logitnormal <- function(seed, k, N, Se, Sp, pi, F_sigma2 = 0.25) {
   for (j in seq_len(k)) Y[, j] <- rbinom(N, 1L, ifelse(C == 1L, Se[j], 1 - Sp[j]))
   Y
 }
-Y_differ <- gen_logitnormal(51L, 5L, 1000L,
+Y_split <- gen_logitnormal(51L, 5L, 1000L,
                             Se = rep(0.92, 5),
                             Sp = c(0.92, 0.92, 0.92, 0.51, 0.51), pi = 0.30)
-Y_agree  <- gen_logitnormal(151L, 5L, 1000L,
-                            Se = rep(0.95, 5),
-                            Sp = rep(0.70, 5), pi = 0.30)
-```
-
-```{r case2-scatter, echo = FALSE, fig.cap = "Two panels with one coefficient value and two different internal structures.", fig.alt = "Sensitivity against specificity for two five-rater panels that both return Fleiss' kappa 0.36. Three raters of the first panel sit together at 0.92 sensitivity and 0.92 specificity while two fall into the shaded low-specificity zone near 0.51. All five raters of the second panel sit together at 0.95 sensitivity and 0.70 specificity."}
-op <- par(mar = c(4.2, 4.2, 2.2, 1))
-plot(NA, xlim = c(0.45, 1.02), ylim = c(0.45, 1.02),
-     xlab = "sensitivity", ylab = "specificity",
-     main = "True rater operating points; both panels return Fleiss k = 0.36")
-rect(0.45, 0.45, 1.02, 0.60, col = "#fdecea", border = NA)
-text(0.47, 0.575, "low-specificity zone", adj = 0, col = "#b04a3a", cex = 0.8)
-points(1, 1, pch = 8, cex = 1.6)
-text(0.995, 0.985, "ideal rater", adj = 1, cex = 0.8)
-points(rep(0.92, 3) + c(-0.012, 0, 0.012), rep(0.92, 3), pch = 19,
-       col = "#2a7e43", cex = 1.2)
-points(c(0.92, 0.92) + c(-0.006, 0.006), c(0.51, 0.51), pch = 19,
-       col = "#2a7e43", cex = 1.2)
-text(0.86, 0.94, "raters differ: R1-R3", col = "#2a7e43", adj = 1, cex = 0.85)
-text(0.86, 0.51, "raters differ: R4, R5", col = "#2a7e43", adj = 1, cex = 0.85)
-points(rep(0.95, 5) + seq(-0.024, 0.024, length.out = 5), rep(0.70, 5),
-       pch = 17, col = "#2c5f8a", cex = 1.1)
-text(0.87, 0.70, "raters agree: all five", col = "#2c5f8a", adj = 1, cex = 0.85)
-par(op)
 ```
 
 ```{r case2a-card}
-grass_report(Y_differ, bootstrap_B = 200, verbose = FALSE)
+grass_report(Y_split, bootstrap_B = 200, verbose = FALSE)
 ```
 
 The observed coefficients look ordinary, but the spread of implied
@@ -293,7 +266,7 @@ latent-class fit puts their specificity at 0.51 and 0.50. This panel
 does not need more raters or more subjects. It needs R4 and R5
 retrained on when to call a case negative.
 
-### Case 3: two raters and the identifiable bounds
+### Case 3: when coefficients cannot disagree (k = 2)
 
 `grass_report()` works the same way at k = 2.
 
@@ -325,11 +298,43 @@ one sensitivity and specificity per rater should add a third rater.
 
 ## Boundaries
 
-**Shared panel bias.** The second panel from Case 2 is the case
-agreement diagnostics miss.
+**Shared panel bias.** A second five-rater panel at the same
+prevalence returns the same Fleiss' kappa 0.36 as the split panel in
+Case 2, but all five raters share sensitivity 0.95 and specificity
+0.70. The two panels sit in different places, and a fixed scale calls
+both *fair*.
 
-```{r case2b-card}
-grass_report(Y_agree, verbose = FALSE)
+```{r shared-data}
+Y_shared <- gen_logitnormal(151L, 5L, 1000L,
+                            Se = rep(0.95, 5),
+                            Sp = rep(0.70, 5), pi = 0.30)
+```
+
+```{r split-vs-shared-scatter, echo = FALSE, fig.cap = "Two panels with one coefficient value and two different internal structures.", fig.alt = "Sensitivity against specificity for two five-rater panels that both return Fleiss' kappa 0.36. Three raters of the first panel sit together at 0.92 sensitivity and 0.92 specificity while two fall into the shaded low-specificity zone near 0.51. All five raters of the second panel sit together at 0.95 sensitivity and 0.70 specificity."}
+op <- par(mar = c(4.2, 4.2, 2.2, 1))
+plot(NA, xlim = c(0.45, 1.02), ylim = c(0.45, 1.02),
+     xlab = "sensitivity", ylab = "specificity",
+     main = "True rater operating points; both panels return Fleiss k = 0.36")
+rect(0.45, 0.45, 1.02, 0.60, col = "#fdecea", border = NA)
+text(0.47, 0.575, "low-specificity zone", adj = 0, col = "#b04a3a", cex = 0.8)
+points(1, 1, pch = 8, cex = 1.6)
+text(0.995, 0.985, "ideal rater", adj = 1, cex = 0.8)
+points(rep(0.92, 3) + c(-0.012, 0, 0.012), rep(0.92, 3), pch = 19,
+       col = "#2a7e43", cex = 1.2)
+points(c(0.92, 0.92) + c(-0.006, 0.006), c(0.51, 0.51), pch = 19,
+       col = "#2a7e43", cex = 1.2)
+text(0.86, 0.94, "raters differ: R1-R3", col = "#2a7e43", adj = 1, cex = 0.85)
+text(0.86, 0.51, "raters differ: R4, R5", col = "#2a7e43", adj = 1, cex = 0.85)
+points(rep(0.95, 5) + seq(-0.024, 0.024, length.out = 5), rep(0.70, 5),
+       pch = 17, col = "#2c5f8a", cex = 1.1)
+text(0.87, 0.70, "raters agree: all five", col = "#2c5f8a", adj = 1, cex = 0.85)
+par(op)
+```
+
+This is the case agreement diagnostics miss.
+
+```{r shared-card}
+grass_report(Y_shared, verbose = FALSE)
 ```
 
 The card raises no flag, yet the panel calls about half its subjects
@@ -435,7 +440,7 @@ check_asymmetry(ratings = Y1)
 detail.
 
 ```{r pairwise}
-pairwise_agreement(Y_differ)
+pairwise_agreement(Y_split)
 ```
 
 `pairwise_agreement()` returns the pairwise matrix and the majority
@@ -462,7 +467,8 @@ head(as.data.frame(card1), 5)
 `as.data.frame()` returns one row per coefficient, for binding many
 studies' cards into one table. `band_open_low` and `band_open_high`
 flag a band that reaches the edge of the calibrated quality range;
-`se_q_hat` is the standard error of the implied quality.
+`se_q_hat` is the standard error of the implied quality, and
+`delta_hat` is in quality percentage points, the unit the card prints.
 
 ```{r plot-surface-card, fig.cap = "The aligned panel pinned on its PABAK reference surface.", fig.alt = "The expected-value surface for PABAK at this design, with the observed panel pinned on it and its consistency band marked along the quality axis."}
 plot(card1)
