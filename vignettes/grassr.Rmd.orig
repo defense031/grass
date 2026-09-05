@@ -139,9 +139,10 @@ grass_report(ratings = Y0)
 ```
 
 - **`sample`** is the study: rater count `k`, subject count `N`, and
-  the observed positive rate `pi_hat`. Here `pi_hat` is 0.36 against a
-  true prevalence of 0.30, because false positives on the many
-  negatives outnumber misses on the few positives.
+  the observed positive rate `pi_hat`, the share of all `N x k`
+  ratings that are positive. Here `pi_hat` is 0.36 against a true
+  prevalence of 0.30, because false positives on the many negatives
+  outnumber misses on the few positives.
 - **The coefficient lines** show each observed value, its percentile,
   and its consistency band. The **percentile** is where the observed
   value falls among everything this study could have produced, from

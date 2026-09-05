@@ -165,9 +165,10 @@ grass_report(ratings = Y0)
 ```
 
 - **`sample`** is the study: rater count `k`, subject count `N`, and
-  the observed positive rate `pi_hat`. Here `pi_hat` is 0.36 against a
-  true prevalence of 0.30, because false positives on the many
-  negatives outnumber misses on the few positives.
+  the observed positive rate `pi_hat`, the share of all `N x k`
+  ratings that are positive. Here `pi_hat` is 0.36 against a true
+  prevalence of 0.30, because false positives on the many negatives
+  outnumber misses on the few positives.
 - **The coefficient lines** show each observed value, its percentile,
   and its consistency band. The **percentile** is where the observed
   value falls among everything this study could have produced, from
@@ -763,7 +764,7 @@ summary(card1)
 #>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   grass version : 0.8.0
-#>   timestamp     : 2026-09-05 19:41:09
+#>   timestamp     : 2026-09-05 19:53:34
 ```
 
 `summary()` prints everything behind the card, the full panel with
