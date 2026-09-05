@@ -40,12 +40,12 @@ Landis and Koch (1977), where 0.00 to 0.20 is *slight*, 0.21 to 0.40
 and Li (2016) give the analogous ranges for the intraclass correlation
 coefficient (ICC).
 
-Those labels have a problem. Every chance-corrected coefficient is the
-same fraction, observed agreement minus chance agreement over one
-minus chance agreement, and the chance-agreement term depends on
-prevalence. The coefficient can therefore vary even when the rater
-quality itself remains constant. At two raters the expected value has
-a closed form.
+Traditional kappa-based statistics do not account for the underlying
+context. Every chance-corrected coefficient is observed agreement
+minus chance agreement, over one minus chance agreement, and the
+chance term depends on prevalence. The coefficient can therefore vary
+even when the rater quality itself remains constant. At two raters the
+expected value has a closed form.
 
 ```{r hook-figure, echo = TRUE, fig.cap = "One panel of raters, three published verdicts.", fig.alt = "Expected Cohen's kappa plotted against prevalence for raters fixed at quality 0.87. The curve rises from near zero at 2 percent prevalence, peaks around 0.55 at balanced prevalence, and falls again toward 98 percent, crossing the slight, fair, and moderate bands on the way."}
 q <- 0.87                       # every rater calls 87% of cases correctly
