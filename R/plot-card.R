@@ -325,9 +325,7 @@ plot_surface <- function(metric,
     has_icc_curve <- !is.null(x$surface$reference_curves) &&
                      !is.null(x$surface$reference_curves$icc)
     if (!has_icc_curve) {
-      fallback_note <- paste0(
-        "ICC surface requires a fitted reference curve; ",
-        "displaying PABAK surface as a fallback.")
+      fallback_note <- "ICC has no drawable surface; PABAK shown"
       primary_for_grid <- "pabak"
     }
   }

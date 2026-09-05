@@ -200,7 +200,11 @@ repeated occasions, uses the same layout with the occasions as columns
 and the call `grass_report(Y, axis = "intra")`. The same reference
 applies, since a rater re-reading the same subjects is modeled exactly
 like independent raters of equal quality, and the card has the same
-fields.
+fields. On this axis the card marks ICC as primary, the conventional
+intra-rater statistic; the three agreement coefficients still print
+and still feed `delta_hat`. The card's note says which way the two
+departures from that model push the reading: drift between occasions
+lowers it, and memory of an earlier pass raises it.
 
 ## When coefficients disagree: the `delta_hat` flag
 
@@ -465,9 +469,15 @@ and specificity are reported as the Hui and Walter bounds rather than
 as point estimates." Check the numbers against your own card; the ones
 here are the Case 3 card's.
 
-The intervals on the latent-class table are 95% percentile bootstrap
-intervals, from `bootstrap_B` resamples (1,000 by default; the
-examples here use 200 to run quickly).
+An intra-rater card is reported the same way with occasions in place
+of raters and ICC in the lead, in the shape "One coder coded N
+subjects on three occasions; ICC was X, at the Yth percentile of what
+a three-occasion, N-subject study at this positive rate can produce,
+and the data are consistent with coder quality A to B." State the
+interval between occasions, since memory of an earlier pass raises the
+reading. The intervals on the latent-class table are 95% percentile
+bootstrap intervals, from `bootstrap_B` resamples (1,000 by default;
+the examples here use 200 to run quickly).
 
 ## Boundaries
 
@@ -753,7 +763,7 @@ summary(card1)
 #>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   grass version : 0.8.0
-#>   timestamp     : 2026-09-05 19:28:59
+#>   timestamp     : 2026-09-05 19:41:09
 ```
 
 `summary()` prints everything behind the card, the full panel with

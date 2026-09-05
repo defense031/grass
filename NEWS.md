@@ -34,6 +34,10 @@ change; on-node readings are unchanged up to storage quantization.
   inversion, so the picture and the printed `q_hat` agree. The two
   ggplot warnings the surface plots used to emit (a dropped `fill`
   aesthetic, removed NA raster cells) are gone.
+* The intra-rater card note is in plain language (occasions treated as
+  independent raters of equal quality; drift lowers the reading, memory
+  raises it) and says that ICC is marked primary on that axis. The
+  surface-plot fallback title no longer runs off the canvas.
 * The delta-hat null is prevalence-resolved everywhere. The bundled
   `delta_null_ecdf` holds 11,616 cells: eleven rater counts (3-25),
   twelve sample sizes (15-1,000), eleven quality levels (0.65-0.99),

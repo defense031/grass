@@ -134,16 +134,15 @@ grass_report <- function(ratings,
   }
   if (identical(axis, "intra")) {
     notes <- c(notes,
-               paste0("Intra-rater axis: under the reference model (stable ",
-                      "rater, conditionally independent occasions) the ",
-                      "inter-rater diagonal calibration at k = W is EXACT ",
-                      "for W repeated viewings. Two deviations the reference ",
-                      "model excludes move the reading in known directions: ",
-                      "occasion drift deflates it, and within-subject ",
-                      "dependence (memory or a rater's own consistent rubric ",
-                      "-- unidentifiable from a single rater's matrix) ",
-                      "inflates it. Read intra percentiles as favorable-case ",
-                      "values under dependence."))
+               paste0("Intra-rater axis: the reference treats the occasions ",
+                      "like the same number of independent raters of equal ",
+                      "quality, which is exact when the rater is stable and ",
+                      "the occasions are independent. Drift between occasions ",
+                      "lowers the reading; memory of an earlier pass raises ",
+                      "it and cannot be detected from one rater's matrix. ",
+                      "Where memory carry-over is possible, treat the ",
+                      "percentile as a favorable-case value. ICC is marked ",
+                      "primary on this axis."))
   }
 
   # ---- Compute the observed panel ---------------------------------------
