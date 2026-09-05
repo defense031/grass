@@ -29,11 +29,10 @@ and Li (2016) give the analogous ranges for the intraclass correlation
 coefficient (ICC).
 
 However, traditional kappa-based statistics do not account for the
-underlying context. A chance-corrected coefficient adjusts observed
-agreement for the agreement expected by chance, and that chance term
-depends on prevalence. The coefficient can therefore vary even when
-the rater quality itself remains constant. At two raters the expected
-value has a closed form.
+underlying context. The chance term they subtract depends on
+prevalence, so the coefficient can vary even when the rater quality
+itself remains constant. At two raters the expected value has a closed
+form.
 
 
 ```r
@@ -676,7 +675,7 @@ summary(card1)
 #>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   grass version : 0.8.0
-#>   timestamp     : 2026-09-05 17:30:01
+#>   timestamp     : 2026-09-05 17:32:11
 ```
 
 `summary()` prints everything behind the card, the full panel with

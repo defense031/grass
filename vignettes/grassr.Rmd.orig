@@ -41,11 +41,10 @@ and Li (2016) give the analogous ranges for the intraclass correlation
 coefficient (ICC).
 
 However, traditional kappa-based statistics do not account for the
-underlying context. A chance-corrected coefficient adjusts observed
-agreement for the agreement expected by chance, and that chance term
-depends on prevalence. The coefficient can therefore vary even when
-the rater quality itself remains constant. At two raters the expected
-value has a closed form.
+underlying context. The chance term they subtract depends on
+prevalence, so the coefficient can vary even when the rater quality
+itself remains constant. At two raters the expected value has a closed
+form.
 
 ```{r hook-figure, echo = TRUE, fig.cap = "One panel of raters, three published verdicts.", fig.alt = "Expected Cohen's kappa plotted against prevalence for raters fixed at quality 0.87. The curve rises from near zero at 2 percent prevalence, peaks around 0.55 at balanced prevalence, and falls again toward 98 percent, crossing the slight, fair, and moderate bands on the way."}
 q <- 0.87                       # every rater calls 87% of cases correctly
