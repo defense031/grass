@@ -19,21 +19,23 @@ A **rater panel** consists of `k` entities that each assess the
 performance of `N` subjects for the successful completion of a binary
 task, as defined by a study protocol. Raters observe each subject
 exactly once, which produces an `N x k` rating matrix of yes-or-no
-responses. Of primary concern is both the level of agreement across
-the panel and the consistency of individual raters over time.
+responses. Both the level of agreement across the panel and the
+consistency of individual raters over time are of primary concern.
 Traditionally, this is referred to as inter- and intra-rater
 reliability and is answered with a single coefficient and a label from
 Landis and Koch (1977), where 0.00 to 0.20 is *slight*, 0.21 to 0.40
-*fair*, 0.41 to 0.60 *moderate*, and 0.61 to 0.80 *substantial*. Koo
-and Li (2016) give the analogous ranges for the intraclass correlation
-coefficient (ICC).
+*fair*, 0.41 to 0.60 *moderate*, 0.61 to 0.80 *substantial*, and 0.81
+to 1.00 *almost perfect*. Koo and Li (2016) give the analogous ranges
+for the intraclass correlation coefficient (ICC).
 
 However, traditional kappa-based statistics do not account for the
-underlying context. The chance term they subtract depends on
+underlying context, meaning the prevalence, rater count, and sample
+size of the study. The chance term they subtract depends on
 prevalence, so the coefficient can vary even when the rater quality
 itself remains constant. The code below fixes two raters at quality
-0.87, sweeps prevalence from 2% to 98%, and plots the expected Cohen's
-kappa against the Landis and Koch bands.
+0.87, meaning each calls 87% of cases correctly, sweeps prevalence
+from 2% to 98%, and plots the expected Cohen's kappa against the
+Landis and Koch bands.
 
 
 ```r
@@ -70,27 +72,29 @@ par(op)
 
 A screening study at 5% prevalence reports *slight* agreement, a
 balanced study reports *moderate*, a high-prevalence study reports
-*fair*, and the raters never changed. Rater count and sample size set
-how far one study's value scatters around this curve, and the fixed
-scale ignores that scatter too. The three multi-rater coefficients in
-common use return three different values on one dataset for the same
-reason. Fleiss' kappa computes the chance term from the panel's
+*fair*, and the raters never changed. How far one study's value
+scatters around this curve depends on rater count and sample size, and
+the fixed scale ignores that too. Three multi-rater agreement
+coefficients, Fleiss' kappa, PABAK taken as the mean over rater pairs,
+and Gwet's AC1, return three different values on one dataset for the
+same reason. Fleiss' kappa computes the chance term from the panel's
 observed positive rate, and the term rises toward one as prevalence
 moves away from 50%. PABAK (prevalence-adjusted bias-adjusted kappa;
-Byrt, Bishop, and Carlin, 1993) fixes it at one half. Gwet's AC1
-(2008) computes it from the same positive rate, and the term falls
-toward zero as prevalence moves away from 50%. Same data, three chance
-terms, three labels.
+Byrt, Bishop, and Carlin, 1993) fixes it at one half. AC1 (Gwet, 2008)
+computes it from the same positive rate, and the term falls toward
+zero as prevalence moves away from 50%. Same data, three chance terms,
+three labels.
 
 grassr, a Guide for Rater Agreement under Structural Skew, is built
 for that problem. The skew in the name refers to prevalence. The
 package takes the rating matrix as its only input, simulates panels at
-the same prevalence, rater count, and sample size, and compares each
-observed coefficient with the values those panels produce. We refer to
-that combination as the study context. The result prints as a **Report
-Card**. For each coefficient it shows where the value falls among
-everything a study this size, at this prevalence, could have produced,
-and which rater qualities are consistent with it.
+the study's own prevalence, rater count, and sample size, a
+combination we call the study context, and compares each observed
+coefficient with the values those panels produce. The result prints as
+a **Report Card**. For each coefficient it shows where the value falls
+among everything a study this size, at this prevalence, could have
+produced as rater quality runs from low to high, and which rater
+qualities are consistent with it.
 
 ## Quick start: the GRASS Report Card
 
@@ -676,7 +680,7 @@ summary(card1)
 #>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   grass version : 0.8.0
-#>   timestamp     : 2026-09-05 17:49:16
+#>   timestamp     : 2026-09-05 18:13:34
 ```
 
 `summary()` prints everything behind the card, the full panel with
