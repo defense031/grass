@@ -19,21 +19,18 @@ A **rater panel** consists of `k` entities that each assess the
 performance of `N` subjects for the successful completion of a binary
 task, as defined by a study protocol. Raters observe each subject
 exactly once, which produces an `N x k` rating matrix of yes-or-no
-responses. grassr, a Guide for Rater Agreement under Structural Skew,
-takes that matrix as its only input and prints a **Report Card**. For
-each agreement coefficient, the card shows where it falls among the
-values a study this size, at this prevalence, could have produced, and
-which rater qualities are consistent with it. The skew in the name
-refers to prevalence. A coefficient moves with it even when the raters
-do not.
-
-Traditionally, practitioners have computed one coefficient and used
-the labels of Landis and Koch (1977) to describe the quality of
-agreement, where 0.00 to 0.20 is *slight*, 0.21 to 0.40 *fair*, 0.41
+responses. A natural question then arises over how well said panel is
+calibrated between its own members, and how well its members are
+calibrated with themselves over time. This in turn becomes an inter-
+and intra-rater reliability question. Traditionally, practitioners
+have answered it with a single coefficient and a label from Landis and
+Koch (1977), where 0.00 to 0.20 is *slight*, 0.21 to 0.40 *fair*, 0.41
 to 0.60 *moderate*, and 0.61 to 0.80 *substantial*. Koo and Li (2016)
-give the analogous ranges for ICC. Every chance-corrected coefficient
-is the same fraction, observed agreement minus chance agreement over
-one minus chance agreement, and the chance-agreement term depends on
+give the analogous ranges for ICC.
+
+Those labels have a problem. Every chance-corrected coefficient is the
+same fraction, observed agreement minus chance agreement over one
+minus chance agreement, and the chance-agreement term depends on
 prevalence. The coefficient can therefore vary even when the rater
 quality itself remains constant. At two raters the expected value has
 a closed form.
@@ -85,9 +82,15 @@ Byrt, Bishop, and Carlin, 1993) fixes it at one half. Gwet's AC1
 toward zero as prevalence moves away from 50%. Same data, three chance
 terms, three labels.
 
-grassr simulates panels at the same prevalence, rater count, and
-sample size, and compares the observed coefficient with the values
-they produce. We refer to that combination as the study context.
+grassr, a Guide for Rater Agreement under Structural Skew, is built
+for that problem. The skew in the name refers to prevalence. The
+package takes the rating matrix as its only input, simulates panels at
+the same prevalence, rater count, and sample size, and compares each
+observed coefficient with the values those panels produce. We refer to
+that combination as the study context. The result prints as a **Report
+Card**. For each coefficient it shows where the value falls among
+everything a study this size, at this prevalence, could have produced,
+and which rater qualities are consistent with it.
 
 ## Quick start: the GRASS Report Card
 
@@ -671,7 +674,7 @@ summary(card1)
 #>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   grass version : 0.8.0
-#>   timestamp     : 2026-09-05 10:09:26
+#>   timestamp     : 2026-09-05 14:54:33
 ```
 
 `summary()` prints everything behind the card, the full panel with
