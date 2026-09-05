@@ -31,14 +31,13 @@ A **rater panel** consists of `k` entities that each assess the
 performance of `N` subjects for the successful completion of a binary
 task, as defined by a study protocol. Raters observe each subject
 exactly once, which produces an `N x k` rating matrix of yes-or-no
-responses. A natural question then arises over how well said panel is
-calibrated between its own members, and how well its members are
-calibrated with themselves over time. This in turn becomes an inter-
-and intra-rater reliability question. Traditionally, practitioners
-have answered it with a single coefficient and a label from Landis and
-Koch (1977), where 0.00 to 0.20 is *slight*, 0.21 to 0.40 *fair*, 0.41
-to 0.60 *moderate*, and 0.61 to 0.80 *substantial*. Koo and Li (2016)
-give the analogous ranges for ICC.
+responses. Of primary concern is both the level of agreement across
+the panel and the consistency of individual raters over time. Those
+are the inter- and intra-rater reliability questions. Traditionally,
+practitioners have answered them with a single coefficient and a label
+from Landis and Koch (1977), where 0.00 to 0.20 is *slight*, 0.21 to
+0.40 *fair*, 0.41 to 0.60 *moderate*, and 0.61 to 0.80 *substantial*.
+Koo and Li (2016) give the analogous ranges for ICC.
 
 Those labels have a problem. Every chance-corrected coefficient is the
 same fraction, observed agreement minus chance agreement over one
