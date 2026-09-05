@@ -109,7 +109,7 @@
   }
   P_j <- colMeans(Y)
   data.frame(
-    rater    = paste0("R", seq_len(k)),
+    rater    = colnames(Y) %||% paste0("R", seq_len(k)),
     se_lower = P_j,
     se_upper = rep(1, k),
     sp_lower = 1 - P_j,
@@ -330,7 +330,7 @@ latent_class_fit <- function(ratings,
          "inequality bounds.", call. = FALSE)
   }
 
-  rater_names <- paste0("R", seq_len(k))
+  rater_names <- colnames(Y) %||% paste0("R", seq_len(k))
 
   if (method == "hui_walter") {
     # k = 2 branch: bounds, optional bootstrap on bound midpoints.

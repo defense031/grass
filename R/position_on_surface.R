@@ -798,12 +798,12 @@ lookup_empirical_q_sweep <- function(metric, pi_hat, k, N) {
   clamp_notes <- character(0L)
   if (as.numeric(k) != k_near) {
     clamp_notes <- c(clamp_notes,
-                     sprintf("k=%s clamped to nearest sim-grid k=%d.",
+                     sprintf("k=%s: the reference uses the nearest calibrated k=%d.",
                              as.character(k), k_near))
   }
   if (N_eff != as.numeric(N)) {
     clamp_notes <- c(clamp_notes,
-                     sprintf("N=%s clamped to sim-grid edge N=%d.",
+                     sprintf("N=%s: the reference uses the calibrated edge N=%d.",
                              as.character(N), as.integer(N_eff)))
   }
   if (abs(as.numeric(pi_hat) - m_eff) > 0.05) {
@@ -998,14 +998,14 @@ lookup_fitted_icc_reference_curve <- function(pi_hat, k, N, q_grid,
                    (log(idx$tau2[valid]) - log(fit$tau2))^2
     cand_idx <- which.min(dist)
     fit_notes <- c(fit_notes,
-                   sprintf("Fitted-ICC F_key picked via glmer: mu_hat=%.3f, tau2_hat=%.3f -> F_key tau2=%.4f, mu=%.3f.",
+                   sprintf("ICC reference: a logit-normal profile fitted to the ratings (mu=%.3f, tau2=%.3f) was matched to the nearest calibrated profile (mu=%.3f, tau2=%.4f).",
                            fit$mu, fit$tau2,
-                           idx$tau2[cand_idx], idx$mu[cand_idx]))
+                           idx$mu[cand_idx], idx$tau2[cand_idx]))
   } else {
     cand_idx <- which.min(abs(idx$M1 - as.numeric(pi_hat)))
     fit_notes <- c(fit_notes,
-                   "Fitted-ICC F_key picked via nearest-M1 only; tau2 not estimated. ",
-                   "Pass `ratings = <rating matrix>` for a glmer-fitted F_key.")
+                   "ICC reference: profile chosen by prevalence only (no rating matrix, so its spread was not estimated). ",
+                   "Pass `ratings = <rating matrix>` for a fitted profile.")
   }
 
   F_key_near <- idx$F_key[cand_idx]
@@ -1033,17 +1033,17 @@ lookup_fitted_icc_reference_curve <- function(pi_hat, k, N, q_grid,
   notes <- character(0L)
   notes <- c(notes, fit_notes)
   notes <- c(notes,
-             sprintf("Fitted-ICC reference (GLMM-gap corrected) at F_key=%s, k=%d, N=%d (family=%s, M1=%.3f).",
+             sprintf("ICC reference: calibrated profile %s at k=%d, N=%d (%s family, mean prevalence %.3f).",
                      F_key_near, k_near, N_near, F_family, M1_near))
   if (as.numeric(k) != k_near) {
     notes <- c(notes,
-               sprintf("k=%s clamped to nearest sim-grid k=%d.",
-                       as.character(k), k_near))
+               sprintf("ICC reference only: k=%s uses the nearest calibrated k=%d. The agreement-family surfaces and the delta_hat null use k=%s.",
+                       as.character(k), k_near, as.character(k)))
   }
   if (as.numeric(N) != N_near) {
     notes <- c(notes,
-               sprintf("N=%s clamped to nearest sim-grid N=%d.",
-                       as.character(N), N_near))
+               sprintf("ICC reference only: N=%s uses the nearest calibrated N=%d. The agreement-family surfaces and the delta_hat null interpolate at N=%s.",
+                       as.character(N), N_near, as.character(N)))
   }
   if (abs(as.numeric(pi_hat) - M1_near) > 0.05 && is.null(ratings)) {
     notes <- c(notes,
@@ -1303,16 +1303,15 @@ print.grass_surface_position <- function(x, digits = 3, ...) {
       "  implied quality q_hat: ",
       formatC(x$q_hat, digits = digits, format = "f"), " +/- ",
       formatC(x$se_q_hat, digits = digits, format = "f"), "\n",
-      "  pooled percentile    : ",
+      "  percentile           : ",
       if (is.finite(x$percentile))
-        sprintf("%.1f (of the design's achievable range)",
+        sprintf("%.1f (of the achievable range in this study context)",
                 100 * x$percentile)
       else "NA", "\n", sep = "")
   if (!is.null(x$band)) {
     cat("  consistency band     : ", format_consistency_band(x$band),
         "\n", sep = "")
   }
-  cat("  sampling method      : ", x$sampling_method, "\n", sep = "")
   if (length(x$notes)) {
     cat("  notes                :\n")
     for (n in x$notes) cat("    - ", n, "\n", sep = "")

@@ -36,7 +36,7 @@
   mn <- delta_list$matched_null
   pct <- delta_list$delta_percentile
   if (!is.null(mn) && is.finite(pct %||% NA_real_)) {
-    sprintf("  matched null = (k=%d, N=%d, q=%.2f): delta_hat at the %.1f percentile%s%s",
+    sprintf("  matched null = (k=%d, N=%d, q=%.2f): delta_hat sits at percentile %.1f of the null%s%s",
             mn$k, mn$N, mn$q, pct,
             if (isTRUE(mn$snapped)) " [design snapped]" else "",
             if (isTRUE(mn$unstable_tail)) " [tail not stably invertible]" else "")
@@ -45,7 +45,7 @@
     sprintf("  thresholds  = (%.2f, %.2f) [user-supplied, legacy pp cuts]",
             thr[["caution"]], thr[["divergent"]])
   } else if (identical(delta_list$thresholds_source, "not_applicable_k2")) {
-    "  matched null = n/a at k = 2 (coefficients cannot disagree; see pairwise/bounds path)"
+    "  matched null = n/a at k = 2 (PABAK and AC1 imply the same quality; see the pairwise table and the Hui-Walter bounds)"
   } else {
     "  matched null = unavailable (flag not calibrated)"
   }
@@ -88,7 +88,7 @@
 # off the headline card and print in summary() only; calibration caveats
 # (clamps, snaps, band boundaries) stay on the card.
 .is_debug_note <- function(n) {
-  grepl("F_key picked via glmer|Fitted-ICC reference|ICC reference curve from bundled|reference curve supplied|q_grid_per_rep", n)
+  grepl("ICC reference: a logit-normal profile|ICC reference: calibrated profile|ICC reference: profile chosen|ICC reference curve from bundled|reference curve supplied|q_grid_per_rep", n)
 }
 
 # Pretty label-mapping for the panel coefficient names.
@@ -168,10 +168,10 @@ format.grass_card <- function(x, digits = 2, ...) {
                          name_w, label, val_str, pct_str, marker))
     }
     lines <- c(lines,
-               sprintf("  panel-agg.  = suppressed (divergent)"))
+               sprintf("  summary     = suppressed (divergent)"))
     lines <- c(lines,
                sprintf("  delta       = %s pp (divergent)",
-                       formatC(delta_pp, format = "g", digits = max(digits, 2L))))
+                       formatC(delta_pp, format = "f", digits = 2L)))
     lines <- c(lines, .fmt_thresholds_line(x$delta))
     lines <- c(lines, .fmt_bootstrap_tier_lines(x$delta, digits))
     # ---- Pairwise (paper Sec.3.3 recommended primary deliverable) ----
@@ -202,7 +202,7 @@ format.grass_card <- function(x, digits = 2, ...) {
       if (nrow(pw$pooled_per_rater) > 0L &&
           any(is.finite(pw$pooled_per_rater$se_tilde))) {
         lines <- c(lines, "",
-                   "  per-rater vs panel-majority of OTHER raters (pooled-reference):")
+                   "  per-rater vs the majority of the OTHER raters:")
         pp <- pw$pooled_per_rater
         for (ii in seq_len(nrow(pp))) {
           se_str <- if (is.finite(pp$se_tilde[ii]))
@@ -221,9 +221,9 @@ format.grass_card <- function(x, digits = 2, ...) {
       lines <- c(lines, "")
       bound_only <- isTRUE(any(x$per_rater$bound_only))
       hdr <- if (bound_only) {
-        "  per-rater (Hui-Walter bounds, k = 2; alongside pairwise):"
+        "  per-rater (Hui-Walter bounds, k = 2):"
       } else {
-        "  per-rater (latent-class fit; alongside pairwise):"
+        "  per-rater (latent-class fit):"
       }
       lines <- c(lines, hdr)
       pr <- x$per_rater
@@ -287,7 +287,7 @@ format.grass_card <- function(x, digits = 2, ...) {
     pband <- x$coefficient$consistency_band
     if (is.finite(ppct %||% NA_real_)) {
       gloss <- sprintf(
-        "  read: this panel agreed more tightly than %.0f%% of what panels at this design can produce%s.",
+        "  read: this panel's agreement exceeds %.0f%% of what panels in this study context can produce%s.",
         ppct,
         if (!is.null(pband) && is.finite(pband$lo %||% NA_real_) &&
             is.finite(pband$hi %||% NA_real_))
@@ -298,7 +298,7 @@ format.grass_card <- function(x, digits = 2, ...) {
     }
     lines <- c(lines,
                sprintf("  delta       = %s pp implied-quality spread (%s)",
-                       formatC(delta_pp, format = "g", digits = max(digits, 2L)),
+                       formatC(delta_pp, format = "f", digits = 2L),
                        flag))
     lines <- c(lines, .fmt_thresholds_line(x$delta))
     lines <- c(lines, .fmt_bootstrap_tier_lines(x$delta, digits))

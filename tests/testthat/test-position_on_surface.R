@@ -149,7 +149,7 @@ test_that("empirical method for ICC uses bundled reference curves", {
   expect_s3_class(r, "grass_surface_position")
   expect_true(is.finite(r$q_hat))
   # Fitted-reference note should identify the nearest cell.
-  expect_true(any(grepl("Fitted-ICC reference", r$notes)))
+  expect_true(any(grepl("ICC reference: calibrated profile", r$notes)))
 
   # Oracle reference_type option still works.
   r_or <- position_on_surface(0.3, "icc", 0.5, 5, 100,
@@ -193,7 +193,7 @@ test_that("nearest-neighbor clamping for out-of-grid design is flagged in notes"
   # N=1234 is not in {50, 200, 1000}; should clamp to 1000 and flag.
   r <- position_on_surface(0.62, "pabak", 0.5, k = 4, N = 1234,
                            method = "empirical")
-  expect_true(any(grepl("clamped", r$notes)))
+  expect_true(any(grepl("nearest calibrated|calibrated edge", r$notes)))
   expect_true(any(grepl("k=", r$notes) | grepl("N=", r$notes)))
 })
 
@@ -270,13 +270,13 @@ test_that("icc glmer path: ratings matrix pins down F_key via (mu, tau2)", {
     ratings = ratings
   )
   expect_s3_class(r, "grass_surface_position")
-  expect_true(any(grepl("glmer", r$notes)))
+  expect_true(any(grepl("fitted to the ratings", r$notes)))
   # Without ratings, the fallback note should mention nearest-M1 instead
   r_fallback <- position_on_surface(
     obs_value = 0.55, metric = "icc",
     pi_hat = pi_hat, k = k, N = N
   )
-  expect_true(any(grepl("nearest-M1", r_fallback$notes)))
+  expect_true(any(grepl("chosen by prevalence only", r_fallback$notes)))
 })
 
 test_that("icc glmer fallback on tiny N or non-numeric ratings surfaces a note", {
@@ -300,7 +300,7 @@ test_that("icc resolves via bundled sysdata; caller reference_curve wins when su
   # note or identifies the fitted-reference F_key cell in notes.
   r_far <- position_on_surface(0.3, "icc", pi_hat = 0.01, k = 5, N = 100)
   expect_true(any(grepl("coarse", r_far$notes) |
-                  grepl("Fitted-ICC reference", r_far$notes)))
+                  grepl("ICC reference: calibrated profile", r_far$notes)))
   # Caller-supplied reference curve of the right length still wins.
   q_grid <- seq(0.5, 1.0, length.out = 501)
   fake_icc <- (q_grid - 0.5) / 0.5 * 0.6

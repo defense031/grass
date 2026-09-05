@@ -103,11 +103,16 @@ qualities are consistent with it.
 
 The input is one matrix or data frame, subjects in rows and raters in
 columns, with at least two raters. Cells are numeric 0/1, `logical`,
-or a two-level `factor`, where 1, `TRUE`, or the positive level means
-present. Column names, if given, become rater labels on the card. The
-functions stop on `NA` rather than silently dropping rows, so filter
-first with `Y <- Y[complete.cases(Y), ]` and report the exclusions in
-your Methods. Binary outcomes only.
+or a two-level `factor` or character column, where 1, `TRUE`, or the
+positive level means present. For a factor or character column the
+level named yes, true, positive, present, or case, in any letter case,
+is taken as positive; any other pair of labels is refused with a
+message asking for a 0/1 recode, so an outcome is never inverted
+silently. Drop identifier columns before the call. Column names, if
+given, become rater labels on the card. The functions stop on `NA`
+rather than silently dropping rows, so filter first with `Y <-
+Y[complete.cases(Y), ]` and report the exclusions in your Methods.
+Binary outcomes only.
 
 The examples simulate the panel, so the true classes are known and
 every claim below can be checked against them. This first panel has
@@ -126,6 +131,8 @@ head(Y0, 8)
 
 Row 6 is unanimously positive, rows 2, 4, 5, and 7 unanimously
 negative, and rows 1, 3, and 8 split. One call produces the card.
+Inside a script, assign the result and `print()` it; the same goes for
+`plot()`.
 
 ```{r headline}
 grass_report(ratings = Y0)
@@ -138,30 +145,35 @@ grass_report(ratings = Y0)
 - **The coefficient lines** show each observed value, its percentile,
   and its consistency band. The **percentile** is where the observed
   value falls among everything this study could have produced, from
-  the worst calibrated panels to the best. **Panel quality `q`** is
-  the share of cases a rater gets correct. The reference panels give
-  every rater the same `q` for both sensitivity and specificity, and
-  `q` is what the package is estimating. The **consistency band** is
-  the range of qualities that could plausibly have produced this
-  coefficient, every `q` at which the observed value sits inside the
-  middle 95% of that quality's panels. A wide band means the study
-  cannot tell those qualities apart, and a small study is always wide.
+  the lowest-quality panels in the reference to the highest. **Panel
+  quality `q`** is the share of cases a rater gets correct. The
+  reference panels give every rater the same `q` for both sensitivity
+  and specificity, and `q` is what the package is estimating. The
+  **consistency band** is the range of qualities that could plausibly
+  have produced this coefficient. Formally, it is every `q` at which
+  the observed value sits inside the middle 95% of that quality's
+  panels. A wide band means the study cannot tell those qualities
+  apart, and a small study always gives a wide band.
 - **`<- primary`** marks the coefficient to report: PABAK at moderate
   prevalence, AC1 when the positive rate is below 0.15 or above 0.85,
   where its percentile is less noisy. ICC is tagged
   `[distribution-sensitive]` because its reference depends on how the
-  positive cases are spread across subjects, not just how many there
-  are, so its percentile is less certain than the other three.
+  positives are spread across subjects, a few obvious cases or many
+  borderline ones, and not just on how many there are, so its
+  percentile is less certain than the other three.
 - **The `read:` line** restates the headline in plain language. The
   card prints no verdict label, and the band's width states the
   uncertainty.
-- **`delta`** is how far apart PABAK, AC1, and Fleiss' kappa are on
-  quality, in percentage points (pp), with its flag. The next section
-  covers the flag.
+- **`delta`** is `delta_hat` as the card prints it, the spread of the
+  qualities implied by PABAK, AC1 (both averaged over rater pairs),
+  and Fleiss' kappa, in percentage points (pp), followed by its flag.
+  The next section covers the flag.
 
 **Intra-rater agreement**, one rater scoring the same subjects on
-repeated occasions, uses the same matrix with the occasions as columns
-and the call `grass_report(Y, axis = "intra")`. The card has the same
+repeated occasions, uses the same layout with the occasions as columns
+and the call `grass_report(Y, axis = "intra")`. The same reference
+applies, since a rater re-reading the same subjects is modeled exactly
+like independent raters of equal quality, and the card has the same
 fields.
 
 ## When coefficients disagree: the `delta_hat` flag
@@ -298,6 +310,36 @@ latent_class_fit(ratings = Y_k2, B = 200)
 
 The bounds are the most a two-rater matrix can say. A study that needs
 one sensitivity and specificity per rater should add a third rater.
+
+### Reporting the result
+
+Two things belong in every write-up whatever the flag: the exclusions
+(which subjects were dropped for missing ratings) and the package
+version, which `summary()` prints. What follows depends on the flag.
+
+An aligned card is reported as one coefficient with its position and
+band. From Case 1: "Five raters rated 1,000 subjects, observed positive
+rate 0.24. PABAK was 0.54, at the 74th percentile of what a five-rater,
+1,000-subject study at this positive rate can produce, and the data are
+consistent with panel quality 0.85 to 0.90. The three agreement
+coefficients implied the same quality (spread 0.00 pp, aligned)."
+
+A divergent card is reported rater by rater, and the coefficient values
+appear only as description. From Case 2: "Five raters rated 1,000
+subjects, observed positive rate 0.47. The qualities implied by the
+three agreement coefficients were 0.42 percentage points apart, at the
+99.5th percentile of the spread that equal-quality raters produce in
+this study context, so the panel is not summarized by one coefficient.
+Pairwise PABAK among R1 to R3 was 0.67 to 0.71 (81st to 84th
+percentile) and 0.17 to 0.27 for every pair involving R4 or R5 (35th to
+48th). Against the majority of the other raters, R4 and R5 had
+specificity 0.51 and 0.50 versus 0.91 to 0.93 for the rest; a
+latent-class fit placed them at 0.51 and 0.50 (95% bootstrap intervals
+0.47 to 0.55 and 0.46 to 0.54)."
+
+The intervals on the latent-class table are 95% percentile bootstrap
+intervals, from `bootstrap_B` resamples (1,000 by default; the
+examples here use 200 to run quickly).
 
 ## Boundaries
 

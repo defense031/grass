@@ -100,11 +100,16 @@ qualities are consistent with it.
 
 The input is one matrix or data frame, subjects in rows and raters in
 columns, with at least two raters. Cells are numeric 0/1, `logical`,
-or a two-level `factor`, where 1, `TRUE`, or the positive level means
-present. Column names, if given, become rater labels on the card. The
-functions stop on `NA` rather than silently dropping rows, so filter
-first with `Y <- Y[complete.cases(Y), ]` and report the exclusions in
-your Methods. Binary outcomes only.
+or a two-level `factor` or character column, where 1, `TRUE`, or the
+positive level means present. For a factor or character column the
+level named yes, true, positive, present, or case, in any letter case,
+is taken as positive; any other pair of labels is refused with a
+message asking for a 0/1 recode, so an outcome is never inverted
+silently. Drop identifier columns before the call. Column names, if
+given, become rater labels on the card. The functions stop on `NA`
+rather than silently dropping rows, so filter first with `Y <-
+Y[complete.cases(Y), ]` and report the exclusions in your Methods.
+Binary outcomes only.
 
 The examples simulate the panel, so the true classes are known and
 every claim below can be checked against them. This first panel has
@@ -133,6 +138,8 @@ head(Y0, 8)
 
 Row 6 is unanimously positive, rows 2, 4, 5, and 7 unanimously
 negative, and rows 1, 3, and 8 split. One call produces the card.
+Inside a script, assign the result and `print()` it; the same goes for
+`plot()`.
 
 
 ```r
@@ -144,13 +151,13 @@ grass_report(ratings = Y0)
 #>   AC1          = 0.55  ->  70th percentile | quality 0.80-0.90
 #>   Fleiss kappa = 0.48  ->  71st percentile | quality 0.80-0.90
 #>   ICC          = 0.62  ->  72nd percentile | quality 0.81-0.90  [distribution-sensitive]
-#>   read: this panel agreed more tightly than 70% of what panels at this design can produce; the data are consistent with panel quality 0.80-0.90.
-#>   delta       =   0 pp implied-quality spread (aligned)
-#>   matched null = (k=3, N=150, q=0.86): delta_hat at the 11.6 percentile
+#>   read: this panel's agreement exceeds 70% of what panels in this study context can produce; the data are consistent with panel quality 0.80-0.90.
+#>   delta       = 0.00 pp implied-quality spread (aligned)
+#>   matched null = (k=3, N=150, q=0.86): delta_hat sits at percentile 11.6 of the null
 #> 
 #>   Notes:
-#>     - N=150 clamped to nearest sim-grid N=100.
-#>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, which the other three coefficients do not need.
+#>     - ICC reference only: N=150 uses the nearest calibrated N=100. The agreement-family surfaces and the delta_hat null interpolate at N=150.
+#>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, while the other three depend only on prevalence and quality.
 #>     - flag from delta_hat's percentile on the matched null (k=3, N=150, q=0.86, prev=0.31; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   See `summary(...)` for full panel and CI details.
@@ -164,30 +171,35 @@ grass_report(ratings = Y0)
 - **The coefficient lines** show each observed value, its percentile,
   and its consistency band. The **percentile** is where the observed
   value falls among everything this study could have produced, from
-  the worst calibrated panels to the best. **Panel quality `q`** is
-  the share of cases a rater gets correct. The reference panels give
-  every rater the same `q` for both sensitivity and specificity, and
-  `q` is what the package is estimating. The **consistency band** is
-  the range of qualities that could plausibly have produced this
-  coefficient, every `q` at which the observed value sits inside the
-  middle 95% of that quality's panels. A wide band means the study
-  cannot tell those qualities apart, and a small study is always wide.
+  the lowest-quality panels in the reference to the highest. **Panel
+  quality `q`** is the share of cases a rater gets correct. The
+  reference panels give every rater the same `q` for both sensitivity
+  and specificity, and `q` is what the package is estimating. The
+  **consistency band** is the range of qualities that could plausibly
+  have produced this coefficient. Formally, it is every `q` at which
+  the observed value sits inside the middle 95% of that quality's
+  panels. A wide band means the study cannot tell those qualities
+  apart, and a small study always gives a wide band.
 - **`<- primary`** marks the coefficient to report: PABAK at moderate
   prevalence, AC1 when the positive rate is below 0.15 or above 0.85,
   where its percentile is less noisy. ICC is tagged
   `[distribution-sensitive]` because its reference depends on how the
-  positive cases are spread across subjects, not just how many there
-  are, so its percentile is less certain than the other three.
+  positives are spread across subjects, a few obvious cases or many
+  borderline ones, and not just on how many there are, so its
+  percentile is less certain than the other three.
 - **The `read:` line** restates the headline in plain language. The
   card prints no verdict label, and the band's width states the
   uncertainty.
-- **`delta`** is how far apart PABAK, AC1, and Fleiss' kappa are on
-  quality, in percentage points (pp), with its flag. The next section
-  covers the flag.
+- **`delta`** is `delta_hat` as the card prints it, the spread of the
+  qualities implied by PABAK, AC1 (both averaged over rater pairs),
+  and Fleiss' kappa, in percentage points (pp), followed by its flag.
+  The next section covers the flag.
 
 **Intra-rater agreement**, one rater scoring the same subjects on
-repeated occasions, uses the same matrix with the occasions as columns
-and the call `grass_report(Y, axis = "intra")`. The card has the same
+repeated occasions, uses the same layout with the occasions as columns
+and the call `grass_report(Y, axis = "intra")`. The same reference
+applies, since a rater re-reading the same subjects is modeled exactly
+like independent raters of equal quality, and the card has the same
 fields.
 
 ## When coefficients disagree: the `delta_hat` flag
@@ -258,13 +270,13 @@ grass_report(Y1, verbose = FALSE)
 #>   AC1          = 0.64  ->  74th percentile | quality 0.85-0.90
 #>   Fleiss kappa = 0.36  ->  74th percentile | quality 0.85-0.90
 #>   ICC          = 0.48  ->  63rd percentile | quality 0.80-0.85  [distribution-sensitive]
-#>   read: this panel agreed more tightly than 74% of what panels at this design can produce; the data are consistent with panel quality 0.85-0.90.
-#>   delta       =   0 pp implied-quality spread (aligned)
-#>   matched null = (k=5, N=1000, q=0.87): delta_hat at the 36.4 percentile
+#>   read: this panel's agreement exceeds 74% of what panels in this study context can produce; the data are consistent with panel quality 0.85-0.90.
+#>   delta       = 0.00 pp implied-quality spread (aligned)
+#>   matched null = (k=5, N=1000, q=0.87): delta_hat sits at percentile 36.4 of the null
 #> 
 #>   Notes:
 #>     - Consistency band narrower than the calibrated q-grid spacing; endpoints interpolated within one grid gap.
-#>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, which the other three coefficients do not need.
+#>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, while the other three depend only on prevalence and quality.
 #>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   See `summary(...)` for full panel and CI details.
@@ -310,9 +322,9 @@ grass_report(Y_split, bootstrap_B = 200, verbose = FALSE)
 #>   AC1           = 0.38  ->  60th percentile
 #>   Fleiss kappa  = 0.36  ->  58th percentile
 #>   ICC           = 0.46  ->  58th percentile  [distribution-sensitive]
-#>   panel-agg.  = suppressed (divergent)
+#>   summary     = suppressed (divergent)
 #>   delta       = 0.42 pp (divergent)
-#>   matched null = (k=5, N=1000, q=0.80): delta_hat at the 99.5 percentile
+#>   matched null = (k=5, N=1000, q=0.80): delta_hat sits at percentile 99.5 of the null
 #> 
 #>   pairwise PABAK / surface percentile (lower / upper):
 #>     R1     R2     R3     R4     R5    
@@ -322,14 +334,14 @@ grass_report(Y_split, bootstrap_B = 200, verbose = FALSE)
 #>   R4    0.27   0.24   0.25   --     35% 
 #>   R5    0.21   0.22   0.21   0.17   --  
 #> 
-#>   per-rater vs panel-majority of OTHER raters (pooled-reference):
+#>   per-rater vs the majority of the OTHER raters:
 #>     R1   Se_tilde = 0.84  Sp_tilde = 0.93  (n_pos = 360, n_neg = 457, excl = 183)
 #>     R2   Se_tilde = 0.85  Sp_tilde = 0.91  (n_pos = 352, n_neg = 460, excl = 188)
 #>     R3   Se_tilde = 0.83  Sp_tilde = 0.92  (n_pos = 351, n_neg = 459, excl = 190)
 #>     R4   Se_tilde = 0.92  Sp_tilde = 0.51  (n_pos = 327, n_neg = 581, excl = 92)
 #>     R5   Se_tilde = 0.88  Sp_tilde = 0.50  (n_pos = 330, n_neg = 579, excl = 91)
 #> 
-#>   per-rater (latent-class fit; alongside pairwise):
+#>   per-rater (latent-class fit):
 #>     R1   Se = 0.93  (0.89, 0.96)   Sp = 0.93  (0.92, 0.96)
 #>     R2   Se = 0.92  (0.89, 0.95)   Sp = 0.91  (0.88, 0.93)
 #>     R3   Se = 0.89  (0.86, 0.93)   Sp = 0.91  (0.88, 0.94)
@@ -337,7 +349,7 @@ grass_report(Y_split, bootstrap_B = 200, verbose = FALSE)
 #>     R5   Se = 0.89  (0.86, 0.92)   Sp = 0.50  (0.46, 0.54)
 #> 
 #>   Notes:
-#>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, which the other three coefficients do not need.
+#>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, while the other three depend only on prevalence and quality.
 #>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.80, prev=0.45; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   See `summary(...)` for full panel and CI details.
@@ -377,9 +389,9 @@ grass_report(ratings = Y_k2)
 #>   sample      = 2 raters, N = 200, pi_hat = 0.39
 #>   PABAK  = 0.50  ->  69th percentile | quality 0.80-0.90  <- primary
 #>   AC1    = 0.52  ->  69th percentile | quality 0.80-0.90
-#>   read: this panel agreed more tightly than 69% of what panels at this design can produce; the data are consistent with panel quality 0.80-0.90.
-#>   delta       =   0 pp implied-quality spread (not_applicable)
-#>   matched null = n/a at k = 2 (coefficients cannot disagree; see pairwise/bounds path)
+#>   read: this panel's agreement exceeds 69% of what panels in this study context can produce; the data are consistent with panel quality 0.80-0.90.
+#>   delta       = 0.00 pp implied-quality spread (not_applicable)
+#>   matched null = n/a at k = 2 (PABAK and AC1 imply the same quality; see the pairwise table and the Hui-Walter bounds)
 #> 
 #>   Notes:
 #>     - delta_hat is not applicable at k = 2: the two-coefficient agreement family (PABAK, AC1) implies identical panel quality by construction, so cross-coefficient discordance cannot be observed. Use the k = 2 identifiable bounds and pairwise path for asymmetry assessment.
@@ -414,6 +426,36 @@ latent_class_fit(ratings = Y_k2, B = 200)
 The bounds are the most a two-rater matrix can say. A study that needs
 one sensitivity and specificity per rater should add a third rater.
 
+### Reporting the result
+
+Two things belong in every write-up whatever the flag: the exclusions
+(which subjects were dropped for missing ratings) and the package
+version, which `summary()` prints. What follows depends on the flag.
+
+An aligned card is reported as one coefficient with its position and
+band. From Case 1: "Five raters rated 1,000 subjects, observed positive
+rate 0.24. PABAK was 0.54, at the 74th percentile of what a five-rater,
+1,000-subject study at this positive rate can produce, and the data are
+consistent with panel quality 0.85 to 0.90. The three agreement
+coefficients implied the same quality (spread 0.00 pp, aligned)."
+
+A divergent card is reported rater by rater, and the coefficient values
+appear only as description. From Case 2: "Five raters rated 1,000
+subjects, observed positive rate 0.47. The qualities implied by the
+three agreement coefficients were 0.42 percentage points apart, at the
+99.5th percentile of the spread that equal-quality raters produce in
+this study context, so the panel is not summarized by one coefficient.
+Pairwise PABAK among R1 to R3 was 0.67 to 0.71 (81st to 84th
+percentile) and 0.17 to 0.27 for every pair involving R4 or R5 (35th to
+48th). Against the majority of the other raters, R4 and R5 had
+specificity 0.51 and 0.50 versus 0.91 to 0.93 for the rest; a
+latent-class fit placed them at 0.51 and 0.50 (95% bootstrap intervals
+0.47 to 0.55 and 0.46 to 0.54)."
+
+The intervals on the latent-class table are 95% percentile bootstrap
+intervals, from `bootstrap_B` resamples (1,000 by default; the
+examples here use 200 to run quickly).
+
 ## Boundaries
 
 **Shared panel bias.** A second five-rater panel at the same
@@ -445,12 +487,12 @@ grass_report(Y_shared, verbose = FALSE)
 #>   AC1          = 0.36  ->  56th percentile | quality 0.75-0.85
 #>   Fleiss kappa = 0.36  ->  56th percentile | quality 0.75-0.85
 #>   ICC          = 0.47  ->  61st percentile | quality 0.76-0.85  [distribution-sensitive]
-#>   read: this panel agreed more tightly than 56% of what panels at this design can produce; the data are consistent with panel quality 0.75-0.85.
-#>   delta       =   0 pp implied-quality spread (aligned)
-#>   matched null = (k=5, N=1000, q=0.80): delta_hat at the 29.2 percentile
+#>   read: this panel's agreement exceeds 56% of what panels in this study context can produce; the data are consistent with panel quality 0.75-0.85.
+#>   delta       = 0.00 pp implied-quality spread (aligned)
+#>   matched null = (k=5, N=1000, q=0.80): delta_hat sits at percentile 29.2 of the null
 #> 
 #>   Notes:
-#>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, which the other three coefficients do not need.
+#>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, while the other three depend only on prevalence and quality.
 #>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.80, prev=0.48; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   See `summary(...)` for full panel and CI details.
@@ -568,9 +610,8 @@ position_on_surface(ratings = Y1, metric = "pabak")
 #>   observed value       : 0.537
 #>   design (pi_hat,k,N)  : (0.237, 5, 1000)
 #>   implied quality q_hat: 0.866 +/- 0.005
-#>   pooled percentile    : 73.9 (of the design's achievable range)
+#>   percentile           : 73.9 (of the achievable range in this study context)
 #>   consistency band     : consistent with panel quality 0.85-0.90 (95%)
-#>   sampling method      : empirical
 #>   notes                :
 #>     - Consistency band narrower than the calibrated q-grid spacing; endpoints interpolated within one grid gap.
 ```
@@ -597,9 +638,9 @@ check_asymmetry(ratings = Y1)
 #> 
 #>   Surface caveats:
 #>     - Consistency band narrower than the calibrated q-grid spacing; endpoints interpolated within one grid gap.
-#>     - Fitted-ICC F_key picked via glmer: mu_hat=-1.775, tau2_hat=3.089 -> F_key tau2=4.0000, mu=-1.386.
-#>     - Fitted-ICC reference (GLMM-gap corrected) at F_key=LN_mu=-1.386_tau2=4.0000, k=5, N=1000 (family=logit_normal, M1=0.300).
-#>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, which the other three coefficients do not need.
+#>     - ICC reference: a logit-normal profile fitted to the ratings (mu=-1.775, tau2=3.089) was matched to the nearest calibrated profile (mu=-1.386, tau2=4.0000).
+#>     - ICC reference: calibrated profile LN_mu=-1.386_tau2=4.0000 at k=5, N=1000 (logit_normal family, mean prevalence 0.300).
+#>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, while the other three depend only on prevalence and quality.
 #>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.
 ```
 
@@ -656,31 +697,30 @@ summary(card1)
 #>   primary coefficient
 #>     name         : pabak
 #>     observed     : 0.537
-#>     percentile   : 73.86 pp (pooled; position in the design's achievable range)
+#>     percentile   : 73.86 (of the achievable range in this study context)
 #>     q_hat        : 0.866
 #>     band         : consistent with panel quality 0.85-0.90 (95%)
-#>     basis        : pooled-achievable-range
 #> 
 #>   delta (cross-coefficient asymmetry)
 #>     implied-q spread (pp) : 0.00
 #>     flag             : aligned
-#>     delta percentile : 36.4 pctile on matched null (k=5, N=1000, q=0.87)
+#>     delta percentile : 36.4 (percentile on the matched null, k=5, N=1000, q=0.87)
 #> 
 #>   panel (full table)
-#>     pabak           observed = 0.537  q_hat = 0.866  pct = 73.86 pp  quality 0.85-0.90              ref = closed-form
-#>     mean_ac1        observed = 0.637  q_hat = 0.866  pct = 73.86 pp  quality 0.85-0.90              ref = closed-form
-#>     fleiss_kappa    observed = 0.361  q_hat = 0.866  pct = 73.86 pp  quality 0.85-0.90              ref = closed-form
-#>     icc             observed = 0.484  q_hat = 0.822  pct = 62.50 pp  quality 0.80-0.85              ref = fitted-icc
+#>     pabak           observed = 0.537  q_hat = 0.866  pct = 73.86  quality 0.85-0.90              ref = closed-form
+#>     mean_ac1        observed = 0.637  q_hat = 0.866  pct = 73.86  quality 0.85-0.90              ref = closed-form
+#>     fleiss_kappa    observed = 0.361  q_hat = 0.866  pct = 73.86  quality 0.85-0.90              ref = closed-form
+#>     icc             observed = 0.484  q_hat = 0.822  pct = 62.50  quality 0.80-0.85              ref = fitted-icc
 #> 
 #>   notes
 #>     - Consistency band narrower than the calibrated q-grid spacing; endpoints interpolated within one grid gap.
-#>     - Fitted-ICC F_key picked via glmer: mu_hat=-1.775, tau2_hat=3.089 -> F_key tau2=4.0000, mu=-1.386.
-#>     - Fitted-ICC reference (GLMM-gap corrected) at F_key=LN_mu=-1.386_tau2=4.0000, k=5, N=1000 (family=logit_normal, M1=0.300).
-#>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, which the other three coefficients do not need.
+#>     - ICC reference: a logit-normal profile fitted to the ratings (mu=-1.775, tau2=3.089) was matched to the nearest calibrated profile (mu=-1.386, tau2=4.0000).
+#>     - ICC reference: calibrated profile LN_mu=-1.386_tau2=4.0000 at k=5, N=1000 (logit_normal family, mean prevalence 0.300).
+#>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, while the other three depend only on prevalence and quality.
 #>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   grass version : 0.8.0
-#>   timestamp     : 2026-09-05 18:18:54
+#>   timestamp     : 2026-09-05 19:17:25
 ```
 
 `summary()` prints everything behind the card, the full panel with

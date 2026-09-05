@@ -62,8 +62,11 @@ as.data.frame.grass_card <- function(x, row.names = NULL, optional = FALSE, ...)
 
   if (!is.null(row.names)) rownames(panel) <- row.names
 
+  # Always one row per coefficient, so cards from many studies bind into
+  # one table whatever their flag. On a divergent card the per-rater table
+  # rides along as an attribute rather than turning the result into a list.
   if (!is.null(x$per_rater) && nrow(x$per_rater) > 0L) {
-    return(list(panel = panel, per_rater = x$per_rater))
+    attr(panel, "per_rater") <- x$per_rater
   }
   panel
 }

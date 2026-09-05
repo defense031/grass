@@ -545,13 +545,13 @@ check_asymmetry <- function(ratings,
     ]
     if (length(excluded_for_clamp)) {
       clamp_note <- sprintf(
-        "delta_hat (implied-quality spread) over %d agreement-family coefficients; excluded due to reference-envelope clamp: %s. ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, which the other three coefficients do not need.",
+        "delta_hat (implied-quality spread) over %d agreement-family coefficients; excluded due to reference-envelope clamp: %s. ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, while the other three depend only on prevalence and quality.",
         sum(in_delta_set),
         paste(excluded_for_clamp, collapse = ", ")
       )
     } else if ("icc" %in% names(positions)) {
       # No clamps; just remind that ICC isn't in delta_hat.
-      clamp_note <- "delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, which the other three coefficients do not need."
+      clamp_note <- "delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, while the other three depend only on prevalence and quality."
     }
   } else {
     # Fall back to all available agreement-family implied qualities, even

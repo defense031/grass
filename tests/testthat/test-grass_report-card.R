@@ -232,8 +232,9 @@ test_that("summary.grass_card returns the documented structure", {
 })
 
 # ---- Test 6 ---------------------------------------------------------------
-# as.data.frame() returns a data.frame for non-divergent cards, list for
-# divergent. Either way, the panel rows have an `is_primary` logical column.
+# as.data.frame() returns a data.frame whatever the flag; on divergent cards
+# the per-rater table rides along as an attribute. The panel rows always have
+# an `is_primary` logical column.
 
 test_that("as.data.frame.grass_card has an is_primary column", {
   set.seed(1)
@@ -253,15 +254,16 @@ test_that("as.data.frame.grass_card has an is_primary column", {
   expect_true(any(df_align$is_primary))
 })
 
-test_that("as.data.frame.grass_card returns a list(panel, per_rater) on divergent cards", {
-  # Re-pinned 2026-07-06: op_strong fires divergent on the delta-B null.
+test_that("as.data.frame.grass_card stays a data.frame on divergent cards, per_rater as attribute", {
+  # 2026-09-05: a divergent card used to come back as a list, which broke
+  # binding many studies' cards into one table (usability test finding).
   Y <- .simulate_op_strong_panel(seed = 6L)
   card_div <- grass_report(Y, bootstrap_B = 50)
   df_div <- as.data.frame(card_div)
-  expect_type(df_div, "list")
-  expect_true("panel" %in% names(df_div))
-  expect_s3_class(df_div$panel, "data.frame")
-  expect_true("is_primary" %in% names(df_div$panel))
+  expect_s3_class(df_div, "data.frame")
+  expect_true("is_primary" %in% names(df_div))
+  expect_s3_class(attr(df_div, "per_rater"), "data.frame")
+  expect_true(nrow(attr(df_div, "per_rater")) >= 2L)
 })
 
 # ---- Test 7 ---------------------------------------------------------------

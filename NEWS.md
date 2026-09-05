@@ -10,6 +10,24 @@ prevalence node at 0.875, and a sample-size node at 25 (581 million
 null draws in total, 50,000 per cell). Off-grid Report Card readings
 change; on-node readings are unchanged up to storage quantization.
 
+* Input handling: a two-level factor or character column is accepted
+  only when one level reads as a positive call (1, TRUE, yes, positive,
+  pos, present, case; case-insensitive). Anything else is an error that
+  asks for a 0/1 recode. Before, the second level was taken as positive
+  without a message, which silently inverted the outcome for labels
+  such as dehisced/intact.
+* `as.data.frame()` on a Report Card always returns one row per
+  coefficient; on a divergent card the per-rater table is attached as
+  the `per_rater` attribute instead of turning the result into a list.
+* `summary()` on a divergent card shows every band as suppressed,
+  matching the card. The latent-class table uses the rating matrix's
+  column names as rater labels, like the pairwise tables.
+* Printed wording: the card's read line, the divergent summary line,
+  the per-rater headers, the k = 2 matched-null line, and the ICC
+  reference notes are reworded in plain language. The former "clamped
+  to nearest sim-grid" notes now say that only the ICC reference uses a
+  nearest calibrated k or N and that the agreement family interpolates.
+  Percentiles are no longer labelled "pp".
 * The delta-hat null is prevalence-resolved everywhere. The bundled
   `delta_null_ecdf` holds 11,616 cells: eleven rater counts (3-25),
   twelve sample sizes (15-1,000), eleven quality levels (0.65-0.99),

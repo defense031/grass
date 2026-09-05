@@ -67,7 +67,7 @@ print.summary.grass_card <- function(x, digits = 3, ...) {
   cat(sprintf("    %-12s : %s\n", "name", co$primary))
   cat(sprintf("    %-12s : %.*f\n", "observed",
               digits, co$observed_value))
-  cat(sprintf("    %-12s : %.*f pp (pooled; position in the design's achievable range)\n",
+  cat(sprintf("    %-12s : %.*f (of the achievable range in this study context)\n",
               "percentile", max(digits - 1L, 1L), co$surface_percentile))
   cat(sprintf("    %-12s : %.*f\n", "q_hat", digits, co$q_hat %||% NA_real_))
   # v0.7.1: co$band is a rendered consistency-band string (or "suppressed"
@@ -77,9 +77,6 @@ print.summary.grass_card <- function(x, digits = 3, ...) {
                   (length(co$band) == 1L && is.na(co$band))) "NA"
               else co$band
   cat(sprintf("    %-12s : %s\n", "band", band_str))
-  if (!is.null(co$percentile_basis) && !is.na(co$percentile_basis)) {
-    cat(sprintf("    %-12s : %s\n", "basis", co$percentile_basis))
-  }
 
   cat("\n  delta (cross-coefficient asymmetry)\n")
   cat(sprintf("    %-16s : %.*f\n", "implied-q spread (pp)",
@@ -88,7 +85,7 @@ print.summary.grass_card <- function(x, digits = 3, ...) {
   mn <- x$delta$matched_null
   dp <- x$delta$delta_percentile
   if (!is.null(mn) && is.finite(dp %||% NA_real_)) {
-    cat(sprintf("    %-16s : %.1f pctile on matched null (k=%d, N=%d, q=%.2f)\n",
+    cat(sprintf("    %-16s : %.1f (percentile on the matched null, k=%d, N=%d, q=%.2f)\n",
                 "delta percentile", dp, mn$k, mn$N, mn$q))
   } else if (!is.null(mn)) {
     cat(sprintf("    %-16s : matched null (k=%d, N=%d, q=%.2f)\n",
@@ -101,11 +98,15 @@ print.summary.grass_card <- function(x, digits = 3, ...) {
   cat("\n  panel (full table)\n")
   pn <- x$panel
   for (i in seq_len(nrow(pn))) {
-    band_str <- .fmt_band_range(pn$band_lo[i], pn$band_hi[i],
-                                pn$band_open_low[i], pn$band_open_high[i])
+    band_str <- if (identical(x$delta$flag, "divergent")) {
+      "band suppressed (divergent)"
+    } else {
+      .fmt_band_range(pn$band_lo[i], pn$band_hi[i],
+                      pn$band_open_low[i], pn$band_open_high[i])
+    }
     if (!nzchar(band_str)) band_str <- "NA"
     ref_used <- if ("reference_used" %in% names(pn)) pn$reference_used[i] else NA_character_
-    cat(sprintf("    %-15s observed = %.*f  q_hat = %.*f  pct = %5.*f pp  %-30s ref = %s\n",
+    cat(sprintf("    %-15s observed = %.*f  q_hat = %.*f  pct = %5.*f  %-30s ref = %s\n",
                 pn$coefficient[i],
                 digits, pn$observed_value[i],
                 digits, pn$q_hat[i],

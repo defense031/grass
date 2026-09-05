@@ -52,21 +52,24 @@ normalize_ratings <- function(ratings) {
   if (is.data.frame(ratings)) {
     cols <- lapply(ratings, function(x) {
       if (is.logical(x)) return(as.integer(x))
-      if (is.factor(x)) {
-        lv <- levels(droplevels(x))
+      if (is.factor(x) || is.character(x)) {
+        lv <- if (is.factor(x)) levels(droplevels(x)) else sort(unique(x[!is.na(x)]))
         if (length(lv) > 2) {
           stop("data.frame column has more than 2 levels: ",
                paste(shQuote(lv), collapse = ", "),
                ". Recode to binary first.", call. = FALSE)
         }
-        # Two-level factor: positive = level "1" if present, else second level.
-        pos <- if ("1" %in% lv) "1" else if ("TRUE" %in% lv) "TRUE" else lv[length(lv)]
+        # Two-level factor or character: the positive level has to be
+        # recognizable. Guessing (the old "second level" rule) silently
+        # inverted the outcome for labels like dehisced/intact, and an
+        # inverted outcome inverts prevalence and every lookup downstream.
+        pos <- .positive_level(lv)
         return(as.integer(as.character(x) == pos))
       }
       if (is.numeric(x)) return(as.integer(x))
       stop("Unsupported data.frame column type: ",
            paste(class(x), collapse = "/"),
-           ". Use logical, integer 0/1, or 2-level factor.",
+           ". Use logical, integer 0/1, or a two-level factor or character.",
            call. = FALSE)
     })
     Y <- do.call(cbind, cols)
@@ -82,6 +85,26 @@ normalize_ratings <- function(ratings) {
        paste(class(ratings), collapse = "/"),
        ". Use an N x k matrix, a data.frame with k rater columns, or a ",
        "list of two equal-length 0/1 vectors.", call. = FALSE)
+}
+
+# Internal: which of two labels is the positive call. A label is
+# recognized when it reads as a positive call (1, TRUE, yes, positive,
+# pos, present, case; case-insensitive). Anything else is an error, so
+# a user recodes deliberately instead of the package guessing.
+.positive_level <- function(lv) {
+  lv <- as.character(lv)
+  keys <- c("1", "true", "yes", "positive", "pos", "present", "case")
+  hit  <- lv[tolower(lv) %in% keys]
+  if (length(hit) == 1L) return(hit)
+  if (length(hit) > 1L) {
+    stop("Both levels (", paste(shQuote(lv), collapse = ", "),
+         ") read as positive calls. Recode to 0/1 with 1 = present.",
+         call. = FALSE)
+  }
+  stop("Cannot tell which level of (", paste(shQuote(lv), collapse = ", "),
+       ") is the positive call. Recode to 0/1 with 1 = present, or name ",
+       "the positive level one of: yes, TRUE, positive, present, case.",
+       call. = FALSE)
 }
 
 # Internal: coerce a numeric / logical / integer matrix to N x k integer
