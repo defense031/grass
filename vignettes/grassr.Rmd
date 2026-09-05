@@ -25,7 +25,8 @@ Traditionally, this is referred to as inter- and intra-rater
 reliability and is answered with a single coefficient and a label from
 Landis and Koch (1977), where 0.00 to 0.20 is *slight*, 0.21 to 0.40
 *fair*, 0.41 to 0.60 *moderate*, and 0.61 to 0.80 *substantial*. Koo
-and Li (2016) give the analogous ranges for ICC.
+and Li (2016) give the analogous ranges for the intraclass correlation
+coefficient (ICC).
 
 Those labels have a problem. Every chance-corrected coefficient is the
 same fraction, observed agreement minus chance agreement over one
@@ -675,7 +676,7 @@ summary(card1)
 #>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   grass version : 0.8.0
-#>   timestamp     : 2026-09-05 16:04:36
+#>   timestamp     : 2026-09-05 16:33:28
 ```
 
 `summary()` prints everything behind the card, the full panel with
