@@ -1293,7 +1293,7 @@ consistency_band_from_sweep <- function(q, p, level = 0.95) {
 
 #' @export
 print.grass_surface_position <- function(x, digits = 3, ...) {
-  cat("grass surface-position report (sweep convention, v0.7.1)\n",
+  cat("grass surface-position report\n",
       "  metric               : ", x$metric, "\n",
       "  observed value       : ", formatC(x$observed_value, digits = digits,
                                            format = "f"), "\n",

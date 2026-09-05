@@ -34,7 +34,7 @@ bits of content. They are now stored as integer-delta byte planes:
 
 * R/sysdata.rda: 8.6 MB -> 4.9 MB
 * tarball: 9.1 MB -> 5.4 MB
-* installed size: 5.6 Mb (was ~9 Mb)
+* installed size: about 6 Mb (was ~9 Mb)
 
 Reconstruction is exact rather than approximate — the decoded arrays are
 `identical()` to those in 0.7.4 — so no reported value changes as a
