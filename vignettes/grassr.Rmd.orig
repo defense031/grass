@@ -392,22 +392,29 @@ model, outside this package.
 **Planning a study.** Before any data exist, `plot_surface()` draws a
 coefficient's expected-value surface, the value a panel of each
 quality produces at each prevalence, for a planned rater count and
-sample size, with the planned positive rate marked. The view answers
-the planning question of which observed value will correspond to
-which panel quality in the study context, so a target can be fixed in
-the protocol before the raters start. The dotted lines mark the
-quality bands the card uses.
+sample size. The `observed` argument pins a hypothetical value at the
+planned positive rate, so the planning question becomes visible:
+which panel quality would that value imply in this study context, and
+how far would the same value drift if the prevalence came in
+differently. The dotted lines mark the quality bands the card uses.
+A screening study plans three raters, 80 subjects, and a positive rate
+near 10%, and asks what a Fleiss' kappa of 0.45 would mean.
 
-```{r plan-surface, fig.cap = "Planning view: PABAK's expected-value surface for three raters and 80 subjects, with a planned positive rate of 10% marked.", fig.alt = "A heatmap of expected PABAK over mean prevalence on the horizontal axis and rater quality on the vertical axis, for a planned three-rater, 80-subject study. The surface is flat across prevalence and rises with quality. A dashed vertical line marks the planned positive rate of 0.10 and dotted horizontal lines mark the quality bands."}
-plot_surface("pabak", pi_hat = 0.10, k = 3, N = 80)
+```{r plan-fleiss, fig.cap = "Planning view: Fleiss' kappa for three raters and 80 subjects, with an observed 0.45 pinned at a 10% positive rate.", fig.alt = "A heatmap of expected Fleiss' kappa over mean prevalence on the horizontal axis and rater quality on the vertical axis. The surface is highest at balanced prevalence and falls toward both edges. A point pinned at prevalence 0.10 and quality near 0.92 marks where an observed kappa of 0.45 lands."}
+plot_surface("fleiss_kappa", pi_hat = 0.10, k = 3, N = 80, observed = 0.45)
 ```
 
-PABAK's surface is flat across prevalence, which is why it is the
-primary coefficient at moderate prevalence. The same call with
-`metric = "fleiss_kappa"` shows how far Fleiss' kappa falls as the
-planned prevalence leaves 50%. An expected observed value can be
-pinned on the surface with the `observed` argument; see
-`?plot_surface`.
+At 10% prevalence the pinned 0.45 implies a panel near quality 0.92.
+The same 0.45 at balanced prevalence would imply a panel near 0.84,
+because the surface falls away from 50% on both sides. A protocol that
+fixes a kappa target without fixing the prevalence it applies to has
+fixed nothing. PABAK's surface for the same study is flat across
+prevalence, which is why it is the primary coefficient at moderate
+prevalence.
+
+```{r plan-pabak, fig.cap = "Planning view: PABAK for the same study, with the same observed 0.45 pinned.", fig.alt = "A heatmap of expected PABAK over mean prevalence and rater quality for the same planned study. The surface is flat across prevalence and rises with quality, and the pinned observed value of 0.45 lands at the same quality at every prevalence."}
+plot_surface("pabak", pi_hat = 0.10, k = 3, N = 80, observed = 0.45)
+```
 
 **Each stage of `grass_report()` on its own.**
 
