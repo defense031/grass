@@ -3,7 +3,7 @@ title: "grassr: rater reliability on binary outcomes, from rating matrix to Repo
 author:
   - Austin Semmel
   - Rachel Gidaro
-date: "2026-09-05"
+date: "2026-09-06"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{grassr: rater reliability on binary outcomes, from rating matrix to Report Card}
@@ -15,27 +15,22 @@ vignette: >
 
 ## Introduction: the prevalence trap
 
-A **rater panel** consists of `k` entities that each assess the
-performance of `N` subjects for the successful completion of a binary
-task, as defined by a study protocol. Raters observe each subject
-exactly once, which produces an `N x k` rating matrix of yes-or-no
-responses. Both the level of agreement across the panel and the
-consistency of individual raters over time are of primary concern.
-Traditionally, this is referred to as inter- and intra-rater
-reliability and is answered with a single coefficient and a label from
-Landis and Koch (1977), where 0.00 to 0.20 is *slight*, 0.21 to 0.40
-*fair*, 0.41 to 0.60 *moderate*, 0.61 to 0.80 *substantial*, and 0.81
-to 1.00 *almost perfect*. Koo and Li (2016) give the analogous ranges
-for the intraclass correlation coefficient (ICC).
+In a study protocol where a rater panel of `k` members evaluates `N`
+subjects on a binary outcome, the resulting `N x k` response matrix is
+traditionally assessed against fixed benchmarks such as the Landis and
+Koch (1977) kappa scale. However, these classical metrics are
+vulnerable to prevalence skew, rater count, and sample size, and can
+label identical rater performance as either *slight* or *substantial*
+purely because of the base rate. grassr (Guide for Rater Agreement
+under Structural Skew) resolves this prevalence trap by simulating
+panels within your study's specific context, translating raw
+coefficients into an empirical Report Card that reports a percentile
+for each coefficient, a consistency band on rater quality, and a flag
+when the coefficients disagree.
 
-However, traditional kappa-based statistics do not account for the
-underlying context (the prevalence, rater count, and sample size of
-the study). The chance term they subtract depends on prevalence, so
-the coefficient can vary even when the rater quality itself remains
-constant. The code below fixes two raters at quality 0.87, meaning
-each calls 87% of cases correctly, sweeps prevalence from 2% to 98%,
-and plots the expected Cohen's kappa against the Landis and Koch
-bands.
+The code below fixes two raters at quality 0.87, meaning each calls 87%
+of cases correctly, sweeps prevalence from 2% to 98%, and plots the
+expected Cohen's kappa against the Landis and Koch bands.
 
 
 ```r
@@ -70,31 +65,9 @@ text(pts, ptk + 0.05, sprintf("%.2f", ptk), cex = 0.85)
 par(op)
 ```
 
-A screening study at 5% prevalence reports *slight* agreement, a
-balanced study reports *moderate*, a high-prevalence study reports
-*fair*, and the raters never changed. How far one study's value
-scatters around this curve depends on rater count and sample size, and
-the fixed scale ignores that too. Three multi-rater agreement
-coefficients, Fleiss' kappa, PABAK taken as the mean over rater pairs,
-and Gwet's AC1, return three different values on one dataset for the
-same reason. Fleiss' kappa computes the chance term from the panel's
-observed positive rate, and the term rises toward one as prevalence
-moves away from 50%. PABAK (prevalence-adjusted bias-adjusted kappa;
-Byrt, Bishop, and Carlin, 1993) fixes it at one half. AC1 (Gwet, 2008)
-computes it from the same positive rate, and the term falls toward
-zero as prevalence moves away from 50%. Same data, three chance terms,
-three labels.
-
-grassr, a Guide for Rater Agreement under Structural Skew, is built
-for that problem. The skew in the name refers to prevalence. The
-package takes the rating matrix as its only input, simulates panels at
-the study's own prevalence, rater count, and sample size, a
-combination we call the study context, and compares each observed
-coefficient with the values those panels produce. The result prints as
-a **Report Card**. For each coefficient it shows where the value falls
-among everything a study this size, at this prevalence, could have
-produced as rater quality runs from low to high, and which rater
-qualities are consistent with it.
+A screening study at 5% prevalence reports *slight*, a balanced study
+reports *moderate*, a high-prevalence study reports *fair*, and the
+raters never changed.
 
 ## Quick start: the GRASS Report Card
 
@@ -168,7 +141,9 @@ grass_report(ratings = Y0)
   the observed positive rate `pi_hat`, the share of all `N x k`
   ratings that are positive. Here `pi_hat` is 0.36 against a true
   prevalence of 0.30, because false positives on the many negatives
-  outnumber misses on the few positives.
+  outnumber misses on the few positives. Together these three are the
+  **study context**, the setting every reference panel is simulated
+  in.
 - **The coefficient lines** show each observed value, its percentile,
   and its consistency band. The **percentile** is where the observed
   value falls among everything this study could have produced, from
@@ -181,10 +156,13 @@ grass_report(ratings = Y0)
   the observed value sits inside the middle 95% of that quality's
   panels. A wide band means the study cannot tell those qualities
   apart, and a small study always gives a wide band.
-- **`<- primary`** marks the coefficient to report: PABAK at moderate
-  prevalence, AC1 when the positive rate is below 0.15 or above 0.85
-  (0.20 or 0.80 at two raters), where its percentile is less noisy.
-  ICC is tagged `[distribution-sensitive]` because its reference
+- **`<- primary`** marks the coefficient to report: PABAK
+  (prevalence-adjusted bias-adjusted kappa; Byrt, Bishop, and Carlin,
+  1993) at moderate prevalence, AC1 (Gwet, 2008) when the positive
+  rate is below 0.15 or above 0.85 (0.20 or 0.80 at two raters), where
+  its percentile is less noisy.
+  The intraclass correlation coefficient (ICC) is tagged
+  `[distribution-sensitive]` because its reference
   depends on how the positives are spread across subjects, a few
   obvious cases or many borderline ones, and not just on how many
   there are, so its percentile is less certain than the other three.
@@ -763,7 +741,7 @@ summary(card1)
 #>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   grass version : 0.8.0
-#>   timestamp     : 2026-09-05 20:05:05
+#>   timestamp     : 2026-09-06 08:34:59
 ```
 
 `summary()` prints everything behind the card, the full panel with
@@ -846,8 +824,5 @@ accompanying paper's worked examples, regenerated from the same seeds.
   Mathematical and Statistical Psychology* 61(1), 29-48.
 - Hui, S. L. & Walter, S. D. (1980). Estimating the error rates of
   diagnostic tests. *Biometrics* 36(1), 167-171.
-- Koo, T. K. & Li, M. Y. (2016). A guideline of selecting and
-  reporting intraclass correlation coefficients for reliability
-  research. *Journal of Chiropractic Medicine* 15(2), 155-163.
 - Landis, J. R. & Koch, G. G. (1977). The measurement of observer
   agreement for categorical data. *Biometrics* 33(1), 159-174.
