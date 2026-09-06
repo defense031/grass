@@ -243,12 +243,12 @@ positioning.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     icc                0.00       0.500       0.0            no [distribution-sensitive]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Surface caveats:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     - Fitted-ICC F_key picked via glmer: mu_hat=-0.831, tau2_hat=0.011 -&gt; F_key tau2=0.0625, mu=-0.847.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     - Fitted-ICC reference (GLMM-gap corrected) at F_key=LN_mu=-0.847_tau2=0.0625, k=5, N=200 (family=logit_normal, M1=0.303).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     - ICC reference: a logit-normal profile fitted to the ratings (mu=-0.831, tau2=0.011) was matched to the nearest calibrated profile (mu=-0.847, tau2=0.0625).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     - ICC reference: calibrated profile LN_mu=-0.847_tau2=0.0625 at k=5, N=200 (logit_normal family, mean prevalence 0.303).</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     - obs_value 0.0034 below achievable minimum (0.0834); q_hat clamped.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     - Delta-method SE undefined: dE/dq near zero at q_hat.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     - Observed value below the sampling range of the lowest calibrated quality (q = 0.55); consistency band open below the calibrated grid.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is reported on the panel but does not enter delta_hat (v0.5.0 scope: ICC's reference depends on the full subject-prevalence distribution F and does not share the (q, pi_+) sufficient statistic the agreement family does).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, while the other three depend only on prevalence and quality.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     - flag from delta_hat's percentile on the matched null (k=5, N=200, q=0.70, prev=0.05; 50,000 draws); design snapped to the calibrated grid; null interpolated between calibrated grid nodes.</span>
 </code></pre></div>
     </div>

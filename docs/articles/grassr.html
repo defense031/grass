@@ -57,7 +57,7 @@ Semmel</h4>
                         <h4 data-toc-skip class="author">Rachel
 Gidaro</h4>
             
-            <h4 data-toc-skip class="date">2026-08-29</h4>
+            <h4 data-toc-skip class="date">2026-09-05</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/defense031/grassr/blob/HEAD/vignettes/grassr.Rmd" class="external-link"><code>vignettes/grassr.Rmd</code></a></small>
       <div class="d-none name"><code>grassr.Rmd</code></div>
@@ -66,109 +66,29 @@ Gidaro</h4>
     
     
 <div class="section level2">
-<h2 id="the-data-a-rater-panel">The data: a rater panel<a class="anchor" aria-label="anchor" href="#the-data-a-rater-panel"></a>
+<h2 id="introduction-the-prevalence-trap">Introduction: the prevalence trap<a class="anchor" aria-label="anchor" href="#introduction-the-prevalence-trap"></a>
 </h2>
-<p>A <strong>rater panel</strong> is <code>k</code> raters, human or
-machine, who each score the same <code>N</code> subjects on one binary
-question. grassr (a Guide for Rater Agreement under Structural Skew)
-reads that panel and reports how much the raters agree. Each rater sees
-every subject exactly once and answers the same yes-or-no question about
-it, so the study produces <code>N x k</code> binary calls and nothing
-else. Chest films read for a finding, adverse events judged preventable
-or not, transcripts coded for a symptom mention: different fields, same
-object.</p>
-<p>That object is the package’s entire input, laid out as a matrix. One
-row per subject. One column per rater. Each cell is that rater’s call on
-that subject: 1 (or <code>TRUE</code>, or the positive level of a
-two-level factor) means present, 0 means absent.</p>
-<p>The matrix answers two different questions, depending on what its
-columns are.</p>
-<ul>
-<li>
-<strong>Inter-rater agreement</strong> asks whether different raters
-agree with each other. Columns are different people. This is the
-default, and every example below is this case.</li>
-<li>
-<strong>Intra-rater agreement</strong> asks whether one rater agrees
-with herself on re-reading. Columns are one person’s repeated viewings
-of the same subjects, and the call is
-<code>grass_report(Y, axis = "intra")</code>. The printed card has the
-same fields.</li>
-</ul>
-<p>The functions accept exactly this:</p>
-<ul>
-<li>a <code>matrix</code> or <code>data.frame</code>, subjects in rows,
-raters in columns, at least 2 raters and one row per subject;</li>
-<li>rows are independent subjects. Every row must be a different
-subject, never a repetition of one (repeated-measures designs are
-addressed just below);</li>
-<li>cells as numeric 0/1, <code>logical</code>, or a two-level
-<code>factor</code> (character columns are rejected; convert to factor
-first);</li>
-<li>column names are optional and become rater labels on the card;</li>
-<li>no <code>NA</code>s: the functions stop rather than silently drop,
-so filter first with <code>Y &lt;- Y[complete.cases(Y), ]</code> and
-report the exclusions in your Methods;</li>
-<li>binary outcomes only. Ordinal scales and continuous measurements are
-outside this package’s calibration.</li>
-</ul>
-<p>The calibration assumes every row is a new subject. Two common
-clinical designs break that assumption.</p>
-<ul>
-<li>
-<strong>Repetitions within a session.</strong> A patient performs
-the task three times and the raters score every repetition. Do not stack
-the repetitions as rows: repetitions of one patient are correlated, the
-stacked matrix overstates the number of subjects, and the band comes out
-narrower than the design earns. Build one matrix per repetition and
-compare the cards, or fix one repetition per patient by protocol.</li>
-<li>
-<strong>The same patients across sessions over time.</strong> Within
-a session the rows are distinct patients, so each session is a valid
-panel. Score one card per session; the sequence of cards is the
-stability record. grassr does not pool sessions into one number and does
-not split disagreement into patient, session, and rater components.
-Those are variance-component analyses, outside this package’s
-calibration.</li>
-</ul>
-<p>A 0/1 matrix does not say which rows share a patient, so grassr
-cannot detect either design.</p>
-<p>The examples simulate the panel, so the truth is known and every
-claim below can be checked against it: 150 subjects at 30% prevalence,
-three raters who each call 87% of cases correctly.</p>
+<p>A <strong>rater panel</strong> consists of <code>k</code> entities
+that each assess the performance of <code>N</code> subjects for the
+successful completion of a binary task, as defined by a study protocol.
+Raters observe each subject exactly once, which produces an
+<code>N x k</code> rating matrix of yes-or-no responses. Both the level
+of agreement across the panel and the consistency of individual raters
+over time are of primary concern. Traditionally, this is referred to as
+inter- and intra-rater reliability and is answered with a single
+coefficient and a label from Landis and Koch (1977), where 0.00 to 0.20
+is <em>slight</em>, 0.21 to 0.40 <em>fair</em>, 0.41 to 0.60
+<em>moderate</em>, 0.61 to 0.80 <em>substantial</em>, and 0.81 to 1.00
+<em>almost perfect</em>. Koo and Li (2016) give the analogous ranges for
+the intraclass correlation coefficient (ICC).</p>
+<p>However, traditional kappa-based statistics do not account for the
+underlying context (the prevalence, rater count, and sample size of the
+study). The chance term they subtract depends on prevalence, so the
+coefficient can vary even when the rater quality itself remains
+constant. The code below fixes two raters at quality 0.87, meaning each
+calls 87% of cases correctly, sweeps prevalence from 2% to 98%, and
+plots the expected Cohen’s kappa against the Landis and Koch bands.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://defense031.github.io/grassr/">grassr</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">7</span><span class="op">)</span></span>
-<span><span class="va">truth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">150</span>, <span class="fl">1</span>, <span class="fl">0.30</span><span class="op">)</span>                  <span class="co"># the latent true classes</span></span>
-<span><span class="va">Y0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="kw">function</span><span class="op">(</span><span class="va">j</span><span class="op">)</span>                  <span class="co"># three raters, 87% accurate</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">truth</span> <span class="op">==</span> <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">150</span>, <span class="fl">1</span>, <span class="fl">0.87</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">150</span>, <span class="fl">1</span>, <span class="fl">0.13</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">Y0</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"R1"</span>, <span class="st">"R2"</span>, <span class="st">"R3"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Y0</span>, <span class="fl">8</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      R1 R2 R3</span></span>
-<span><span class="co">#&gt; [1,]  1  0  1</span></span>
-<span><span class="co">#&gt; [2,]  0  0  0</span></span>
-<span><span class="co">#&gt; [3,]  0  0  1</span></span>
-<span><span class="co">#&gt; [4,]  0  0  0</span></span>
-<span><span class="co">#&gt; [5,]  0  0  0</span></span>
-<span><span class="co">#&gt; [6,]  1  1  1</span></span>
-<span><span class="co">#&gt; [7,]  0  0  0</span></span>
-<span><span class="co">#&gt; [8,]  1  1  0</span></span></code></pre></div>
-<p>Row 6 is unanimous. Rows 1, 3, and 8 split. Do these raters agree
-well enough to trust the scores? The conventional answer computes one
-coefficient and stamps a label on it from a fixed scale: 0.21 to 0.40 is
-<em>fair</em>, 0.41 to 0.60 <em>moderate</em>, 0.61 to 0.80
-<em>substantial</em>.</p>
-</div>
-<div class="section level2">
-<h2 id="the-problem-the-label-tracks-the-study-design">The problem: the label tracks the study design<a class="anchor" aria-label="anchor" href="#the-problem-the-label-tracks-the-study-design"></a>
-</h2>
-<p>Every chance-corrected coefficient is the same fraction:</p>
-<pre><code>coefficient = (observed agreement - chance agreement) / (1 - chance agreement)</code></pre>
-<p>The catch is the chance term. It depends on how often the finding
-appears in front of the raters, so the coefficient moves when prevalence
-moves, with the raters unchanged. At two raters the expected value has a
-closed form, and four lines of code show the problem:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">q</span> <span class="op">&lt;-</span> <span class="fl">0.87</span>                       <span class="co"># every rater calls 87% of cases correctly</span></span>
 <span><span class="va">prev</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.02</span>, <span class="fl">0.98</span>, <span class="fl">0.005</span><span class="op">)</span></span>
 <span><span class="va">Pa</span> <span class="op">&lt;-</span> <span class="va">q</span><span class="op">^</span><span class="fl">2</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">q</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span>           <span class="co"># P(two such raters agree); prevalence-free</span></span>
@@ -190,53 +110,78 @@ closed form, and four lines of code show the problem:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">pts</span>, <span class="va">ptk</span>, pch <span class="op">=</span> <span class="fl">19</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/text.html" class="external-link">text</a></span><span class="op">(</span><span class="va">pts</span>, <span class="va">ptk</span> <span class="op">+</span> <span class="fl">0.05</span>, <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.2f"</span>, <span class="va">ptk</span><span class="op">)</span>, cex <span class="op">=</span> <span class="fl">0.85</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
-<img src="grassr-hook-figure-1.png" alt="Expected Cohen's kappa plotted against prevalence for raters fixed at quality 0.87. The curve rises from near zero at 2 percent prevalence, peaks around 0.62 at balanced prevalence, and falls again toward 98 percent, crossing the slight, fair, and moderate bands on the way."><p class="caption">
+<img src="grassr-hook-figure-1.png" alt="Expected Cohen's kappa plotted against prevalence for raters fixed at quality 0.87. The curve rises from near zero at 2 percent prevalence, peaks around 0.55 at balanced prevalence, and falls again toward 98 percent, crossing the slight, fair, and moderate bands on the way."><p class="caption">
 One panel of raters, three published verdicts.
 </p>
 </div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
-<p>One rater panel, three published verdicts. A screening study at 5%
-prevalence reports <em>slight</em> agreement, a balanced study reports
-<em>moderate</em>, a high-prevalence study reports <em>fair</em>, and
-the raters never changed. Rater count and sample size move the value
-too.</p>
-<p>The three coefficients in common use split the same way on a single
-dataset, because each computes the chance term differently. Fleiss’
-kappa computes it from the panel’s marginal positive rate, PABAK fixes
-it at one half, and AC1 interpolates between the two. Same data, three
-numbers, three labels.</p>
+<p>A screening study at 5% prevalence reports <em>slight</em> agreement,
+a balanced study reports <em>moderate</em>, a high-prevalence study
+reports <em>fair</em>, and the raters never changed. How far one study’s
+value scatters around this curve depends on rater count and sample size,
+and the fixed scale ignores that too. Three multi-rater agreement
+coefficients, Fleiss’ kappa, PABAK taken as the mean over rater pairs,
+and Gwet’s AC1, return three different values on one dataset for the
+same reason. Fleiss’ kappa computes the chance term from the panel’s
+observed positive rate, and the term rises toward one as prevalence
+moves away from 50%. PABAK (prevalence-adjusted bias-adjusted kappa;
+Byrt, Bishop, and Carlin, 1993) fixes it at one half. AC1 (Gwet, 2008)
+computes it from the same positive rate, and the term falls toward zero
+as prevalence moves away from 50%. Same data, three chance terms, three
+labels.</p>
+<p>grassr, a Guide for Rater Agreement under Structural Skew, is built
+for that problem. The skew in the name refers to prevalence. The package
+takes the rating matrix as its only input, simulates panels at the
+study’s own prevalence, rater count, and sample size, a combination we
+call the study context, and compares each observed coefficient with the
+values those panels produce. The result prints as a <strong>Report
+Card</strong>. For each coefficient it shows where the value falls among
+everything a study this size, at this prevalence, could have produced as
+rater quality runs from low to high, and which rater qualities are
+consistent with it.</p>
 </div>
 <div class="section level2">
-<h2 id="what-grassr-reports-instead">What grassr reports instead<a class="anchor" aria-label="anchor" href="#what-grassr-reports-instead"></a>
+<h2 id="quick-start-the-grass-report-card">Quick start: the GRASS Report Card<a class="anchor" aria-label="anchor" href="#quick-start-the-grass-report-card"></a>
 </h2>
-<p>grassr asks where the observed coefficient sits among the values a
-panel could produce at this design.</p>
-<ul>
-<li>
-<strong>Panel quality <code>q</code></strong> is the rate at which a
-rater calls a case correctly (sensitivity = specificity = <code>q</code>
-under the calibration model). <code>q</code>, not the coefficient, is
-the quantity of interest.</li>
-<li>The <strong>reference surface</strong> holds the coefficient values
-a quality-<code>q</code> panel produces at the design (prevalence,
-raters <code>k</code>, subjects <code>N</code>). A data-generating
-process determines it.</li>
-<li>The <strong>percentile</strong> is where the observed coefficient
-falls within everything the design can produce, and it is the card’s
-headline.</li>
-<li>The <strong>consistency band</strong> holds the qualities
-<code>q</code> consistent with the observation (95%). Its width is the
-design’s resolving power. A small study cannot produce a narrow
-band.</li>
-</ul>
-<p>A fifth term, the spread <code>delta_hat</code>, measures how much
-the family’s coefficients disagree about <code>q</code>. When the spread
-is small against chance, one number is a fair summary. When it is large,
-no single number is honest and the card decomposes the panel rater by
-rater.</p>
-<p>The whole workflow is one call:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p>The input is one matrix or data frame, subjects in rows and raters in
+columns, with at least two raters. Cells are numeric 0/1,
+<code>logical</code>, or a two-level <code>factor</code> or character
+column, where 1, <code>TRUE</code>, or the positive level means present.
+For a factor or character column the level named yes, true, positive,
+present, or case, in any letter case, is taken as positive; any other
+pair of labels is refused with a message asking for a 0/1 recode, so an
+outcome is never inverted silently. Drop identifier columns before the
+call. Column names, if given, become rater labels on the card. The
+functions stop on <code>NA</code> rather than silently dropping rows, so
+filter first with <code>Y &lt;- Y[complete.cases(Y), ]</code> and report
+the exclusions in your Methods. Binary outcomes only.</p>
+<p>The examples simulate the panel, so the true classes are known and
+every claim below can be checked against them. This first panel has 150
+subjects at 30% prevalence and three raters who each call 87% of cases
+correctly.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://defense031.github.io/grassr/">grassr</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">7</span><span class="op">)</span></span>
+<span><span class="va">truth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">150</span>, <span class="fl">1</span>, <span class="fl">0.30</span><span class="op">)</span>                  <span class="co"># the latent true classes</span></span>
+<span><span class="va">Y0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="kw">function</span><span class="op">(</span><span class="va">j</span><span class="op">)</span>                  <span class="co"># three raters, 87% accurate</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">truth</span> <span class="op">==</span> <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">150</span>, <span class="fl">1</span>, <span class="fl">0.87</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">150</span>, <span class="fl">1</span>, <span class="fl">0.13</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">Y0</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"R1"</span>, <span class="st">"R2"</span>, <span class="st">"R3"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Y0</span>, <span class="fl">8</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      R1 R2 R3</span></span>
+<span><span class="co">#&gt; [1,]  1  0  1</span></span>
+<span><span class="co">#&gt; [2,]  0  0  0</span></span>
+<span><span class="co">#&gt; [3,]  0  0  1</span></span>
+<span><span class="co">#&gt; [4,]  0  0  0</span></span>
+<span><span class="co">#&gt; [5,]  0  0  0</span></span>
+<span><span class="co">#&gt; [6,]  1  1  1</span></span>
+<span><span class="co">#&gt; [7,]  0  0  0</span></span>
+<span><span class="co">#&gt; [8,]  1  1  0</span></span></code></pre></div>
+<p>Row 6 is unanimously positive, rows 2, 4, 5, and 7 unanimously
+negative, and rows 1, 3, and 8 split. One call produces the card. Inside
+a script, assign the result and <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> it; the same goes
+for <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/grass_report.html">grass_report</a></span><span class="op">(</span>ratings <span class="op">=</span> <span class="va">Y0</span><span class="op">)</span></span>
 <span><span class="co">#&gt; GRASS Report Card</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -245,13 +190,13 @@ rater.</p>
 <span><span class="co">#&gt;   AC1          = 0.55  -&gt;  70th percentile | quality 0.80-0.90</span></span>
 <span><span class="co">#&gt;   Fleiss kappa = 0.48  -&gt;  71st percentile | quality 0.80-0.90</span></span>
 <span><span class="co">#&gt;   ICC          = 0.62  -&gt;  72nd percentile | quality 0.81-0.90  [distribution-sensitive]</span></span>
-<span><span class="co">#&gt;   read: this panel agreed more tightly than 70% of what panels at this design can produce; the data are consistent with panel quality 0.80-0.90.</span></span>
-<span><span class="co">#&gt;   delta       =   0 pp implied-quality spread (aligned)</span></span>
-<span><span class="co">#&gt;   matched null = (k=3, N=150, q=0.86): delta_hat at the 11.6 percentile</span></span>
+<span><span class="co">#&gt;   read: this panel's agreement exceeds 70% of what panels in this study context can produce; the data are consistent with panel quality 0.80-0.90.</span></span>
+<span><span class="co">#&gt;   delta       = 0.00 pp implied-quality spread (aligned)</span></span>
+<span><span class="co">#&gt;   matched null = (k=3, N=150, q=0.86): delta_hat sits at percentile 11.6 of the null</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   Notes:</span></span>
-<span><span class="co">#&gt;     - N=150 clamped to nearest sim-grid N=100.</span></span>
-<span><span class="co">#&gt;     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is reported on the panel but does not enter delta_hat (v0.5.0 scope: ICC's reference depends on the full subject-prevalence distribution F and does not share the (q, pi_+) sufficient statistic the agreement family does).</span></span>
+<span><span class="co">#&gt;     - ICC reference only: N=150 uses the nearest calibrated N=100. The agreement-family surfaces and the delta_hat null interpolate at N=150.</span></span>
+<span><span class="co">#&gt;     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, while the other three depend only on prevalence and quality.</span></span>
 <span><span class="co">#&gt;     - flag from delta_hat's percentile on the matched null (k=3, N=150, q=0.86, prev=0.31; 50,000 draws); null interpolated between calibrated grid nodes.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   See `summary(...)` for full panel and CI details.</span></span>
@@ -260,33 +205,101 @@ rater.</p>
 <li>
 <strong><code>sample</code></strong> is the study: rater count
 <code>k</code>, subject count <code>N</code>, and the observed positive
-rate.</li>
+rate <code>pi_hat</code>, the share of all <code>N x k</code> ratings
+that are positive. Here <code>pi_hat</code> is 0.36 against a true
+prevalence of 0.30, because false positives on the many negatives
+outnumber misses on the few positives.</li>
 <li>
 <strong>The coefficient lines</strong> show each observed value, its
-percentile, and its consistency band. The <code>read:</code> line
-restates the headline in plain language. No fixed verdict label stands
-between the percentile and the reader; the band’s width is the
-uncertainty statement.</li>
+percentile, and its consistency band. The <strong>percentile</strong> is
+where the observed value falls among everything this study could have
+produced, from the lowest-quality panels in the reference to the
+highest. <strong>Panel quality <code>q</code></strong> is the share of
+cases a rater gets correct. The reference panels give every rater the
+same <code>q</code> for both sensitivity and specificity, and
+<code>q</code> is what the package is estimating. The
+<strong>consistency band</strong> is the range of qualities that could
+plausibly have produced this coefficient. Formally, it is every
+<code>q</code> at which the observed value sits inside the middle 95% of
+that quality’s panels. A wide band means the study cannot tell those
+qualities apart, and a small study always gives a wide band.</li>
 <li>
-<strong><code>delta</code></strong> is the implied-quality spread
-across the agreement family (PABAK, mean AC1, Fleiss kappa; ICC excluded
-by construction). Each coefficient implies a panel quality, and the
-spread is judged by its percentile on a bundled null distribution at the
-matched design: <strong>caution at the 95th percentile, divergent at the
-99th</strong>, with mid-p at ties. At two raters the spread is
-<code>not_applicable</code>, because PABAK and AC1 imply identical
-quality by construction.</li>
+<strong><code>&lt;- primary</code></strong> marks the coefficient to
+report: PABAK at moderate prevalence, AC1 when the positive rate is
+below 0.15 or above 0.85 (0.20 or 0.80 at two raters), where its
+percentile is less noisy. ICC is tagged
+<code>[distribution-sensitive]</code> because its reference depends on
+how the positives are spread across subjects, a few obvious cases or
+many borderline ones, and not just on how many there are, so its
+percentile is less certain than the other three.</li>
+<li>
+<strong>The <code>read:</code> line</strong> restates the headline
+in plain language. The card prints no verdict label, and the band’s
+width states the uncertainty.</li>
+<li>
+<strong><code>delta</code></strong> is <code>delta_hat</code> as the
+card prints it, the spread of the qualities implied by PABAK, AC1 (both
+averaged over rater pairs), and Fleiss’ kappa, in percentage points
+(pp), followed by its flag. The next section covers the flag.</li>
 </ul>
+<p><strong>Intra-rater agreement</strong>, one rater scoring the same
+subjects on repeated occasions, uses the same layout with the occasions
+as columns and the call <code>grass_report(Y, axis = "intra")</code>.
+The same reference applies, since a rater re-reading the same subjects
+is modeled exactly like independent raters of equal quality, and the
+card has the same fields. On this axis the card marks ICC as primary,
+the conventional intra-rater statistic; the three agreement coefficients
+still print and still feed <code>delta_hat</code>. The card’s note says
+which way the two departures from that model push the reading: drift
+between occasions lowers it, and memory of an earlier pass raises
+it.</p>
+</div>
+<div class="section level2">
+<h2 id="when-coefficients-disagree-the-delta_hat-flag">When coefficients disagree: the <code>delta_hat</code> flag<a class="anchor" aria-label="anchor" href="#when-coefficients-disagree-the-delta_hat-flag"></a>
+</h2>
+<p>Every coefficient on the card can be turned back into a panel
+quality. PABAK has a formula,
+<code>q_hat = (1 + sqrt(PABAK)) / 2</code>; the others are looked up on
+their reference surfaces. <code>delta_hat</code> is the gap between the
+highest and lowest of those qualities across PABAK, AC1, and Fleiss’
+kappa, in percentage points of quality, so a spread of 0.42 pp is 0.0042
+on the 0-to-1 quality scale. ICC is left out because its reference
+depends on more than prevalence and quality.</p>
+<p>Some spread happens by chance even when every rater is equally good,
+so the observed spread is compared with what equal-quality panels
+produce at the same rater count, sample size, quality, and prevalence.
+That is the matched null, and the card prints which cell it used. Below
+the null’s 95th percentile the flag is <code>aligned</code>, from the
+95th <code>caution</code>, from the 99th <code>divergent</code>. The
+null uses the true prevalence implied by the observed rate and quality,
+which the card prints as <code>prev</code>, so <code>prev</code> and
+<code>pi_hat</code> differ. With two raters PABAK and AC1 always agree
+on quality, so the flag is <code>not_applicable</code>.</p>
+<p>An aligned panel can be summarized by one number. A divergent one
+cannot, because one number can hide a real difference between raters, so
+the card drops the bands and the <code>read:</code> line, marks the
+panel summary <code>suppressed</code>, and shows the raters one at a
+time in three views. A matrix of pairwise PABAK values fills the lower
+triangle, with each pair’s percentile at its own positive rate in the
+upper. A table scores each rater against the majority vote of the other
+raters (<code>Se_tilde</code> and <code>Sp_tilde</code>, excluding
+subjects on which the majority tied). A latent-class fit, the Dawid and
+Skene (1979) model, estimates each rater’s sensitivity and specificity
+from the rating matrix alone. Start with the majority table. It compares
+each rater with the other raters’ votes, which are observed, so unlike
+the latent-class fit it can never mix up which class is positive. An
+over-caller shows high <code>Se_tilde</code> and lower
+<code>Sp_tilde</code>, an under-caller the reverse.</p>
 </div>
 <div class="section level2">
 <h2 id="case-studies">Case studies<a class="anchor" aria-label="anchor" href="#case-studies"></a>
 </h2>
 <div class="section level3">
-<h3 id="three-labels-one-position">Three labels, one position<a class="anchor" aria-label="anchor" href="#three-labels-one-position"></a>
+<h3 id="case-1-three-labels-one-position">Case 1: three labels, one position<a class="anchor" aria-label="anchor" href="#case-1-three-labels-one-position"></a>
 </h3>
 <p>Five raters score 1,000 subjects. Every rater operates at quality
 0.87 and the finding has true prevalence 0.15.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen_flat</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">N</span>, <span class="va">prev</span>, <span class="va">Se</span>, <span class="va">Sp</span>, <span class="va">k</span>, <span class="va">seed</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span></span>
 <span>  <span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">N</span>, <span class="fl">1L</span>, <span class="va">prev</span><span class="op">)</span></span>
@@ -298,7 +311,7 @@ quality by construction.</li>
 one panel: Fleiss’ kappa 0.36 reads <em>fair</em>, PABAK 0.54 reads
 <em>moderate</em>, AC1 0.64 reads <em>substantial</em>. A reader who saw
 only the labels would conclude they describe three different panels.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/grass_report.html">grass_report</a></span><span class="op">(</span><span class="va">Y1</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; GRASS Report Card</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -307,33 +320,32 @@ only the labels would conclude they describe three different panels.</p>
 <span><span class="co">#&gt;   AC1          = 0.64  -&gt;  74th percentile | quality 0.85-0.90</span></span>
 <span><span class="co">#&gt;   Fleiss kappa = 0.36  -&gt;  74th percentile | quality 0.85-0.90</span></span>
 <span><span class="co">#&gt;   ICC          = 0.48  -&gt;  63rd percentile | quality 0.80-0.85  [distribution-sensitive]</span></span>
-<span><span class="co">#&gt;   read: this panel agreed more tightly than 74% of what panels at this design can produce; the data are consistent with panel quality 0.85-0.90.</span></span>
-<span><span class="co">#&gt;   delta       =   0 pp implied-quality spread (aligned)</span></span>
-<span><span class="co">#&gt;   matched null = (k=5, N=1000, q=0.87): delta_hat at the 36.4 percentile</span></span>
+<span><span class="co">#&gt;   read: this panel's agreement exceeds 74% of what panels in this study context can produce; the data are consistent with panel quality 0.85-0.90.</span></span>
+<span><span class="co">#&gt;   delta       = 0.00 pp implied-quality spread (aligned)</span></span>
+<span><span class="co">#&gt;   matched null = (k=5, N=1000, q=0.87): delta_hat sits at percentile 36.4 of the null</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   Notes:</span></span>
 <span><span class="co">#&gt;     - Consistency band narrower than the calibrated q-grid spacing; endpoints interpolated within one grid gap.</span></span>
-<span><span class="co">#&gt;     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is reported on the panel but does not enter delta_hat (v0.5.0 scope: ICC's reference depends on the full subject-prevalence distribution F and does not share the (q, pi_+) sufficient statistic the agreement family does).</span></span>
+<span><span class="co">#&gt;     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, while the other three depend only on prevalence and quality.</span></span>
 <span><span class="co">#&gt;     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   See `summary(...)` for full panel and CI details.</span></span>
 <span><span class="co">#&gt;   See `plot(...)` for a surface-position visualization.</span></span></code></pre></div>
-<p>The card gives all three one reading. Each sits at the 74th
-percentile of what this design can produce, and each returns the same
-band, quality 0.85 to 0.90, which contains the true 0.87. The label
-disagreement was an artifact of reading three prevalence-sensitive
-statistics against one fixed scale.</p>
+<p>Each agreement coefficient sits at the 74th percentile of what this
+study context can produce, and each returns the same band, quality 0.85
+to 0.90, which contains the true 0.87. ICC sits apart, at the 63rd
+percentile with band 0.80 to 0.85, on its distribution-sensitive
+reference. The labels disagreed because one fixed scale was applied to
+three statistics with three different chance terms.</p>
 </div>
 <div class="section level3">
-<h3 id="two-panels-the-fixed-bands-call-identical">Two panels the fixed bands call identical<a class="anchor" aria-label="anchor" href="#two-panels-the-fixed-bands-call-identical"></a>
+<h3 id="case-2-the-latent-split">Case 2: the latent split<a class="anchor" aria-label="anchor" href="#case-2-the-latent-split"></a>
 </h3>
-<p>Two five-rater panels, both at true prevalence 0.30 with 1,000
-subjects, both returning Fleiss kappa 0.36. The fixed scale gives one
-verdict, <em>fair</em>, for both. The panels differ sharply: in the
-first, three raters operate near-ideally and two have a severe
-specificity problem; in the second, all five raters share one operating
-point.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<p>Five raters score 1,000 subjects at true prevalence 0.30. Three sit
+at sensitivity and specificity 0.92, and two keep that sensitivity but
+drop to specificity 0.51. The panel returns Fleiss’ kappa 0.36, which a
+fixed scale would label <em>fair</em>.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen_logitnormal</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">seed</span>, <span class="va">k</span>, <span class="va">N</span>, <span class="va">Se</span>, <span class="va">Sp</span>, <span class="va">pi</span>, <span class="va">F_sigma2</span> <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span></span>
 <span>  <span class="va">p_i</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">plogis</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">N</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">qlogis</a></span><span class="op">(</span><span class="va">pi</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">F_sigma2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -342,22 +354,11 @@ point.</p>
 <span>  <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">k</span><span class="op">)</span><span class="op">)</span> <span class="va">Y</span><span class="op">[</span>, <span class="va">j</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">N</span>, <span class="fl">1L</span>, <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">C</span> <span class="op">==</span> <span class="fl">1L</span>, <span class="va">Se</span><span class="op">[</span><span class="va">j</span><span class="op">]</span>, <span class="fl">1</span> <span class="op">-</span> <span class="va">Sp</span><span class="op">[</span><span class="va">j</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">Y</span></span>
 <span><span class="op">}</span></span>
-<span><span class="va">Y_differ</span> <span class="op">&lt;-</span> <span class="fu">gen_logitnormal</span><span class="op">(</span><span class="fl">51L</span>, <span class="fl">5L</span>, <span class="fl">1000L</span>,</span>
+<span><span class="va">Y_split</span> <span class="op">&lt;-</span> <span class="fu">gen_logitnormal</span><span class="op">(</span><span class="fl">51L</span>, <span class="fl">5L</span>, <span class="fl">1000L</span>,</span>
 <span>                            Se <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.92</span>, <span class="fl">5</span><span class="op">)</span>,</span>
-<span>                            Sp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.92</span>, <span class="fl">0.92</span>, <span class="fl">0.92</span>, <span class="fl">0.51</span>, <span class="fl">0.51</span><span class="op">)</span>, pi <span class="op">=</span> <span class="fl">0.30</span><span class="op">)</span></span>
-<span><span class="va">Y_agree</span>  <span class="op">&lt;-</span> <span class="fu">gen_logitnormal</span><span class="op">(</span><span class="fl">151L</span>, <span class="fl">5L</span>, <span class="fl">1000L</span>,</span>
-<span>                            Se <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.95</span>, <span class="fl">5</span><span class="op">)</span>,</span>
-<span>                            Sp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.70</span>, <span class="fl">5</span><span class="op">)</span>, pi <span class="op">=</span> <span class="fl">0.30</span><span class="op">)</span></span></code></pre></div>
-<div class="figure">
-<img src="grassr-case2-scatter-1.png" alt="Sensitivity against specificity for two five-rater panels that both return Fleiss kappa 0.36. Three raters of the first panel sit together at 0.92 sensitivity and 0.92 specificity while two fall into the shaded low-specificity zone near 0.51. All five raters of the second panel sit together at 0.95 sensitivity and 0.70 specificity."><p class="caption">
-Two panels with one coefficient value and two different internal
-structures.
-</p>
-</div>
-<p>The first panel splits across the low-specificity zone, and the card
-routes to per-rater output.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/grass_report.html">grass_report</a></span><span class="op">(</span><span class="va">Y_differ</span>, bootstrap_B <span class="op">=</span> <span class="fl">200</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>                            Sp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.92</span>, <span class="fl">0.92</span>, <span class="fl">0.92</span>, <span class="fl">0.51</span>, <span class="fl">0.51</span><span class="op">)</span>, pi <span class="op">=</span> <span class="fl">0.30</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/grass_report.html">grass_report</a></span><span class="op">(</span><span class="va">Y_split</span>, bootstrap_B <span class="op">=</span> <span class="fl">200</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; GRASS Report Card</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   sample      = 5 raters, N = 1000, pi_hat = 0.47</span></span>
@@ -365,9 +366,9 @@ routes to per-rater output.</p>
 <span><span class="co">#&gt;   AC1           = 0.38  -&gt;  60th percentile</span></span>
 <span><span class="co">#&gt;   Fleiss kappa  = 0.36  -&gt;  58th percentile</span></span>
 <span><span class="co">#&gt;   ICC           = 0.46  -&gt;  58th percentile  [distribution-sensitive]</span></span>
-<span><span class="co">#&gt;   panel-agg.  = suppressed (divergent)</span></span>
+<span><span class="co">#&gt;   summary     = suppressed (divergent)</span></span>
 <span><span class="co">#&gt;   delta       = 0.42 pp (divergent)</span></span>
-<span><span class="co">#&gt;   matched null = (k=5, N=1000, q=0.80): delta_hat at the 99.5 percentile</span></span>
+<span><span class="co">#&gt;   matched null = (k=5, N=1000, q=0.80): delta_hat sits at percentile 99.5 of the null</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   pairwise PABAK / surface percentile (lower / upper):</span></span>
 <span><span class="co">#&gt;     R1     R2     R3     R4     R5    </span></span>
@@ -377,14 +378,14 @@ routes to per-rater output.</p>
 <span><span class="co">#&gt;   R4    0.27   0.24   0.25   --     35% </span></span>
 <span><span class="co">#&gt;   R5    0.21   0.22   0.21   0.17   --  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   per-rater vs panel-majority of OTHER raters (pooled-reference):</span></span>
+<span><span class="co">#&gt;   per-rater vs the majority of the OTHER raters:</span></span>
 <span><span class="co">#&gt;     R1   Se_tilde = 0.84  Sp_tilde = 0.93  (n_pos = 360, n_neg = 457, excl = 183)</span></span>
 <span><span class="co">#&gt;     R2   Se_tilde = 0.85  Sp_tilde = 0.91  (n_pos = 352, n_neg = 460, excl = 188)</span></span>
 <span><span class="co">#&gt;     R3   Se_tilde = 0.83  Sp_tilde = 0.92  (n_pos = 351, n_neg = 459, excl = 190)</span></span>
 <span><span class="co">#&gt;     R4   Se_tilde = 0.92  Sp_tilde = 0.51  (n_pos = 327, n_neg = 581, excl = 92)</span></span>
 <span><span class="co">#&gt;     R5   Se_tilde = 0.88  Sp_tilde = 0.50  (n_pos = 330, n_neg = 579, excl = 91)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   per-rater (latent-class fit; alongside pairwise):</span></span>
+<span><span class="co">#&gt;   per-rater (latent-class fit):</span></span>
 <span><span class="co">#&gt;     R1   Se = 0.93  (0.89, 0.96)   Sp = 0.93  (0.92, 0.96)</span></span>
 <span><span class="co">#&gt;     R2   Se = 0.92  (0.89, 0.95)   Sp = 0.91  (0.88, 0.93)</span></span>
 <span><span class="co">#&gt;     R3   Se = 0.89  (0.86, 0.93)   Sp = 0.91  (0.88, 0.94)</span></span>
@@ -392,148 +393,32 @@ routes to per-rater output.</p>
 <span><span class="co">#&gt;     R5   Se = 0.89  (0.86, 0.92)   Sp = 0.50  (0.46, 0.54)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   Notes:</span></span>
-<span><span class="co">#&gt;     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is reported on the panel but does not enter delta_hat (v0.5.0 scope: ICC's reference depends on the full subject-prevalence distribution F and does not share the (q, pi_+) sufficient statistic the agreement family does).</span></span>
+<span><span class="co">#&gt;     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, while the other three depend only on prevalence and quality.</span></span>
 <span><span class="co">#&gt;     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.80, prev=0.45; 50,000 draws); null interpolated between calibrated grid nodes.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   See `summary(...)` for full panel and CI details.</span></span>
 <span><span class="co">#&gt;   See `plot(...)` for a surface-position visualization.</span></span></code></pre></div>
-<p>The observed coefficients are unremarkable. The implied-quality
-spread is not: 0.42 quality points, at the 99.5th percentile of what
-chance produces at this design, so the card declines to average the
-panel into one number. The latent-class fit names the structure, R4 and
-R5 near specificity 0.51 against 0.91 to 0.93 for the rest. This panel
-does not need more raters or more subjects. It needs R4 and R5 retrained
-on the negative-call criterion.</p>
-<p>The second panel shows what agreement diagnostics cannot see.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/grass_report.html">grass_report</a></span><span class="op">(</span><span class="va">Y_agree</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; GRASS Report Card</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   sample      = 5 raters, N = 1000, pi_hat = 0.49</span></span>
-<span><span class="co">#&gt;   PABAK        = 0.36  -&gt;  56th percentile | quality 0.75-0.85  &lt;- primary</span></span>
-<span><span class="co">#&gt;   AC1          = 0.36  -&gt;  56th percentile | quality 0.75-0.85</span></span>
-<span><span class="co">#&gt;   Fleiss kappa = 0.36  -&gt;  56th percentile | quality 0.75-0.85</span></span>
-<span><span class="co">#&gt;   ICC          = 0.47  -&gt;  61st percentile | quality 0.76-0.85  [distribution-sensitive]</span></span>
-<span><span class="co">#&gt;   read: this panel agreed more tightly than 56% of what panels at this design can produce; the data are consistent with panel quality 0.75-0.85.</span></span>
-<span><span class="co">#&gt;   delta       =   0 pp implied-quality spread (aligned)</span></span>
-<span><span class="co">#&gt;   matched null = (k=5, N=1000, q=0.80): delta_hat at the 29.2 percentile</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   Notes:</span></span>
-<span><span class="co">#&gt;     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is reported on the panel but does not enter delta_hat (v0.5.0 scope: ICC's reference depends on the full subject-prevalence distribution F and does not share the (q, pi_+) sufficient statistic the agreement family does).</span></span>
-<span><span class="co">#&gt;     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.80, prev=0.48; 50,000 draws); null interpolated between calibrated grid nodes.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   See `summary(...)` for full panel and CI details.</span></span>
-<span><span class="co">#&gt;   See `plot(...)` for a surface-position visualization.</span></span></code></pre></div>
-<p>Nothing in the card objects, yet the panel calls about half its
-subjects positive against a true prevalence of 0.30. Every rater shares
-the same specificity deficit, so the shared error shifts all marginals
-in unison and no internal comparison can see it. Agreement diagnostics
-detect raters who disagree with each other, not a panel that is wrong
-together. Only an external reference standard catches the shared error;
-the card’s job is to make the disagreement visible instead of averaging
-it away.</p>
+<p>The observed coefficients look ordinary, but the spread of implied
+quality, 0.42 percentage points, sits at the 99.5th percentile of what
+chance produces in this study context, where equal-quality raters rarely
+spread by more than a hundredth of a percentage point. The card
+therefore does not average the panel into one number. The pairwise
+matrix separates the panel at a glance, with R1 to R3 agreeing at the
+81st to 84th percentile and every pair involving R4 or R5 at the 48th or
+below. The majority table shows R4 and R5 as over-callers,
+<code>Sp_tilde</code> 0.51 and 0.50 against 0.91 to 0.93 for the rest,
+and the latent-class fit puts their specificity at 0.51 and 0.50. This
+panel does not need more raters or more subjects. It needs R4 and R5
+retrained on when to call a case negative.</p>
 </div>
 <div class="section level3">
-<h3 id="a-divergent-panel-and-the-per-rater-route">A divergent panel and the per-rater route<a class="anchor" aria-label="anchor" href="#a-divergent-panel-and-the-per-rater-route"></a>
+<h3 id="case-3-when-coefficients-cannot-disagree-k-2">Case 3: when coefficients cannot disagree (k = 2)<a class="anchor" aria-label="anchor" href="#case-3-when-coefficients-cannot-disagree-k-2"></a>
 </h3>
-<p>The flag also catches asymmetry that cancels at the panel level.
-Three raters lean toward over-calling (sensitivity 0.95, specificity
-0.75); two lean the other way (0.75, 0.95). Each coefficient returns
-roughly the same observed value, yet the qualities they imply split.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">Y_div</span> <span class="op">&lt;-</span> <span class="fu">gen_logitnormal</span><span class="op">(</span><span class="fl">6L</span>, <span class="fl">5L</span>, <span class="fl">1000L</span>,</span>
-<span>                         Se <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.95</span>, <span class="fl">0.75</span>, <span class="fl">0.95</span>, <span class="fl">0.75</span>, <span class="fl">0.95</span><span class="op">)</span>,</span>
-<span>                         Sp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.75</span>, <span class="fl">0.95</span>, <span class="fl">0.75</span>, <span class="fl">0.95</span>, <span class="fl">0.75</span><span class="op">)</span>, pi <span class="op">=</span> <span class="fl">0.50</span><span class="op">)</span></span>
-<span><span class="va">card_div</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/grass_report.html">grass_report</a></span><span class="op">(</span>ratings <span class="op">=</span> <span class="va">Y_div</span>, bootstrap_B <span class="op">=</span> <span class="fl">200</span><span class="op">)</span></span>
-<span><span class="va">card_div</span></span>
-<span><span class="co">#&gt; GRASS Report Card</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   sample      = 5 raters, N = 1000, pi_hat = 0.50</span></span>
-<span><span class="co">#&gt;   PABAK         = 0.49  -&gt;  67th percentile  &lt;- primary</span></span>
-<span><span class="co">#&gt;   AC1           = 0.49  -&gt;  69th percentile</span></span>
-<span><span class="co">#&gt;   Fleiss kappa  = 0.49  -&gt;  67th percentile</span></span>
-<span><span class="co">#&gt;   ICC           = 0.62  -&gt;  65th percentile  [distribution-sensitive]</span></span>
-<span><span class="co">#&gt;   panel-agg.  = suppressed (divergent)</span></span>
-<span><span class="co">#&gt;   delta       = 0.25 pp (divergent)</span></span>
-<span><span class="co">#&gt;   matched null = (k=5, N=1000, q=0.85): delta_hat at the 99.5 percentile</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   pairwise PABAK / surface percentile (lower / upper):</span></span>
-<span><span class="co">#&gt;     R1     R2     R3     R4     R5    </span></span>
-<span><span class="co">#&gt;   R1    --     65%    71%    67%    74% </span></span>
-<span><span class="co">#&gt;   R2    0.47   --     62%    73%    64% </span></span>
-<span><span class="co">#&gt;   R3    0.51   0.41   --     62%    73% </span></span>
-<span><span class="co">#&gt;   R4    0.48   0.52   0.42   --     70% </span></span>
-<span><span class="co">#&gt;   R5    0.55   0.46   0.54   0.50   --  </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   per-rater vs panel-majority of OTHER raters (pooled-reference):</span></span>
-<span><span class="co">#&gt;     R1   Se_tilde = 0.94  Sp_tilde = 0.77  (n_pos = 434, n_neg = 471, excl = 95)</span></span>
-<span><span class="co">#&gt;     R2   Se_tilde = 0.71  Sp_tilde = 0.95  (n_pos = 466, n_neg = 439, excl = 95)</span></span>
-<span><span class="co">#&gt;     R3   Se_tilde = 0.95  Sp_tilde = 0.71  (n_pos = 433, n_neg = 485, excl = 82)</span></span>
-<span><span class="co">#&gt;     R4   Se_tilde = 0.74  Sp_tilde = 0.95  (n_pos = 468, n_neg = 441, excl = 91)</span></span>
-<span><span class="co">#&gt;     R5   Se_tilde = 0.96  Sp_tilde = 0.78  (n_pos = 428, n_neg = 476, excl = 96)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   per-rater (latent-class fit; alongside pairwise):</span></span>
-<span><span class="co">#&gt;     R1   Se = 0.95  (0.21, 0.97)   Sp = 0.78  (0.05, 0.82)</span></span>
-<span><span class="co">#&gt;     R2   Se = 0.73  (0.04, 0.78)   Sp = 0.95  (0.28, 0.97)</span></span>
-<span><span class="co">#&gt;     R3   Se = 0.96  (0.26, 0.98)   Sp = 0.72  (0.04, 0.75)</span></span>
-<span><span class="co">#&gt;     R4   Se = 0.75  (0.05, 0.79)   Sp = 0.95  (0.25, 0.97)</span></span>
-<span><span class="co">#&gt;     R5   Se = 0.96  (0.21, 0.98)   Sp = 0.78  (0.04, 0.82)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   Notes:</span></span>
-<span><span class="co">#&gt;     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is reported on the panel but does not enter delta_hat (v0.5.0 scope: ICC's reference depends on the full subject-prevalence distribution F and does not share the (q, pi_+) sufficient statistic the agreement family does).</span></span>
-<span><span class="co">#&gt;     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.85, prev=0.50; 50,000 draws); null interpolated between calibrated grid nodes.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   See `summary(...)` for full panel and CI details.</span></span>
-<span><span class="co">#&gt;   See `plot(...)` for a surface-position visualization.</span></span></code></pre></div>
-<p>Three things change in the printed output. The panel-aggregate
-summary is marked <code>suppressed (divergent)</code>. The pairwise
-PABAK matrix and the per-rater pooled-reference table appear. And the
-latent-class table appears alongside, pinning R1, R3, R5 near (0.95,
-0.75) and R2, R4 near (0.75, 0.95); its bootstrap intervals are wide
-near balanced prevalence because the resamples visit both the correct
-mode and its label-switched mirror.</p>
-<p>With a divergent panel, report <code><a href="../reference/pairwise_agreement.html">pairwise_agreement()</a></code>:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pairwise_agreement.html">pairwise_agreement</a></span><span class="op">(</span><span class="va">Y_div</span><span class="op">)</span></span>
-<span><span class="va">pw</span></span>
-<span><span class="co">#&gt; GRASS Pairwise Reliability</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   sample      = 5 raters, N = 1000, pi_hat = 0.50, tau2_hat = 0.122, axis = inter</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   Pairwise PABAK (lower triangle = PABAK_ij; upper triangle = surface percentile):</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;    R1     R2     R3     R4     R5    </span></span>
-<span><span class="co">#&gt; R1     --   65%    71%    67%    74% </span></span>
-<span><span class="co">#&gt; R2   0.47     --   62%    73%    64% </span></span>
-<span><span class="co">#&gt; R3   0.51   0.41     --   62%    73% </span></span>
-<span><span class="co">#&gt; R4   0.48   0.52   0.42     --   70% </span></span>
-<span><span class="co">#&gt; R5   0.55   0.46   0.54   0.50     --</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   Per-rater behavior against pooled panel-majority:</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  rater Se_tilde Sp_tilde n_pos n_neg n_excl</span></span>
-<span><span class="co">#&gt;     R1     0.94     0.77   434   471     95</span></span>
-<span><span class="co">#&gt;     R2     0.71     0.95   466   439     95</span></span>
-<span><span class="co">#&gt;     R3     0.95     0.71   433   485     82</span></span>
-<span><span class="co">#&gt;     R4     0.74     0.95   468   441     91</span></span>
-<span><span class="co">#&gt;     R5     0.96     0.78   428   476     96</span></span>
-<span><span class="co">#&gt;   (Se_tilde, Sp_tilde are calls vs panel-majority of OTHER raters,</span></span>
-<span><span class="co">#&gt;    not against external truth. n_excl: subjects with tied majority,</span></span>
-<span><span class="co">#&gt;    excluded from the per-rater pool.)</span></span></code></pre></div>
-<p>Read the per-rater table first. The reference is the observable panel
-majority rather than a latent class, so label-switching is moot: an
-over-caller shows high <code>Se_tilde</code> and lower
-<code>Sp_tilde</code>, an under-caller the mirror. In the matrix, the
-lower triangle holds the pairwise agreements and the upper triangle
-their percentiles at each pair’s own marginal. The same PABAK value can
-land at different percentiles across pairs because each pair sees a
-different positive rate.</p>
-</div>
-<div class="section level3">
-<h3 id="two-raters">Two raters<a class="anchor" aria-label="anchor" href="#two-raters"></a>
-</h3>
-<p><code><a href="../reference/grass_report.html">grass_report()</a></code> works the same way at k = 2.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<p><code><a href="../reference/grass_report.html">grass_report()</a></code> works the same way at k = 2, with a
+shorter card. The package computes Cohen’s kappa for a pair but has no
+calibrated reference for it, so it is not positioned, and Fleiss’ kappa
+and the ICC are computed for three or more raters.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">200</span></span>
 <span><span class="va">truth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">N</span>, <span class="fl">1</span>, <span class="fl">0.30</span><span class="op">)</span></span>
@@ -548,22 +433,21 @@ different positive rate.</p>
 <span><span class="co">#&gt;   sample      = 2 raters, N = 200, pi_hat = 0.39</span></span>
 <span><span class="co">#&gt;   PABAK  = 0.50  -&gt;  69th percentile | quality 0.80-0.90  &lt;- primary</span></span>
 <span><span class="co">#&gt;   AC1    = 0.52  -&gt;  69th percentile | quality 0.80-0.90</span></span>
-<span><span class="co">#&gt;   read: this panel agreed more tightly than 69% of what panels at this design can produce; the data are consistent with panel quality 0.80-0.90.</span></span>
-<span><span class="co">#&gt;   delta       =   0 pp implied-quality spread (not_applicable)</span></span>
-<span><span class="co">#&gt;   matched null = n/a at k = 2 (coefficients cannot disagree; see pairwise/bounds path)</span></span>
+<span><span class="co">#&gt;   read: this panel's agreement exceeds 69% of what panels in this study context can produce; the data are consistent with panel quality 0.80-0.90.</span></span>
+<span><span class="co">#&gt;   delta       = 0.00 pp implied-quality spread (not_applicable)</span></span>
+<span><span class="co">#&gt;   matched null = n/a at k = 2 (PABAK and AC1 imply the same quality; see the pairwise table and the Hui-Walter bounds)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   Notes:</span></span>
 <span><span class="co">#&gt;     - delta_hat is not applicable at k = 2: the two-coefficient agreement family (PABAK, AC1) implies identical panel quality by construction, so cross-coefficient discordance cannot be observed. Use the k = 2 identifiable bounds and pairwise path for asymmetry assessment.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   See `summary(...)` for full panel and CI details.</span></span>
 <span><span class="co">#&gt;   See `plot(...)` for a surface-position visualization.</span></span></code></pre></div>
-<p>With two raters the agreement family reduces to PABAK and AC1, which
-imply identical quality by construction, so <code>delta_hat</code>
-reports <code>not_applicable</code> rather than a flag. Per-rater
-sensitivity and specificity are not point-identified from a two-rater
-matrix, so the latent-class fit returns Hui-Walter bounds instead of
-point estimates:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<p>With two raters only PABAK and AC1 remain, and they always agree on
+quality, so <code>delta_hat</code> is <code>not_applicable</code>. Two
+raters also cannot pin down each rater’s own sensitivity and
+specificity, so the latent-class fit returns the range the data allow,
+the Hui and Walter (1980) bounds, instead of point estimates.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/latent_class_fit.html">latent_class_fit</a></span><span class="op">(</span>ratings <span class="op">=</span> <span class="va">Y_k2</span>, B <span class="op">=</span> <span class="fl">200</span><span class="op">)</span></span>
 <span><span class="co">#&gt; grass latent-class fit</span></span>
 <span><span class="co">#&gt;   method        : hui_walter</span></span>
@@ -577,53 +461,314 @@ point estimates:</p>
 <span><span class="co">#&gt;         without external information. The intervals are</span></span>
 <span><span class="co">#&gt;         Hui-Walter (1980) inequality bounds, not point</span></span>
 <span><span class="co">#&gt;         estimates with sampling uncertainty.</span></span></code></pre></div>
-<p>The bounds state what a two-rater matrix can support. A study that
-needs per-rater points should add a third rater.</p>
+<p>The bounds are the most a two-rater matrix can say. A study that
+needs one sensitivity and specificity per rater should add a third
+rater.</p>
+</div>
+<div class="section level3">
+<h3 id="reporting-the-result">Reporting the result<a class="anchor" aria-label="anchor" href="#reporting-the-result"></a>
+</h3>
+<p>Two things belong in every write-up whatever the flag: the exclusions
+(which subjects were dropped for missing ratings) and the package
+version, which <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> prints. What follows depends on
+the flag.</p>
+<p>An aligned card is reported as one coefficient with its position and
+band. From Case 1: “Five raters rated 1,000 subjects, observed positive
+rate 0.24. PABAK was 0.54, at the 74th percentile of what a five-rater,
+1,000-subject study at this positive rate can produce, and the data are
+consistent with panel quality 0.85 to 0.90. The three agreement
+coefficients implied the same quality (spread 0.00 pp, aligned).”</p>
+<p>A divergent card is reported rater by rater, and the coefficient
+values appear only as description. From Case 2: “Five raters rated 1,000
+subjects, observed positive rate 0.47. The qualities implied by the
+three agreement coefficients were 0.42 percentage points apart, at the
+99.5th percentile of the spread that equal-quality raters produce in
+this study context, so the panel is not summarized by one coefficient.
+Pairwise PABAK among R1 to R3 was 0.67 to 0.71 (81st to 84th percentile)
+and 0.17 to 0.27 for every pair involving R4 or R5 (35th to 48th).
+Against the majority of the other raters, R4 and R5 had specificity 0.51
+and 0.50 versus 0.91 to 0.93 for the rest; a latent-class fit placed
+them at 0.51 and 0.50 (95% bootstrap intervals 0.47 to 0.55 and 0.46 to
+0.54).”</p>
+<p>A two-rater card has no flag to report. From Case 3: “Two raters
+rated 200 subjects, observed positive rate 0.39. PABAK was 0.50, at the
+69th percentile of what a two-rater, 200-subject study at this positive
+rate can produce, and the data are consistent with panel quality 0.80 to
+0.90. With two raters the coefficients cannot disagree about quality, so
+no consistency check applies, and each rater’s sensitivity and
+specificity are reported as the Hui and Walter bounds rather than as
+point estimates.” Check the numbers against your own card; the ones here
+are the Case 3 card’s.</p>
+<p>An intra-rater card is reported the same way with occasions in place
+of raters and ICC in the lead, in the shape “One coder coded N subjects
+on three occasions; ICC was X, at the Yth percentile of what a
+three-occasion, N-subject study at this positive rate can produce, and
+the data are consistent with coder quality A to B.” State the interval
+between occasions, since memory of an earlier pass raises the reading.
+The intervals on the latent-class table are 95% percentile bootstrap
+intervals, from <code>bootstrap_B</code> resamples (1,000 by default;
+the examples here use 200 to run quickly).</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="layered-access">Layered access<a class="anchor" aria-label="anchor" href="#layered-access"></a>
+<h2 id="boundaries">Boundaries<a class="anchor" aria-label="anchor" href="#boundaries"></a>
 </h2>
+<p><strong>Shared panel bias.</strong> A second five-rater panel at the
+same prevalence returns the same Fleiss’ kappa 0.36 as the split panel
+in Case 2, but all five raters share sensitivity 0.95 and specificity
+0.70. A fixed scale calls both <em>fair</em>.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Y_shared</span> <span class="op">&lt;-</span> <span class="fu">gen_logitnormal</span><span class="op">(</span><span class="fl">151L</span>, <span class="fl">5L</span>, <span class="fl">1000L</span>,</span>
+<span>                            Se <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.95</span>, <span class="fl">5</span><span class="op">)</span>,</span>
+<span>                            Sp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.70</span>, <span class="fl">5</span><span class="op">)</span>, pi <span class="op">=</span> <span class="fl">0.30</span><span class="op">)</span></span></code></pre></div>
+<div class="figure">
+<img src="grassr-split-vs-shared-scatter-1.png" alt="Sensitivity against specificity for two five-rater panels that both return Fleiss' kappa 0.36. Three raters of the first panel sit together at 0.92 sensitivity and 0.92 specificity while two fall into the shaded low-specificity zone near 0.51. All five raters of the second panel sit together at 0.95 sensitivity and 0.70 specificity."><p class="caption">
+Two panels with one coefficient value and two different internal
+structures.
+</p>
+</div>
+<p>This is the case agreement diagnostics miss.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/grass_report.html">grass_report</a></span><span class="op">(</span><span class="va">Y_shared</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; GRASS Report Card</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   sample      = 5 raters, N = 1000, pi_hat = 0.49</span></span>
+<span><span class="co">#&gt;   PABAK        = 0.36  -&gt;  56th percentile | quality 0.75-0.85  &lt;- primary</span></span>
+<span><span class="co">#&gt;   AC1          = 0.36  -&gt;  56th percentile | quality 0.75-0.85</span></span>
+<span><span class="co">#&gt;   Fleiss kappa = 0.36  -&gt;  56th percentile | quality 0.75-0.85</span></span>
+<span><span class="co">#&gt;   ICC          = 0.47  -&gt;  61st percentile | quality 0.76-0.85  [distribution-sensitive]</span></span>
+<span><span class="co">#&gt;   read: this panel's agreement exceeds 56% of what panels in this study context can produce; the data are consistent with panel quality 0.75-0.85.</span></span>
+<span><span class="co">#&gt;   delta       = 0.00 pp implied-quality spread (aligned)</span></span>
+<span><span class="co">#&gt;   matched null = (k=5, N=1000, q=0.80): delta_hat sits at percentile 29.2 of the null</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   Notes:</span></span>
+<span><span class="co">#&gt;     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, while the other three depend only on prevalence and quality.</span></span>
+<span><span class="co">#&gt;     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.80, prev=0.48; 50,000 draws); null interpolated between calibrated grid nodes.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   See `summary(...)` for full panel and CI details.</span></span>
+<span><span class="co">#&gt;   See `plot(...)` for a surface-position visualization.</span></span></code></pre></div>
+<p>The card raises no flag, yet the panel calls about half its subjects
+positive when the true prevalence is 0.30. Every rater shares the same
+specificity deficit, so the shared error raises every rater’s positive
+rate together and no internal comparison can see it. Agreement
+diagnostics detect raters who disagree with each other, not a panel that
+is wrong together. Only an external reference standard catches the
+shared error.</p>
+<p><strong>ICC and the subject-prevalence distribution.</strong> PABAK,
+AC1, and Fleiss’ kappa depend only on the positive rate and the rater
+quality. ICC depends additionally on the full distribution of
+subject-level positive probabilities; two studies can share a 30%
+positive rate and differ on whether it comes from obvious positives or
+borderline cases. The bundled reference covers a 48-point logit-normal
+grid plus four discrete-mixture profiles, and a panel whose true
+distribution lies off that grid has its ICC percentile computed against
+a reference that does not match it. That is why ICC prints a
+<code>[distribution-sensitive]</code> marker and stays out of
+<code>delta_hat</code>. The card’s ICC is ICC(1,1), a one-way
+random-effects model fitted on the logit scale; the package computes no
+other variant.</p>
+<p><strong>Clamping.</strong> Every study context has a range of
+coefficient values it can produce, and an observed value occasionally
+lands outside that range. No quality produces that value, so the package
+uses the nearest edge of the range and marks it
+<code>clamped = TRUE</code>. A clamped reading is a floor or a ceiling
+rather than a measurement, so <code><a href="../reference/grass_report.html">grass_report()</a></code> drops clamped
+coefficients from <code>delta_hat</code> whenever at least two unclamped
+ones remain, and reports the clamp in the <code>Notes</code> and in the
+<code>panel</code> data frame’s <code>clamped</code> and
+<code>reference_used</code> columns. Clamping is rare. Even at 8%
+prevalence, near the low edge of the calibrated grid, every coefficient
+of this five-rater panel inverts cleanly.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Y_edge</span> <span class="op">&lt;-</span> <span class="fu">gen_logitnormal</span><span class="op">(</span><span class="fl">5L</span>, <span class="fl">5L</span>, <span class="fl">1000L</span>,</span>
+<span>                          Se <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.85</span>, <span class="fl">5</span><span class="op">)</span>, Sp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.85</span>, <span class="fl">5</span><span class="op">)</span>, pi <span class="op">=</span> <span class="fl">0.08</span><span class="op">)</span></span>
+<span><span class="va">card_edge</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/grass_report.html">grass_report</a></span><span class="op">(</span><span class="va">Y_edge</span>, bootstrap_B <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
+<span><span class="va">card_edge</span><span class="op">$</span><span class="va">panel</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"coefficient"</span>, <span class="st">"surface_percentile"</span>,</span>
+<span>                    <span class="st">"clamped"</span>, <span class="st">"reference_used"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;    coefficient surface_percentile clamped reference_used</span></span>
+<span><span class="co">#&gt; 1        pabak           67.75940   FALSE    closed-form</span></span>
+<span><span class="co">#&gt; 2     mean_ac1           67.67115   FALSE    closed-form</span></span>
+<span><span class="co">#&gt; 3 fleiss_kappa           67.78800   FALSE    closed-form</span></span>
+<span><span class="co">#&gt; 4          icc           51.13636   FALSE     fitted-icc</span></span></code></pre></div>
+<p><strong>Designs the matrix cannot reveal.</strong> The calibration
+assumes every row is a new subject, and a 0/1 matrix does not say which
+rows share a patient. Practitioners should avoid stacking the
+repetitions of one patient as rows, since the repetitions are not
+independent trials; stacking them overstates the number of subjects and
+leads to overstated confidence in the reported quality bands. Build one
+matrix per repetition and compare the cards, or fix one repetition per
+patient by protocol. When the same patients are scored across sessions
+over time, each session is a valid panel. One card per session, compared
+in order, shows whether agreement held over time. Pooling sessions into
+one number, or splitting disagreement into patient, session, and rater
+components, is a variance-component analysis and belongs in a mixed
+model, outside this package.</p>
+</div>
+<div class="section level2">
+<h2 id="study-planning-and-modular-functions">Study planning and modular functions<a class="anchor" aria-label="anchor" href="#study-planning-and-modular-functions"></a>
+</h2>
+<p><strong>Planning a study.</strong> Before any data exist,
+<code><a href="../reference/plot_surface.html">plot_surface()</a></code> draws a coefficient’s expected-value
+surface, the value a panel of each quality produces at each prevalence,
+for a planned rater count and sample size. The <code>observed</code>
+argument pins a hypothetical value at the planned positive rate. That
+turns the picture into the planning question: what quality would that
+value mean in this study, and how far would the same value drift if the
+prevalence came in differently. The dotted lines mark the quality bands
+the card uses. A screening study plans three raters, 80 subjects, and a
+positive rate near 10%, and asks what a Fleiss’ kappa of 0.45 would
+mean.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_surface.html">plot_surface</a></span><span class="op">(</span><span class="st">"fleiss_kappa"</span>, pi_hat <span class="op">=</span> <span class="fl">0.10</span>, k <span class="op">=</span> <span class="fl">3</span>, N <span class="op">=</span> <span class="fl">80</span>, observed <span class="op">=</span> <span class="fl">0.45</span><span class="op">)</span></span></code></pre></div>
+<div class="figure">
+<img src="grassr-plan-fleiss-1.png" alt="A heatmap of expected Fleiss' kappa over mean prevalence on the horizontal axis and rater quality on the vertical axis. The surface is highest at balanced prevalence and falls toward both edges. A point pinned at prevalence 0.10 and quality near 0.95 marks where an observed kappa of 0.45 lands."><p class="caption">
+Planning view: Fleiss’ kappa for three raters and 80 subjects, with an
+observed 0.45 pinned at a 10% positive rate.
+</p>
+</div>
+<p>At 10% prevalence the pinned 0.45 implies a panel near quality 0.95.
+The same 0.45 at balanced prevalence would imply a panel near 0.84,
+because the surface falls away from 50% on both sides. A protocol that
+fixes a kappa target without fixing the prevalence it applies to has
+fixed nothing. PABAK’s surface for the same study is flat across
+prevalence, which is why it is the primary coefficient at moderate
+prevalence.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_surface.html">plot_surface</a></span><span class="op">(</span><span class="st">"pabak"</span>, pi_hat <span class="op">=</span> <span class="fl">0.10</span>, k <span class="op">=</span> <span class="fl">3</span>, N <span class="op">=</span> <span class="fl">80</span>, observed <span class="op">=</span> <span class="fl">0.45</span><span class="op">)</span></span></code></pre></div>
+<div class="figure">
+<img src="grassr-plan-pabak-1.png" alt="A heatmap of expected PABAK over mean prevalence and rater quality for the same planned study. The surface is flat across prevalence and rises with quality, and the pinned observed value of 0.45 lands at the same quality at every prevalence."><p class="caption">
+Planning view: PABAK for the same study, with the same observed 0.45
+pinned.
+</p>
+</div>
+<p>The same question with a number instead of a picture:
+<code><a href="../reference/position_on_surface.html">position_on_surface()</a></code> takes the hypothetical value and the
+planned study context, with no rating matrix, and returns the implied
+quality, its percentile, and the consistency band the planned study
+would give. The metric names are <code>"pabak"</code>,
+<code>"mean_ac1"</code>, <code>"fleiss_kappa"</code>, and
+<code>"icc"</code>. In a script, assign and <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> this
+result and the plots above, as with the card.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/position_on_surface.html">position_on_surface</a></span><span class="op">(</span><span class="fl">0.45</span>, <span class="st">"fleiss_kappa"</span>, pi_hat <span class="op">=</span> <span class="fl">0.10</span>, k <span class="op">=</span> <span class="fl">3</span>, N <span class="op">=</span> <span class="fl">80</span><span class="op">)</span></span>
+<span><span class="co">#&gt; grass surface-position report</span></span>
+<span><span class="co">#&gt;   metric               : fleiss_kappa</span></span>
+<span><span class="co">#&gt;   observed value       : 0.450</span></span>
+<span><span class="co">#&gt;   design (pi_hat,k,N)  : (0.100, 3, 80)</span></span>
+<span><span class="co">#&gt;   implied quality q_hat: 0.948 +/- 0.019</span></span>
+<span><span class="co">#&gt;   percentile           : 90.2 (of the achievable range in this study context)</span></span>
+<span><span class="co">#&gt;   consistency band     : consistent with panel quality 0.90-0.99 (95%)</span></span></code></pre></div>
+<p><strong>Each stage of <code><a href="../reference/grass_report.html">grass_report()</a></code> on its
+own.</strong></p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/position_on_surface.html">position_on_surface</a></span><span class="op">(</span>ratings <span class="op">=</span> <span class="va">Y1</span>, metric <span class="op">=</span> <span class="st">"pabak"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; grass surface-position report</span></span>
+<span><span class="co">#&gt;   metric               : pabak</span></span>
+<span><span class="co">#&gt;   observed value       : 0.537</span></span>
+<span><span class="co">#&gt;   design (pi_hat,k,N)  : (0.237, 5, 1000)</span></span>
+<span><span class="co">#&gt;   implied quality q_hat: 0.866 +/- 0.005</span></span>
+<span><span class="co">#&gt;   percentile           : 73.9 (of the achievable range in this study context)</span></span>
+<span><span class="co">#&gt;   consistency band     : consistent with panel quality 0.85-0.90 (95%)</span></span>
+<span><span class="co">#&gt;   notes                :</span></span>
+<span><span class="co">#&gt;     - Consistency band narrower than the calibrated q-grid spacing; endpoints interpolated within one grid gap.</span></span></code></pre></div>
+<p><code><a href="../reference/position_on_surface.html">position_on_surface()</a></code> returns the percentile, the band,
+the implied quality, and, for one coefficient, its position within the
+sampling distribution at every calibrated quality level, the profile
+behind the band.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/check_asymmetry.html">check_asymmetry</a></span><span class="op">(</span>ratings <span class="op">=</span> <span class="va">Y1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; GRASS panel asymmetry diagnostic</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   delta_hat = 0.0 pp  (spread of the implied panel qualities)</span></span>
+<span><span class="co">#&gt;   flag      = aligned  (36.4 percentile of matched null: k=5, N=1000, q=0.87)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   panel:</span></span>
+<span><span class="co">#&gt;     coefficient        observed   implied q   pooled pctile   in delta_hat</span></span>
+<span><span class="co">#&gt;     pabak              0.54       0.866       73.9            yes</span></span>
+<span><span class="co">#&gt;     mean_ac1           0.64       0.866       73.9            yes</span></span>
+<span><span class="co">#&gt;     fleiss_kappa       0.36       0.866       73.9            yes</span></span>
+<span><span class="co">#&gt;     icc                0.48       0.822       62.5            no [distribution-sensitive]</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   Surface caveats:</span></span>
+<span><span class="co">#&gt;     - Consistency band narrower than the calibrated q-grid spacing; endpoints interpolated within one grid gap.</span></span>
+<span><span class="co">#&gt;     - ICC reference: a logit-normal profile fitted to the ratings (mu=-1.775, tau2=3.089) was matched to the nearest calibrated profile (mu=-1.386, tau2=4.0000).</span></span>
+<span><span class="co">#&gt;     - ICC reference: calibrated profile LN_mu=-1.386_tau2=4.0000 at k=5, N=1000 (logit_normal family, mean prevalence 0.300).</span></span>
+<span><span class="co">#&gt;     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, while the other three depend only on prevalence and quality.</span></span>
+<span><span class="co">#&gt;     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.</span></span></code></pre></div>
+<p><code><a href="../reference/check_asymmetry.html">check_asymmetry()</a></code> returns the spread and its flag
+without per-rater detail.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/pairwise_agreement.html">pairwise_agreement</a></span><span class="op">(</span><span class="va">Y_split</span><span class="op">)</span></span>
+<span><span class="co">#&gt; GRASS Pairwise Reliability</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   sample      = 5 raters, N = 1000, pi_hat = 0.47, axis = inter</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   Pairwise PABAK (lower triangle = PABAK_ij; upper triangle = surface percentile):</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;    R1     R2     R3     R4     R5    </span></span>
+<span><span class="co">#&gt; R1     --   84%    84%    48%    40% </span></span>
+<span><span class="co">#&gt; R2   0.71     --   81%    45%    41% </span></span>
+<span><span class="co">#&gt; R3   0.70   0.67     --   45%    41% </span></span>
+<span><span class="co">#&gt; R4   0.27   0.24   0.25     --   35% </span></span>
+<span><span class="co">#&gt; R5   0.21   0.22   0.21   0.17     --</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   Per-rater behavior against pooled panel-majority:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  rater Se_tilde Sp_tilde n_pos n_neg n_excl</span></span>
+<span><span class="co">#&gt;     R1     0.84     0.93   360   457    183</span></span>
+<span><span class="co">#&gt;     R2     0.85     0.91   352   460    188</span></span>
+<span><span class="co">#&gt;     R3     0.83     0.92   351   459    190</span></span>
+<span><span class="co">#&gt;     R4     0.92     0.51   327   581     92</span></span>
+<span><span class="co">#&gt;     R5     0.88     0.50   330   579     91</span></span>
+<span><span class="co">#&gt;   (Se_tilde, Sp_tilde are calls vs panel-majority of OTHER raters,</span></span>
+<span><span class="co">#&gt;    not against external truth. n_excl: subjects with tied majority,</span></span>
+<span><span class="co">#&gt;    excluded from the per-rater pool.)</span></span></code></pre></div>
+<p><code><a href="../reference/pairwise_agreement.html">pairwise_agreement()</a></code> returns the pairwise matrix and the
+majority table for any panel, flagged or not, and is the table to report
+in place of a panel coefficient when the flag is <code>divergent</code>.
+<code><a href="../reference/latent_class_fit.html">latent_class_fit()</a></code> is what the divergent card runs to
+produce its latent-class table; called on its own it returns that table
+for any panel, and at two raters the Hui and Walter bounds, as in Case
+3.</p>
+<p><strong>Other views of a card.</strong></p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">card1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/grass_report.html">grass_report</a></span><span class="op">(</span><span class="va">Y1</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">card1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; GRASS Report Card -- summary</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   sample       : k = 5 raters, N = 1000, pi_hat = 0.237, axis = inter</span></span>
-<span><span class="co">#&gt;   tau2_hat     : 0.065</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   primary coefficient</span></span>
 <span><span class="co">#&gt;     name         : pabak</span></span>
 <span><span class="co">#&gt;     observed     : 0.537</span></span>
-<span><span class="co">#&gt;     percentile   : 73.86 pp (pooled; position in the design's achievable range)</span></span>
+<span><span class="co">#&gt;     percentile   : 73.86 (of the achievable range in this study context)</span></span>
 <span><span class="co">#&gt;     q_hat        : 0.866</span></span>
 <span><span class="co">#&gt;     band         : consistent with panel quality 0.85-0.90 (95%)</span></span>
-<span><span class="co">#&gt;     basis        : pooled-achievable-range</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   delta (cross-coefficient asymmetry)</span></span>
 <span><span class="co">#&gt;     implied-q spread (pp) : 0.00</span></span>
 <span><span class="co">#&gt;     flag             : aligned</span></span>
-<span><span class="co">#&gt;     delta percentile : 36.4 pctile on matched null (k=5, N=1000, q=0.87)</span></span>
+<span><span class="co">#&gt;     delta percentile : 36.4 (percentile on the matched null, k=5, N=1000, q=0.87)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   panel (full table)</span></span>
-<span><span class="co">#&gt;     pabak           observed = 0.537  q_hat = 0.866  pct = 73.86 pp  quality 0.85-0.90              ref = closed-form</span></span>
-<span><span class="co">#&gt;     mean_ac1        observed = 0.637  q_hat = 0.866  pct = 73.86 pp  quality 0.85-0.90              ref = closed-form</span></span>
-<span><span class="co">#&gt;     fleiss_kappa    observed = 0.361  q_hat = 0.866  pct = 73.86 pp  quality 0.85-0.90              ref = closed-form</span></span>
-<span><span class="co">#&gt;     icc             observed = 0.484  q_hat = 0.822  pct = 62.50 pp  quality 0.80-0.85              ref = fitted-icc</span></span>
+<span><span class="co">#&gt;     pabak           observed = 0.537  q_hat = 0.866  pct = 73.86  quality 0.85-0.90              ref = closed-form</span></span>
+<span><span class="co">#&gt;     mean_ac1        observed = 0.637  q_hat = 0.866  pct = 73.86  quality 0.85-0.90              ref = closed-form</span></span>
+<span><span class="co">#&gt;     fleiss_kappa    observed = 0.361  q_hat = 0.866  pct = 73.86  quality 0.85-0.90              ref = closed-form</span></span>
+<span><span class="co">#&gt;     icc             observed = 0.484  q_hat = 0.822  pct = 62.50  quality 0.80-0.85              ref = fitted-icc</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   notes</span></span>
 <span><span class="co">#&gt;     - Consistency band narrower than the calibrated q-grid spacing; endpoints interpolated within one grid gap.</span></span>
-<span><span class="co">#&gt;     - Fitted-ICC F_key picked via glmer: mu_hat=-1.775, tau2_hat=3.089 -&gt; F_key tau2=4.0000, mu=-1.386.</span></span>
-<span><span class="co">#&gt;     - Fitted-ICC reference (GLMM-gap corrected) at F_key=LN_mu=-1.386_tau2=4.0000, k=5, N=1000 (family=logit_normal, M1=0.300).</span></span>
-<span><span class="co">#&gt;     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is reported on the panel but does not enter delta_hat (v0.5.0 scope: ICC's reference depends on the full subject-prevalence distribution F and does not share the (q, pi_+) sufficient statistic the agreement family does).</span></span>
+<span><span class="co">#&gt;     - ICC reference: a logit-normal profile fitted to the ratings (mu=-1.775, tau2=3.089) was matched to the nearest calibrated profile (mu=-1.386, tau2=4.0000).</span></span>
+<span><span class="co">#&gt;     - ICC reference: calibrated profile LN_mu=-1.386_tau2=4.0000 at k=5, N=1000 (logit_normal family, mean prevalence 0.300).</span></span>
+<span><span class="co">#&gt;     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is shown but not included in delta_hat; its reference depends on how positive probability is spread across subjects, while the other three depend only on prevalence and quality.</span></span>
 <span><span class="co">#&gt;     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   grass version : 0.8.0</span></span>
-<span><span class="co">#&gt;   timestamp     : 2026-08-29 23:16:03</span></span></code></pre></div>
-<p><code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> is the audit view: the full panel with
-percentiles and bands, every caveat from the surface lookup, the package
-version, the timestamp.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt;   timestamp     : 2026-09-05 20:05:05</span></span></code></pre></div>
+<p><code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> prints everything behind the card, the full
+panel with percentiles and bands, every caveat from the surface lookup,
+the package version, and the timestamp.</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">card1</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    coefficient observed_value surface_percentile band_lo band_hi band_open_low</span></span>
 <span><span class="co">#&gt; 1        pabak      0.5372000           73.86364 0.85125 0.89875         FALSE</span></span>
@@ -645,212 +790,40 @@ version, the timestamp.</p>
 <span><span class="co">#&gt; 2           1000      0.8664693</span></span>
 <span><span class="co">#&gt; 3           1000      0.8664693</span></span>
 <span><span class="co">#&gt; 4           1000      0.8664693</span></span></code></pre></div>
-<p><code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> is the tidy view, one row per
-coefficient, for binding many studies’ cards into one table.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<p><code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> returns one row per coefficient, for
+binding many studies’ cards into one table. <code>band_open_low</code>
+and <code>band_open_high</code> flag a band that reaches the edge of the
+calibrated quality range; <code>se_q_hat</code> is the standard error of
+the implied quality, and <code>delta_hat</code> is in quality percentage
+points, the unit the card prints.</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">card1</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
 <img src="grassr-plot-surface-card-1.png" alt="The expected-value surface for PABAK at this design, with the observed panel pinned on it and its consistency band marked along the quality axis."><p class="caption">
 The aligned panel pinned on its PABAK reference surface.
 </p>
 </div>
-<p>The default <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> view places the panel on the
-expected-value surface at its design, with the observation pinned. Other
-views (<code>type = "thermometer"</code> for the <code>delta_hat</code>
-gauge, <code>"panel"</code>, <code>"intervals"</code>,
+<p>The default <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> places the panel on the
+expected-value surface in its study context. Other views
+(<code>type = "thermometer"</code> for the <code>delta_hat</code> gauge,
+<code>"panel"</code>, <code>"intervals"</code>,
 <code>"per_rater"</code>, <code>"diagnostic"</code>) are documented in
 <code><a href="../reference/plot.grass_card.html">?plot.grass_card</a></code>.</p>
 </div>
 <div class="section level2">
-<h2 id="building-blocks">Building blocks<a class="anchor" aria-label="anchor" href="#building-blocks"></a>
+<h2 id="reproducibility-and-references">Reproducibility and references<a class="anchor" aria-label="anchor" href="#reproducibility-and-references"></a>
 </h2>
-<p>Each stage of <code><a href="../reference/grass_report.html">grass_report()</a></code> is exported on its own.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/position_on_surface.html">position_on_surface</a></span><span class="op">(</span>ratings <span class="op">=</span> <span class="va">Y1</span>, metric <span class="op">=</span> <span class="st">"pabak"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; grass surface-position report (sweep convention, v0.7.1)</span></span>
-<span><span class="co">#&gt;   metric               : pabak</span></span>
-<span><span class="co">#&gt;   observed value       : 0.537</span></span>
-<span><span class="co">#&gt;   design (pi_hat,k,N)  : (0.237, 5, 1000)</span></span>
-<span><span class="co">#&gt;   implied quality q_hat: 0.866 +/- 0.005</span></span>
-<span><span class="co">#&gt;   pooled percentile    : 73.9 (of the design's achievable range)</span></span>
-<span><span class="co">#&gt;   consistency band     : consistent with panel quality 0.85-0.90 (95%)</span></span>
-<span><span class="co">#&gt;   sampling method      : empirical</span></span>
-<span><span class="co">#&gt;   notes                :</span></span>
-<span><span class="co">#&gt;     - Consistency band narrower than the calibrated q-grid spacing; endpoints interpolated within one grid gap.</span></span></code></pre></div>
-<p><code><a href="../reference/position_on_surface.html">position_on_surface()</a></code> returns the percentile, the band,
-the implied quality, and the full sweep profile for one coefficient.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/check_asymmetry.html">check_asymmetry</a></span><span class="op">(</span>ratings <span class="op">=</span> <span class="va">Y1</span><span class="op">)</span></span>
-<span><span class="co">#&gt; GRASS panel asymmetry diagnostic</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   delta_hat = 0.0 pp  (spread of the implied panel qualities)</span></span>
-<span><span class="co">#&gt;   flag      = aligned  (36.4 percentile of matched null: k=5, N=1000, q=0.87)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   panel:</span></span>
-<span><span class="co">#&gt;     coefficient        observed   implied q   pooled pctile   in delta_hat</span></span>
-<span><span class="co">#&gt;     pabak              0.54       0.866       73.9            yes</span></span>
-<span><span class="co">#&gt;     mean_ac1           0.64       0.866       73.9            yes</span></span>
-<span><span class="co">#&gt;     fleiss_kappa       0.36       0.866       73.9            yes</span></span>
-<span><span class="co">#&gt;     icc                0.48       0.822       62.5            no [distribution-sensitive]</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   Surface caveats:</span></span>
-<span><span class="co">#&gt;     - Consistency band narrower than the calibrated q-grid spacing; endpoints interpolated within one grid gap.</span></span>
-<span><span class="co">#&gt;     - Fitted-ICC F_key picked via glmer: mu_hat=-1.775, tau2_hat=3.089 -&gt; F_key tau2=4.0000, mu=-1.386.</span></span>
-<span><span class="co">#&gt;     - Fitted-ICC reference (GLMM-gap corrected) at F_key=LN_mu=-1.386_tau2=4.0000, k=5, N=1000 (family=logit_normal, M1=0.300).</span></span>
-<span><span class="co">#&gt;     - delta_hat is the implied-quality spread over the agreement family (PABAK, mean AC1, Fleiss kappa). ICC is reported on the panel but does not enter delta_hat (v0.5.0 scope: ICC's reference depends on the full subject-prevalence distribution F and does not share the (q, pi_+) sufficient statistic the agreement family does).</span></span>
-<span><span class="co">#&gt;     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.</span></span></code></pre></div>
-<p><code><a href="../reference/check_asymmetry.html">check_asymmetry()</a></code> returns the spread and its flag
-without per-rater detail.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/latent_class_fit.html">latent_class_fit</a></span><span class="op">(</span>ratings <span class="op">=</span> <span class="va">Y_div</span>, B <span class="op">=</span> <span class="fl">200</span><span class="op">)</span></span>
-<span><span class="co">#&gt; grass latent-class fit</span></span>
-<span><span class="co">#&gt;   method        : dawid_skene_em</span></span>
-<span><span class="co">#&gt;   raters (k)    : 5</span></span>
-<span><span class="co">#&gt;   bootstrap B   : 200</span></span>
-<span><span class="co">#&gt;   converged     : TRUE</span></span>
-<span><span class="co">#&gt;   iterations    : 10</span></span>
-<span><span class="co">#&gt;   prevalence_hat: 0.475</span></span>
-<span><span class="co">#&gt;   log-likelihood: -2504.371</span></span>
-<span><span class="co">#&gt;   per-rater</span></span>
-<span><span class="co">#&gt;     R1    Se = 0.950  (0.227, 0.968)   Sp = 0.783  (0.048, 0.818)</span></span>
-<span><span class="co">#&gt;     R2    Se = 0.729  (0.044, 0.767)   Sp = 0.953  (0.267, 0.972)</span></span>
-<span><span class="co">#&gt;     R3    Se = 0.956  (0.282, 0.977)   Sp = 0.718  (0.047, 0.751)</span></span>
-<span><span class="co">#&gt;     R4    Se = 0.750  (0.048, 0.785)   Sp = 0.949  (0.252, 0.968)</span></span>
-<span><span class="co">#&gt;     R5    Se = 0.962  (0.211, 0.981)   Sp = 0.781  (0.035, 0.811)</span></span></code></pre></div>
-<p><code><a href="../reference/latent_class_fit.html">latent_class_fit()</a></code> produces the per-rater table
-directly.</p>
-<p>For prospective design, before any data exist,
-<code><a href="../reference/plot_surface.html">plot_surface()</a></code> draws a coefficient’s expected-value surface
-at a planned design and can pin a hypothetical observed value; see
-<code><a href="../reference/plot_surface.html">?plot_surface</a></code>.</p>
-</div>
-<div class="section level2">
-<h2 id="reference-resolution-and-the-clamp-guard">Reference resolution and the clamp guard<a class="anchor" aria-label="anchor" href="#reference-resolution-and-the-clamp-guard"></a>
-</h2>
-<p><code>delta_hat</code> inverts each coefficient to an implied panel
-quality. Every design has a range of coefficient values it can produce,
-and an observed value occasionally lands outside that range. The
-inversion then has no quality to return, so it reports the nearest edge
-of the range and marks the reading <code>clamped = TRUE</code>.
-<strong>That substitution is a clamp:</strong> an edge value standing in
-for an answer the reference surface cannot give.</p>
-<p>A clamped reading is a floor or a ceiling rather than a measurement,
-so <code><a href="../reference/grass_report.html">grass_report()</a></code> drops clamped coefficients from
-<code>delta_hat</code> whenever at least two unclamped ones remain. One
-coefficient pinned to an edge could otherwise stretch the spread and
-fire a false divergent flag.</p>
-<p>Clamping is rare. When the exact design is not a calibrated grid
-point, the reference resolves to the nearest calibrated cell and the
-resolution is disclosed in the <code>Notes</code>:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">Y_edge</span> <span class="op">&lt;-</span> <span class="fu">gen_logitnormal</span><span class="op">(</span><span class="fl">5L</span>, <span class="fl">5L</span>, <span class="fl">1000L</span>,</span>
-<span>                          Se <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.85</span>, <span class="fl">5</span><span class="op">)</span>, Sp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.85</span>, <span class="fl">5</span><span class="op">)</span>, pi <span class="op">=</span> <span class="fl">0.08</span><span class="op">)</span></span>
-<span><span class="va">card_edge</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/grass_report.html">grass_report</a></span><span class="op">(</span><span class="va">Y_edge</span>, bootstrap_B <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
-<span><span class="va">card_edge</span><span class="op">$</span><span class="va">panel</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"coefficient"</span>, <span class="st">"surface_percentile"</span>,</span>
-<span>                    <span class="st">"clamped"</span>, <span class="st">"reference_used"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;    coefficient surface_percentile clamped reference_used</span></span>
-<span><span class="co">#&gt; 1        pabak           67.75940   FALSE    closed-form</span></span>
-<span><span class="co">#&gt; 2     mean_ac1           67.67115   FALSE    closed-form</span></span>
-<span><span class="co">#&gt; 3 fleiss_kappa           67.78800   FALSE    closed-form</span></span>
-<span><span class="co">#&gt; 4          icc           51.13636   FALSE     fitted-icc</span></span></code></pre></div>
-<p>When a clamp does occur the card surfaces it twice, in the
-<code>Notes</code> and in the <code>panel</code> data frame’s
-<code>clamped</code> and <code>reference_used</code> columns. The
-trade-off is deliberate: a coefficient with no calibrated reference at
-the user’s design contributes nothing, and in exchange a fired flag
-reflects genuine disagreement rather than a boundary artifact.</p>
-</div>
-<div class="section level2">
-<h2 id="the-machinery">The machinery<a class="anchor" aria-label="anchor" href="#the-machinery"></a>
-</h2>
-<p>The accompanying paper gives the derivations and the full calibration
-appendices.</p>
-<p><strong>Notation.</strong> <code>Y</code> is the N x k binary rating
-matrix. <code>pi_hat</code> is the observed marginal positive rate.
-<code>Se_j</code> and <code>Sp_j</code> are per-rater sensitivity and
-specificity, inferred from the matrix alone. <code>q</code> is diagonal
-rater quality (<code>Se = Sp = q</code> for every rater under the
-calibration case). <code>q_hat</code> is the implied panel quality
-recovered from an observed coefficient. <code>delta_hat</code> is the
-spread of implied qualities, in quality percentage points, over PABAK,
-mean AC1, and Fleiss kappa.</p>
-<p><strong>Recovering <code>q_hat</code>.</strong> PABAK has an
-algebraic inverse, <code>q_hat = (1 + sqrt(PABAK)) / 2</code>. Fleiss
-kappa, AC1, Krippendorff alpha, and ICC invert by a 501-point grid
-lookup with linear interpolation. Out-of-range observations clamp to the
-boundary with a flag (previous section).</p>
-<p><strong>ICC and the subject-prevalence distribution.</strong> The
-agreement family’s expectations depend only on the panel marginal and
-the rater quality. ICC depends additionally on the full distribution of
-subject-level positive probabilities: two studies can share a 30%
-positive rate and differ on whether it comes from obvious positives or
-borderline cases. The bundled reference covers a 48-point logit-normal
-grid plus four discrete-mixture profiles; a panel whose true
-distribution sits elsewhere pays a mismatch cost that the agreement
-family escapes. That is why ICC prints a
-<code>[distribution-sensitive]</code> marker and stays out of
-<code>delta_hat</code>. Variant selection (ICC(1,1), ICC(2,1), ICC(3,1))
-follows the Koo and Li (2016) decision tree through the
-<code>metric</code> argument.</p>
-<p><strong>The matched-null flag convention.</strong> The null
-distribution of <code>delta_hat</code> moves with panel quality and
-design, and at small N it includes a point mass at zero, so no fixed cut
-in quality points works everywhere. The package reads the observed
-spread’s percentile on a bundled null at the matched
-<code>(k, N, q_hat)</code> cell, exactly how every coefficient on the
-card is already read. The nulls are generated through the production
-pipeline itself, resolved at every combination of design and prevalence:
-11,616 cells at 50,000 draws each, spanning eleven rater counts, twelve
-sample sizes, eleven quality levels, and eight prevalence levels (the
-flag is <code>not_applicable</code> at k = 2). Monte Carlo error on a
-reported percentile stays under a quarter of a percentile point at the
-shipped draw counts. Designs between calibrated cells are read by
+<p>Every percentile and consistency band above comes from a simulated
+reference. The bundled calibration holds 44,616 surface cells at 2,000
+draws each and 11,616 <code>delta_hat</code> null cells at 50,000 draws
+each. Study contexts between calibrated cells are handled by
 interpolation in quality, log sample size, and prevalence; rater count
-snaps to the nearest calibrated value. The card prints the matched cell,
-its draw count, and whether the reading interpolated or clamped at a
-grid edge.</p>
-<p><strong>Pairwise PABAK and pooled-reference identifiability.</strong>
-PABAK is the pairwise coefficient because under symmetric raters its
-expectation reduces to <code>(2q - 1)^2</code>, a function of quality
-alone; every rater pair has its own observed marginal, and Cohen’s kappa
-at the pair level is prevalence-attenuated (the kappa paradox of Byrt,
-Bishop, and Carlin, 1993). The pooled-reference estimates read each
-rater against the observable panel majority, so they are label-flip
-clean whenever the majority tracks the truth direction; under a panel
-whose minority is right, they read backwards. A 54-cell Monte Carlo
-validation recovers each rater’s true bias direction in 85.8% of
-in-majority draws overall, with a per-cell median of 96.1%. Recovery
-exceeds 95% at the designs where the divergent flag is the intended
-deliverable (k of 5 or more at asymmetry 0.2 and above); small panels at
-mild asymmetry (k = 3, A = 0.1) are the structural floor. The package
-reports the per-rater pool size alongside each estimate.</p>
-<p><strong>Where the rest lives.</strong> The accompanying paper gives
-the reference-surface construction, the closed-form derivations, the
-calibration grids, the flag’s operating characteristics, and two
-published-panel reanalyses. The three case studies above are the paper’s
-worked examples, regenerated from the same seeds; the quick-start and
-two-rater demonstration panels are this vignette’s own.</p>
-</div>
-<div class="section level2">
-<h2 id="what-the-calibration-covers">What the calibration covers<a class="anchor" aria-label="anchor" href="#what-the-calibration-covers"></a>
-</h2>
-<p>Every number above is read from a simulated reference, and the
-reference is only as fine as the compute that built it. The bundled
-calibration holds 44,616 surface cells at 2,000 draws each and 11,616
-<code>delta_hat</code> null cells at 50,000 draws each: an
-89-million-draw surface program, a 581-million-draw null program, and a
-22-million-draw power program behind the flag’s operating
-characteristics. Rater count snaps to the nearest calibrated value, so a
-panel of 17 raters reads the 15-rater reference; the other design axes
-interpolate (previous section).</p>
-<p>Denser grids, a wider subject-prevalence compendium for ICC, and
-deeper draws would each tighten the readings, and none of them needs new
-theory. The simulation programs that produced the bundled references are
-in the source repository under <code>simulation/</code>.</p>
-</div>
-<div class="section level2">
-<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
-</h2>
+snaps to the nearest calibrated value, so a panel of 17 raters uses the
+15-rater reference. The card says so when a snap happens. The simulation
+programs that produced the bundled references are in the source
+repository under <code>simulation/</code>. The three case studies are
+the accompanying paper’s worked examples, regenerated from the same
+seeds.</p>
 <ul>
 <li>Semmel, A. &amp; Gidaro, R. (2026). <em>A context-conditioned
 reporting convention for rater reliability on binary outcomes.</em>
@@ -874,6 +847,8 @@ diagnostic tests. <em>Biometrics</em> 36(1), 167-171.</li>
 <li>Koo, T. K. &amp; Li, M. Y. (2016). A guideline of selecting and
 reporting intraclass correlation coefficients for reliability research.
 <em>Journal of Chiropractic Medicine</em> 15(2), 155-163.</li>
+<li>Landis, J. R. &amp; Koch, G. G. (1977). The measurement of observer
+agreement for categorical data. <em>Biometrics</em> 33(1), 159-174.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
