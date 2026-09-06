@@ -696,7 +696,7 @@ detail.
 pairwise_agreement(Y_split)
 #> GRASS Pairwise Reliability
 #> 
-#>   sample      = 5 raters, N = 1000, pi_hat = 0.47, tau2_hat = 0.090, axis = inter
+#>   sample      = 5 raters, N = 1000, pi_hat = 0.47, axis = inter
 #> 
 #>   Pairwise PABAK (lower triangle = PABAK_ij; upper triangle = surface percentile):
 #> 
@@ -736,7 +736,6 @@ summary(card1)
 #> GRASS Report Card -- summary
 #> 
 #>   sample       : k = 5 raters, N = 1000, pi_hat = 0.237, axis = inter
-#>   tau2_hat     : 0.065
 #> 
 #>   primary coefficient
 #>     name         : pabak
@@ -764,7 +763,7 @@ summary(card1)
 #>     - flag from delta_hat's percentile on the matched null (k=5, N=1000, q=0.87, prev=0.14; 50,000 draws); null interpolated between calibrated grid nodes.
 #> 
 #>   grass version : 0.8.0
-#>   timestamp     : 2026-09-05 19:53:34
+#>   timestamp     : 2026-09-05 20:05:05
 ```
 
 `summary()` prints everything behind the card, the full panel with

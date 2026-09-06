@@ -38,6 +38,9 @@ change; on-node readings are unchanged up to storage quantization.
   independent raters of equal quality; drift lowers the reading, memory
   raises it) and says that ICC is marked primary on that axis. The
   surface-plot fallback title no longer runs off the canvas.
+* `summary()` and the pairwise print no longer show `tau2_hat`, an
+  internal heterogeneity estimate that no user-facing text defined. It
+  stays in the returned objects (`card$sample$tau2_hat`).
 * The delta-hat null is prevalence-resolved everywhere. The bundled
   `delta_null_ecdf` holds 11,616 cells: eleven rater counts (3-25),
   twelve sample sizes (15-1,000), eleven quality levels (0.65-0.99),

@@ -58,9 +58,6 @@ print.summary.grass_card <- function(x, digits = 3, ...) {
   cat("GRASS Report Card -- summary\n\n")
   cat(sprintf("  sample       : k = %d raters, N = %d, pi_hat = %.*f, axis = %s\n",
               s$k, s$N, digits, s$pi_hat, s$axis))
-  if (!is.null(s$tau2_hat) && is.finite(s$tau2_hat)) {
-    cat(sprintf("  tau2_hat     : %.*f\n", digits, s$tau2_hat))
-  }
 
   cat("\n  primary coefficient\n")
   co <- x$coefficient

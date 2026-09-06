@@ -201,10 +201,9 @@ pairwise_agreement <- function(ratings, axis = c("inter", "intra")) {
 #' @export
 print.grass_pairwise <- function(x, digits = 2, ...) {
   cat("GRASS Pairwise Reliability\n\n")
-  cat(sprintf("  sample      = %d raters, N = %d, pi_hat = %.*f, tau2_hat = %.*f, axis = %s\n",
+  cat(sprintf("  sample      = %d raters, N = %d, pi_hat = %.*f, axis = %s\n",
               x$sample$k, x$sample$N,
               digits, x$sample$pi_hat,
-              max(digits + 1L, 3L), x$sample$tau2_hat,
               x$sample$axis))
   cat("\n  Pairwise PABAK (lower triangle = PABAK_ij; upper triangle = surface percentile):\n\n")
   k <- x$sample$k
